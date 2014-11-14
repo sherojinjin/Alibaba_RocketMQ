@@ -3,14 +3,14 @@
  */
 package com.alibaba.rocketmq.store;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertTrue;
 
 
 public class MappedFileTest {
@@ -37,7 +37,7 @@ public class MappedFileTest {
             assertTrue(result);
             System.out.println("write OK");
 
-            SelectMappedBufferResult selectMappedBufferResult = mappedFile.selectMapedBuffer(0);
+            SelectMappedBufferResult selectMappedBufferResult = mappedFile.selectMappedBuffer(0);
             byte[] data = new byte[StoreMessage.length()];
             selectMappedBufferResult.getByteBuffer().get(data);
             String readString = new String(data);
@@ -48,7 +48,7 @@ public class MappedFileTest {
             // 禁止Buffer读写
             mappedFile.shutdown(1000);
 
-            // mapedFile对象不可用
+            // mappedFile对象不可用
             assertTrue(!mappedFile.isAvailable());
 
             // 释放读到的Buffer
@@ -77,7 +77,7 @@ public class MappedFileTest {
             assertTrue(result);
             System.out.println("write OK");
 
-            SelectMappedBufferResult selectMappedBufferResult = mappedFile.selectMapedBuffer(0);
+            SelectMappedBufferResult selectMappedBufferResult = mappedFile.selectMappedBuffer(0);
             selectMappedBufferResult.release();
             mappedFile.shutdown(1000);
 

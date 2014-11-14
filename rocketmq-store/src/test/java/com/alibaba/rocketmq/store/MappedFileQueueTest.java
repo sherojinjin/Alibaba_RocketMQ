@@ -34,7 +34,7 @@ public class MappedFileQueueTest {
 
 
     @Test
-    public void test_getLastMapedFile() {
+    public void test_getLastMappedFile() {
         final String fixedMsg = "0123456789abcdef";
         System.out.println("================================================================");
         AllocateMappedFileService allocateMappedFileService = new AllocateMappedFileService();
@@ -55,12 +55,12 @@ public class MappedFileQueueTest {
         mappedFileQueue.shutdown(1000);
         mappedFileQueue.destroy();
         allocateMappedFileService.shutdown();
-        System.out.println("MapedFileQueue.getLastMappedFile() OK");
+        System.out.println("MappedFileQueue.getLastMappedFile() OK");
     }
 
 
     @Test
-    public void test_findMapedFileByOffset() {
+    public void test_findMappedFileByOffset() {
         final String fixedMsg = "abcd";
         System.out.println("================================================================");
         AllocateMappedFileService allocateMappedFileService = new AllocateMappedFileService();
@@ -115,7 +115,7 @@ public class MappedFileQueueTest {
         mappedFileQueue.shutdown(1000);
         mappedFileQueue.destroy();
         allocateMappedFileService.shutdown();
-        System.out.println("MapedFileQueue.findMappedFileByOffset() OK");
+        System.out.println("MappedFileQueue.findMappedFileByOffset() OK");
     }
 
 
@@ -169,12 +169,12 @@ public class MappedFileQueueTest {
         mappedFileQueue.shutdown(1000);
         mappedFileQueue.destroy();
         allocateMappedFileService.shutdown();
-        System.out.println("MapedFileQueue.commit() OK");
+        System.out.println("MappedFileQueue.commit() OK");
     }
 
 
     @Test
-    public void test_getMapedMemorySize() {
+    public void test_getMappedMemorySize() {
         final String fixedMsg = "abcd";
         System.out.println("================================================================");
         AllocateMappedFileService allocateMappedFileService = new AllocateMappedFileService();
@@ -194,7 +194,7 @@ public class MappedFileQueueTest {
         mappedFileQueue.shutdown(1000);
         mappedFileQueue.destroy();
         allocateMappedFileService.shutdown();
-        System.out.println("MapedFileQueue.getMappedMemorySize() OK");
+        System.out.println("MappedFileQueue.getMappedMemorySize() OK");
     }
 
 }

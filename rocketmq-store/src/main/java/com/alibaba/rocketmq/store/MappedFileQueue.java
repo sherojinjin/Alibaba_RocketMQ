@@ -397,7 +397,7 @@ public class MappedFileQueue {
             for (int i = 0; i < mfsLength; i++) {
                 boolean destroy = true;
                 MappedFile mappedFile = (MappedFile) mfs[i];
-                SelectMappedBufferResult result = mappedFile.selectMapedBuffer(this.mappedFileSize - unitSize);
+                SelectMappedBufferResult result = mappedFile.selectMappedBuffer(this.mappedFileSize - unitSize);
                 if (result != null) {
                     long maxOffsetInLogicQueue = result.getByteBuffer().getLong();
                     result.release();

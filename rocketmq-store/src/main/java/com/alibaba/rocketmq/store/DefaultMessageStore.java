@@ -78,7 +78,7 @@ public class DefaultMessageStore implements MessageStore {
     private final DispatchMessageService dispatchMessageService;
     // 消息索引服务
     private final IndexService indexService;
-    // 预分配MapedFile对象服务
+    // 预分配MappedFile对象服务
     private final AllocateMappedFileService allocateMappedFileService;
     // 从物理队列解析消息重新发送到逻辑队列
     private final ReputMessageService reputMessageService;
@@ -849,7 +849,7 @@ public class DefaultMessageStore implements MessageStore {
             // 从小到达排序
             Collections.sort(queryOffsetResult.getPhyOffsets());
 
-            queryMessageResult.setIndexLastUpdatePhyoffset(queryOffsetResult.getIndexLastUpdatePhyoffset());
+            queryMessageResult.setIndexLastUpdatePhyOffset(queryOffsetResult.getIndexLastUpdatePhyoffset());
             queryMessageResult.setIndexLastUpdateTimestamp(queryOffsetResult.getIndexLastUpdateTimestamp());
 
             for (int m = 0; m < queryOffsetResult.getPhyOffsets().size(); m++) {
@@ -1253,10 +1253,10 @@ public class DefaultMessageStore implements MessageStore {
             long currentTimestamp = System.currentTimeMillis();
             if ((currentTimestamp - this.lastRedeleteTimestamp) > interval) {
                 this.lastRedeleteTimestamp = currentTimestamp;
-                int destroyMapedFileIntervalForcibly =
+                int destroyMappedFileIntervalForcibly =
                         DefaultMessageStore.this.getMessageStoreConfig()
                             .getDestroyMappedFileIntervalForcibly();
-                if (DefaultMessageStore.this.commitLog.retryDeleteFirstFile(destroyMapedFileIntervalForcibly)) {
+                if (DefaultMessageStore.this.commitLog.retryDeleteFirstFile(destroyMappedFileIntervalForcibly)) {
                     // TODO
                 }
             }
@@ -1268,15 +1268,15 @@ public class DefaultMessageStore implements MessageStore {
             long fileReservedTime = DefaultMessageStore.this.getMessageStoreConfig().getFileReservedTime();
             int deletePhysicFilesInterval =
                     DefaultMessageStore.this.getMessageStoreConfig().getDeleteCommitLogFilesInterval();
-            int destroyMapedFileIntervalForcibly =
+            int destroyMappedFileIntervalForcibly =
                     DefaultMessageStore.this.getMessageStoreConfig().getDestroyMappedFileIntervalForcibly();
 
-            boolean timeup = this.isTimeToDelete();
-            boolean spacefull = this.isSpaceToDelete();
+            boolean timeUp = this.isTimeToDelete();
+            boolean spaceFull = this.isSpaceToDelete();
             boolean manualDelete = this.manualDeleteFileSeveralTimes > 0;
 
             // 删除物理队列文件
-            if (timeup || spacefull || manualDelete) {
+            if (timeUp || spaceFull || manualDelete) {
 
                 if (manualDelete)
                     this.manualDeleteFileSeveralTimes--;
@@ -1287,10 +1287,10 @@ public class DefaultMessageStore implements MessageStore {
                                 && this.cleanImmediately;
 
                 log.info(
-                    "begin to delete before {} hours file. timeup: {} spacefull: {} manualDeleteFileSeveralTimes: {} cleanAtOnce: {}",//
+                    "begin to delete before {} hours file. timeUp: {} spaceFull: {} manualDeleteFileSeveralTimes: {} cleanAtOnce: {}",//
                     fileReservedTime,//
-                    timeup,//
-                    spacefull,//
+                    timeUp,//
+                    spaceFull,//
                     manualDeleteFileSeveralTimes,//
                     cleanAtOnce);
 
@@ -1299,12 +1299,12 @@ public class DefaultMessageStore implements MessageStore {
 
                 deleteCount =
                         DefaultMessageStore.this.commitLog.deleteExpiredFile(fileReservedTime,
-                            deletePhysicFilesInterval, destroyMapedFileIntervalForcibly, cleanAtOnce);
+                            deletePhysicFilesInterval, destroyMappedFileIntervalForcibly, cleanAtOnce);
                 if (deleteCount > 0) {
                     // TODO
                 }
                 // 危险情况：磁盘满了，但是又无法删除文件
-                else if (spacefull) {
+                else if (spaceFull) {
                     // XXX: warn and notify me
                     log.warn("disk space will be full soon, but delete file failed.");
                 }
@@ -1327,8 +1327,8 @@ public class DefaultMessageStore implements MessageStore {
                         DefaultMessageStore.this.getMessageStoreConfig().getStorePathCommitLog();
                 double physicRatio = UtilAll.getDiskPartitionSpaceUsedPercent(storePathPhysic);
                 if (physicRatio > DiskSpaceWarningLevelRatio) {
-                    boolean diskok = DefaultMessageStore.this.runningFlags.getAndMakeDiskFull();
-                    if (diskok) {
+                    boolean diskOK = DefaultMessageStore.this.runningFlags.getAndMakeDiskFull();
+                    if (diskOK) {
                         DefaultMessageStore.log.error("physic disk maybe full soon " + physicRatio
                                 + ", so mark disk full");
                         System.gc();
@@ -1340,8 +1340,8 @@ public class DefaultMessageStore implements MessageStore {
                     cleanImmediately = true;
                 }
                 else {
-                    boolean diskok = DefaultMessageStore.this.runningFlags.getAndMakeDiskOK();
-                    if (!diskok) {
+                    boolean diskOK = DefaultMessageStore.this.runningFlags.getAndMakeDiskOK();
+                    if (!diskOK) {
                         DefaultMessageStore.log.info("physic disk space OK " + physicRatio
                                 + ", so mark disk ok");
                     }
@@ -1374,8 +1374,8 @@ public class DefaultMessageStore implements MessageStore {
                     cleanImmediately = true;
                 }
                 else {
-                    boolean diskok = DefaultMessageStore.this.runningFlags.getAndMakeDiskOK();
-                    if (!diskok) {
+                    boolean diskOK = DefaultMessageStore.this.runningFlags.getAndMakeDiskOK();
+                    if (!diskOK) {
                         DefaultMessageStore.log.info("logics disk space OK " + logicsRatio
                                 + ", so mark disk ok");
                     }
@@ -1551,7 +1551,7 @@ public class DefaultMessageStore implements MessageStore {
 
 
         @Override
-        public long getJointime() {
+        public long getJoinTime() {
             return 1000 * 60;
         }
     }
@@ -1564,10 +1564,10 @@ public class DefaultMessageStore implements MessageStore {
         private volatile List<DispatchRequest> requestsRead;
 
 
-        public DispatchMessageService(int putMsgIndexHightWater) {
-            putMsgIndexHightWater *= 1.5;
-            this.requestsWrite = new ArrayList<DispatchRequest>(putMsgIndexHightWater);
-            this.requestsRead = new ArrayList<DispatchRequest>(putMsgIndexHightWater);
+        public DispatchMessageService(int putMsgIndexHighWater) {
+            putMsgIndexHighWater *= 1.5;
+            this.requestsWrite = new ArrayList<DispatchRequest>(putMsgIndexHighWater);
+            this.requestsRead = new ArrayList<DispatchRequest>(putMsgIndexHighWater);
         }
 
 
@@ -1588,7 +1588,7 @@ public class DefaultMessageStore implements MessageStore {
 
         public void putRequest(final DispatchRequest dispatchRequest) {
             int requestsWriteSize = 0;
-            int putMsgIndexHightWater =
+            int putMsgIndexHighWater =
                     DefaultMessageStore.this.getMessageStoreConfig().getPutMsgIndexHighWater();
             synchronized (this) {
                 this.requestsWrite.add(dispatchRequest);
@@ -1602,11 +1602,11 @@ public class DefaultMessageStore implements MessageStore {
             DefaultMessageStore.this.getStoreStatsService().setDispatchMaxBuffer(requestsWriteSize);
 
             // 这里主动做流控，防止CommitLog写入太快，导致消费队列被冲垮
-            if (requestsWriteSize > putMsgIndexHightWater) {
+            if (requestsWriteSize > putMsgIndexHighWater) {
                 try {
                     if (log.isDebugEnabled()) {
                         log.debug("Message index buffer size " + requestsWriteSize + " > high water "
-                                + putMsgIndexHightWater);
+                                + putMsgIndexHighWater);
                     }
 
                     Thread.sleep(1);
@@ -1792,8 +1792,8 @@ public class DefaultMessageStore implements MessageStore {
             SelectMappedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(cqOffset);
             if (bufferConsumeQueue != null) {
                 try {
-                    long offsetPy = bufferConsumeQueue.getByteBuffer().getLong();
-                    return offsetPy;
+                    long physicalOffset = bufferConsumeQueue.getByteBuffer().getLong();
+                    return physicalOffset;
                 }
                 finally {
                     bufferConsumeQueue.release();

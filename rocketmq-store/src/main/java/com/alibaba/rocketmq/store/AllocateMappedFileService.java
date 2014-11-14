@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * 预分配MapedFile服务
+ * 预分配MappedFile服务
  * 
  * @author shijia.wxr<vintage.wang@gmail.com>
  * @since 2013-7-21
@@ -102,7 +102,7 @@ public class AllocateMappedFileService extends ServiceThread {
         this.thread.interrupt();
 
         try {
-            this.thread.join(this.getJointime());
+            this.thread.join(this.getJoinTime());
         }
         catch (InterruptedException e) {
             e.printStackTrace();
@@ -110,7 +110,7 @@ public class AllocateMappedFileService extends ServiceThread {
 
         for (AllocateRequest req : this.requestTable.values()) {
             if (req.mappedFile != null) {
-                log.info("delete pre allocated maped file, {}", req.mappedFile.getFileName());
+                log.info("delete pre allocated mapped file, {}", req.mappedFile.getFileName());
                 req.mappedFile.destroy(1000);
             }
         }

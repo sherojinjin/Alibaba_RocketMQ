@@ -151,8 +151,8 @@ public class MappedFile extends ReferenceResource {
 
         // JDK7中将DirectByteBuffer类中的viewedBuffer方法换成了attachment方法
         Method[] methods = buffer.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            if (methods[i].getName().equals("attachment")) {
+        for (Method method : methods) {
+            if (method.getName().equals("attachment")) {
                 methodName = "attachment";
                 break;
             }
@@ -166,7 +166,7 @@ public class MappedFile extends ReferenceResource {
     }
 
 
-    public static int getTotalmapedfiles() {
+    public static int getTotalMappedFiles() {
         return TotalMappedFiles.get();
     }
 
@@ -200,12 +200,12 @@ public class MappedFile extends ReferenceResource {
 
 
     /**
-     * 向MapedBuffer追加消息<br>
+     * 向MappedBuffer追加消息<br>
      * 
      * @param msg
      *            要追加的消息
      * @param cb
-     *            用来对消息进行序列化，尤其对于依赖MapedFile Offset的属性进行动态序列化
+     *            用来对消息进行序列化，尤其对于依赖MappedFile Offset的属性进行动态序列化
      * @return 是否成功，写入多少数据
      */
     public AppendMessageResult appendMessage(final Object msg, final AppendMessageCallback cb) {
@@ -319,10 +319,10 @@ public class MappedFile extends ReferenceResource {
     }
 
 
-    public SelectMappedBufferResult selectMapedBuffer(int pos, int size) {
+    public SelectMappedBufferResult selectMappedBuffer(int pos, int size) {
         // 有消息
         if ((pos + size) <= this.wrotePosition.get()) {
-            // 从MapedBuffer读
+            // 从MappedBuffer读
             if (this.hold()) {
                 ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
                 byteBuffer.position(pos);
@@ -337,7 +337,7 @@ public class MappedFile extends ReferenceResource {
         }
         // 请求参数非法
         else {
-            log.warn("selectMapedBuffer request pos invalid, request pos: " + pos + ", size: " + size
+            log.warn("selectMappedBuffer request pos invalid, request pos: " + pos + ", size: " + size
                     + ", fileFromOffset: " + this.fileFromOffset);
         }
 
@@ -349,7 +349,7 @@ public class MappedFile extends ReferenceResource {
     /**
      * 读逻辑分区
      */
-    public SelectMappedBufferResult selectMapedBuffer(int pos) {
+    public SelectMappedBufferResult selectMappedBuffer(int pos) {
         if (pos < this.wrotePosition.get() && pos >= 0) {
             if (this.hold()) {
                 ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
@@ -418,7 +418,7 @@ public class MappedFile extends ReferenceResource {
             return true;
         }
         else {
-            log.warn("destroy maped file[REF:" + this.getRefCount() + "] " + this.fileName
+            log.warn("destroy mapped file[REF:" + this.getRefCount() + "] " + this.fileName
                     + " Failed. cleanupOver: " + this.cleanupOver);
         }
 

@@ -100,11 +100,11 @@ public abstract class ServiceThread implements Runnable {
 
             long beginTime = System.currentTimeMillis();
             if (!this.thread.isDaemon()) {
-                this.thread.join(this.getJointime());
+                this.thread.join(this.getJoinTime());
             }
             long eclipseTime = System.currentTimeMillis() - beginTime;
             stlog.info("join thread " + this.getServiceName() + " eclipse time(ms) " + eclipseTime + " "
-                    + this.getJointime());
+                    + this.getJoinTime());
         }
         catch (InterruptedException e) {
             e.printStackTrace();
@@ -153,7 +153,7 @@ public abstract class ServiceThread implements Runnable {
     }
 
 
-    public long getJointime() {
+    public long getJoinTime() {
         return JoinTime;
     }
 }

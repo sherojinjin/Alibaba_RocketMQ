@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class GetMessageResult {
     // 多个连续的消息集合
-    private final List<SelectMappedBufferResult> messageMapedList =
+    private final List<SelectMappedBufferResult> messageMappedList =
             new ArrayList<SelectMappedBufferResult>(100);
     // 用来向Consumer传送消息
     private final List<ByteBuffer> messageBufferList = new ArrayList<ByteBuffer>(100);
@@ -90,8 +90,8 @@ public class GetMessageResult {
     }
 
 
-    public List<SelectMappedBufferResult> getMessageMapedList() {
-        return messageMapedList;
+    public List<SelectMappedBufferResult> getMessageMappedList() {
+        return messageMappedList;
     }
 
 
@@ -100,15 +100,15 @@ public class GetMessageResult {
     }
 
 
-    public void addMessage(final SelectMappedBufferResult mapedBuffer) {
-        this.messageMapedList.add(mapedBuffer);
-        this.messageBufferList.add(mapedBuffer.getByteBuffer());
-        this.bufferTotalSize += mapedBuffer.getSize();
+    public void addMessage(final SelectMappedBufferResult mappedBuffer) {
+        this.messageMappedList.add(mappedBuffer);
+        this.messageBufferList.add(mappedBuffer.getByteBuffer());
+        this.bufferTotalSize += mappedBuffer.getSize();
     }
 
 
     public void release() {
-        for (SelectMappedBufferResult select : this.messageMapedList) {
+        for (SelectMappedBufferResult select : this.messageMappedList) {
             select.release();
         }
     }
@@ -125,7 +125,7 @@ public class GetMessageResult {
 
 
     public int getMessageCount() {
-        return this.messageMapedList.size();
+        return this.messageMappedList.size();
     }
 
 

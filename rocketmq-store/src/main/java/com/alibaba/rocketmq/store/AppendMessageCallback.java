@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
 public interface AppendMessageCallback {
 
     /**
-     * 序列化消息后，写入MapedByteBuffer
+     * 序列化消息后，写入MappedByteBuffer
      * 
      * @param byteBuffer
      *            要写入的target

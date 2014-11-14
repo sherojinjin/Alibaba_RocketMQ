@@ -215,9 +215,9 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
                     break;
 
                 // Failed
-                case CREATE_MAPEDFILE_FAILED:
+                case CREATE_MAPPED_FILE_FAILED:
                     response.setCode(ResponseCode.SYSTEM_ERROR);
-                    response.setRemark("create maped file failed.");
+                    response.setRemark("create mapped file failed.");
                     break;
                 case MESSAGE_ILLEGAL:
                     response.setCode(ResponseCode.MESSAGE_ILLEGAL);
