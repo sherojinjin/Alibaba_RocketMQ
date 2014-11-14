@@ -15,14 +15,13 @@
  */
 package com.alibaba.rocketmq.store;
 
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.List;
-
+import com.alibaba.rocketmq.common.constant.LoggerName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.rocketmq.common.constant.LoggerName;
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.util.List;
 
 
 /**
@@ -39,7 +38,7 @@ public class ConsumeQueue {
     // 存储顶层对象
     private final DefaultMessageStore defaultMessageStore;
     // 存储消息索引的队列
-    private final MapedFileQueue mapedFileQueue;
+    private final MappedFileQueue mappedFileQueue;
     // Topic
     private final String topic;
     // queueId
@@ -73,21 +72,21 @@ public class ConsumeQueue {
                 + File.separator + topic//
                 + File.separator + queueId;//
 
-        this.mapedFileQueue = new MapedFileQueue(queueDir, mapedFileSize, null);
+        this.mappedFileQueue = new MappedFileQueue(queueDir, mapedFileSize, null);
 
         this.byteBufferIndex = ByteBuffer.allocate(CQStoreUnitSize);
     }
 
 
     public boolean load() {
-        boolean result = this.mapedFileQueue.load();
+        boolean result = this.mappedFileQueue.load();
         log.info("load consume queue " + this.topic + "-" + this.queueId + " " + (result ? "OK" : "Failed"));
         return result;
     }
 
 
     public void recover() {
-        final List<MappedFile> mappedFiles = this.mapedFileQueue.getMappedFiles();
+        final List<MappedFile> mappedFiles = this.mappedFileQueue.getMappedFiles();
         if (!mappedFiles.isEmpty()) {
             // 从倒数第三个文件开始恢复
             int index = mappedFiles.size() - 3;
@@ -143,7 +142,7 @@ public class ConsumeQueue {
             }
 
             processOffset += mapedFileOffset;
-            this.mapedFileQueue.truncateDirtyFiles(processOffset);
+            this.mappedFileQueue.truncateDirtyFiles(processOffset);
         }
     }
 
@@ -152,7 +151,7 @@ public class ConsumeQueue {
      * 二分查找查找消息发送时间最接近timestamp逻辑队列的offset
      */
     public long getOffsetInQueueByTime(final long timestamp) {
-        MappedFile mappedFile = this.mapedFileQueue.getMapedFileByTime(timestamp);
+        MappedFile mappedFile = this.mappedFileQueue.getMappedFileByTime(timestamp);
         if (mappedFile != null) {
             long offset = 0;
             // low:第一个索引信息的起始位置
@@ -168,7 +167,7 @@ public class ConsumeQueue {
             long leftIndexValue = -1L, rightIndexValue = -1L;
 
             // 取出该mapedFile里面所有的映射空间(没有映射的空间并不会返回,不会返回文件空洞)
-            SelectMapedBufferResult sbr = mappedFile.selectMapedBuffer(0);
+            SelectMappedBufferResult sbr = mappedFile.selectMapedBuffer(0);
             if (null != sbr) {
                 ByteBuffer byteBuffer = sbr.getByteBuffer();
                 high = byteBuffer.limit() - CQStoreUnitSize;
@@ -247,7 +246,7 @@ public class ConsumeQueue {
         this.maxPhysicOffset = phyOffet - 1;
 
         while (true) {
-            MappedFile mappedFile = this.mapedFileQueue.getLastMapedFile2();
+            MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile2();
             if (mappedFile != null) {
                 ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
                 // 先将Offset清空
@@ -262,7 +261,7 @@ public class ConsumeQueue {
                     // 逻辑文件起始单元
                     if (0 == i) {
                         if (offset >= phyOffet) {
-                            this.mapedFileQueue.deleteLastMapedFile();
+                            this.mappedFileQueue.deleteLastMappedFile();
                             break;
                         }
                         else {
@@ -313,7 +312,7 @@ public class ConsumeQueue {
         // 逻辑队列每个文件大小
         int logicFileSize = this.mapedFileSize;
 
-        MappedFile mappedFile = this.mapedFileQueue.getLastMapedFile2();
+        MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile2();
         if (mappedFile != null) {
             // 找到写入位置对应的索引项的起始位置
             int position = mappedFile.getWrotePosition() - CQStoreUnitSize;
@@ -342,12 +341,12 @@ public class ConsumeQueue {
 
 
     public boolean commit(final int flushLeastPages) {
-        return this.mapedFileQueue.commit(flushLeastPages);
+        return this.mappedFileQueue.commit(flushLeastPages);
     }
 
 
     public int deleteExpiredFile(long offset) {
-        int cnt = this.mapedFileQueue.deleteExpiredFileByOffset(offset, CQStoreUnitSize);
+        int cnt = this.mappedFileQueue.deleteExpiredFileByOffset(offset, CQStoreUnitSize);
         // 无论是否删除文件，都需要纠正下最小值，因为有可能物理文件删除了，
         // 但是逻辑文件一个也删除不了
         this.correctMinOffset(offset);
@@ -359,9 +358,9 @@ public class ConsumeQueue {
      * 逻辑队列的最小Offset要比传入的物理最小phyMinOffset大
      */
     public void correctMinOffset(long phyMinOffset) {
-        MappedFile mappedFile = this.mapedFileQueue.getFirstMapedFileOnLock();
+        MappedFile mappedFile = this.mappedFileQueue.getFirstMappedFileOnLock();
         if (mappedFile != null) {
-            SelectMapedBufferResult result = mappedFile.selectMapedBuffer(0);
+            SelectMappedBufferResult result = mappedFile.selectMapedBuffer(0);
             if (result != null) {
                 try {
                     // 有消息存在
@@ -451,7 +450,7 @@ public class ConsumeQueue {
 
         final long expectLogicOffset = cqOffset * CQStoreUnitSize;
 
-        MappedFile mappedFile = this.mapedFileQueue.getLastMapedFile(expectLogicOffset);
+        MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile(expectLogicOffset);
         if (mappedFile != null) {
             // 纠正MapedFile逻辑队列索引顺序
             if (mappedFile.isFirstCreateInQueue() && cqOffset != 0 && mappedFile.getWrotePosition() == 0) {
@@ -492,7 +491,7 @@ public class ConsumeQueue {
         byteBuffer.putInt(Integer.MAX_VALUE);
         byteBuffer.putLong(0L);
 
-        int until = (int) (untilWhere % this.mapedFileQueue.getMapedFileSize());
+        int until = (int) (untilWhere % this.mappedFileQueue.getMappedFileSize());
         for (int i = 0; i < until; i += CQStoreUnitSize) {
             mappedFile.appendMessage(byteBuffer.array());
         }
@@ -505,13 +504,13 @@ public class ConsumeQueue {
      * @param startIndex
      *            起始偏移量索引
      */
-    public SelectMapedBufferResult getIndexBuffer(final long startIndex) {
+    public SelectMappedBufferResult getIndexBuffer(final long startIndex) {
         int mapedFileSize = this.mapedFileSize;
         long offset = startIndex * CQStoreUnitSize;
         if (offset >= this.getMinLogicOffset()) {
-            MappedFile mappedFile = this.mapedFileQueue.findMapedFileByOffset(offset);
+            MappedFile mappedFile = this.mappedFileQueue.findMappedFileByOffset(offset);
             if (mappedFile != null) {
-                SelectMapedBufferResult result = mappedFile.selectMapedBuffer((int) (offset % mapedFileSize));
+                SelectMappedBufferResult result = mappedFile.selectMapedBuffer((int) (offset % mapedFileSize));
                 return result;
             }
         }
@@ -549,7 +548,7 @@ public class ConsumeQueue {
     public void destroy() {
         this.maxPhysicOffset = -1;
         this.minLogicOffset = 0;
-        this.mapedFileQueue.destroy();
+        this.mappedFileQueue.destroy();
     }
 
 
@@ -572,6 +571,6 @@ public class ConsumeQueue {
 
 
     public long getMaxOffsetInQuque() {
-        return this.mapedFileQueue.getMaxOffset() / CQStoreUnitSize;
+        return this.mappedFileQueue.getMaxOffset() / CQStoreUnitSize;
     }
 }

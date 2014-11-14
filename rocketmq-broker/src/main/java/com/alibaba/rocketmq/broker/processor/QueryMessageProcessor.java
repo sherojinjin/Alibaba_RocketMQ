@@ -36,7 +36,7 @@ import com.alibaba.rocketmq.remoting.exception.RemotingCommandException;
 import com.alibaba.rocketmq.remoting.netty.NettyRequestProcessor;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
 import com.alibaba.rocketmq.store.QueryMessageResult;
-import com.alibaba.rocketmq.store.SelectMapedBufferResult;
+import com.alibaba.rocketmq.store.SelectMappedBufferResult;
 
 
 /**
@@ -136,20 +136,20 @@ public class QueryMessageProcessor implements NettyRequestProcessor {
         // 由于使用sendfile，所以必须要设置
         response.setOpaque(request.getOpaque());
 
-        final SelectMapedBufferResult selectMapedBufferResult =
+        final SelectMappedBufferResult selectMappedBufferResult =
                 this.brokerController.getMessageStore().selectOneMessageByOffset(requestHeader.getOffset());
-        if (selectMapedBufferResult != null) {
+        if (selectMappedBufferResult != null) {
             response.setCode(ResponseCode.SUCCESS);
             response.setRemark(null);
 
             try {
                 FileRegion fileRegion =
-                        new OneMessageTransfer(response.encodeHeader(selectMapedBufferResult.getSize()),
-                            selectMapedBufferResult);
+                        new OneMessageTransfer(response.encodeHeader(selectMappedBufferResult.getSize()),
+                                selectMappedBufferResult);
                 ctx.channel().writeAndFlush(fileRegion).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
-                        selectMapedBufferResult.release();
+                        selectMappedBufferResult.release();
                         if (!future.isSuccess()) {
                             log.error("transfer one message by pagecache failed, ", future.cause());
                         }
@@ -158,7 +158,7 @@ public class QueryMessageProcessor implements NettyRequestProcessor {
             }
             catch (Throwable e) {
                 log.error("", e);
-                selectMapedBufferResult.release();
+                selectMappedBufferResult.release();
             }
 
             return null;

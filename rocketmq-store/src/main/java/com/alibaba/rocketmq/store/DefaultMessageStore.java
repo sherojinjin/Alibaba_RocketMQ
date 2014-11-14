@@ -79,7 +79,7 @@ public class DefaultMessageStore implements MessageStore {
     // 消息索引服务
     private final IndexService indexService;
     // 预分配MapedFile对象服务
-    private final AllocateMapedFileService allocateMapedFileService;
+    private final AllocateMappedFileService allocateMappedFileService;
     // 从物理队列解析消息重新发送到逻辑队列
     private final ReputMessageService reputMessageService;
     // HA服务
@@ -108,7 +108,7 @@ public class DefaultMessageStore implements MessageStore {
             final BrokerStatsManager brokerStatsManager) throws IOException {
         this.messageStoreConfig = messageStoreConfig;
         this.brokerStatsManager = brokerStatsManager;
-        this.allocateMapedFileService = new AllocateMapedFileService();
+        this.allocateMappedFileService = new AllocateMappedFileService();
         this.commitLog = new CommitLog(this);
         this.consumeQueueTable =
                 new ConcurrentHashMap<String/* topic */, ConcurrentHashMap<Integer/* queueId */, ConsumeQueue>>(
@@ -140,7 +140,7 @@ public class DefaultMessageStore implements MessageStore {
         }
 
         // load过程依赖此服务，所以提前启动
-        this.allocateMapedFileService.start();
+        this.allocateMappedFileService.start();
         this.dispatchMessageService.start();
         // 因为下面的recover会分发请求到索引服务，如果不启动，分发过程会被流控
         this.indexService.start();
@@ -203,7 +203,7 @@ public class DefaultMessageStore implements MessageStore {
         }
 
         if (!result) {
-            this.allocateMapedFileService.shutdown();
+            this.allocateMappedFileService.shutdown();
         }
 
         return result;
@@ -345,7 +345,7 @@ public class DefaultMessageStore implements MessageStore {
             this.indexService.shutdown();
             this.flushConsumeQueueService.shutdown();
             this.commitLog.shutdown();
-            this.allocateMapedFileService.shutdown();
+            this.allocateMappedFileService.shutdown();
             if (this.reputMessageService != null) {
                 this.reputMessageService.shutdown();
             }
@@ -492,7 +492,7 @@ public class DefaultMessageStore implements MessageStore {
                 }
             }
             else {
-                SelectMapedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(offset);
+                SelectMappedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(offset);
                 if (bufferConsumeQueue != null) {
                     try {
                         status = GetMessageStatus.NO_MATCHED_MESSAGE;
@@ -526,7 +526,7 @@ public class DefaultMessageStore implements MessageStore {
 
                             // 消息过滤
                             if (this.messageFilter.isMessageMatched(subscriptionData, tagsCode)) {
-                                SelectMapedBufferResult selectResult =
+                                SelectMappedBufferResult selectResult =
                                         this.commitLog.getMessage(offsetPy, sizePy);
                                 if (selectResult != null) {
                                     this.storeStatsService.getGetMessageTransferedMsgCount()
@@ -647,7 +647,7 @@ public class DefaultMessageStore implements MessageStore {
 
 
     public MessageExt lookMessageByOffset(long commitLogOffset) {
-        SelectMapedBufferResult sbr = this.commitLog.getMessage(commitLogOffset, 4);
+        SelectMappedBufferResult sbr = this.commitLog.getMessage(commitLogOffset, 4);
         if (null != sbr) {
             try {
                 // 1 TOTALSIZE
@@ -664,8 +664,8 @@ public class DefaultMessageStore implements MessageStore {
 
 
     @Override
-    public SelectMapedBufferResult selectOneMessageByOffset(long commitLogOffset) {
-        SelectMapedBufferResult sbr = this.commitLog.getMessage(commitLogOffset, 4);
+    public SelectMappedBufferResult selectOneMessageByOffset(long commitLogOffset) {
+        SelectMappedBufferResult sbr = this.commitLog.getMessage(commitLogOffset, 4);
         if (null != sbr) {
             try {
                 // 1 TOTALSIZE
@@ -682,7 +682,7 @@ public class DefaultMessageStore implements MessageStore {
 
 
     @Override
-    public SelectMapedBufferResult selectOneMessageByOffset(long commitLogOffset, int msgSize) {
+    public SelectMappedBufferResult selectOneMessageByOffset(long commitLogOffset, int msgSize) {
         return this.commitLog.getMessage(commitLogOffset, msgSize);
     }
 
@@ -741,7 +741,7 @@ public class DefaultMessageStore implements MessageStore {
         if (logicQueue != null) {
             long minLogicOffset = logicQueue.getMinLogicOffset();
 
-            SelectMapedBufferResult result =
+            SelectMappedBufferResult result =
                     logicQueue.getIndexBuffer(minLogicOffset / ConsumeQueue.CQStoreUnitSize);
             if (result != null) {
                 try {
@@ -766,7 +766,7 @@ public class DefaultMessageStore implements MessageStore {
     public long getMessageStoreTimeStamp(String topic, int queueId, long offset) {
         ConsumeQueue logicQueue = this.findConsumeQueue(topic, queueId);
         if (logicQueue != null) {
-            SelectMapedBufferResult result = logicQueue.getIndexBuffer(offset);
+            SelectMappedBufferResult result = logicQueue.getIndexBuffer(offset);
             if (result != null) {
                 try {
                     final long phyOffset = result.getByteBuffer().getLong();
@@ -798,7 +798,7 @@ public class DefaultMessageStore implements MessageStore {
 
 
     @Override
-    public SelectMapedBufferResult getCommitLogData(final long offset) {
+    public SelectMappedBufferResult getCommitLogData(final long offset) {
         if (this.shutdown) {
             log.warn("message store has shutdown, so getPhyQueueData is forbidden");
             return null;
@@ -874,7 +874,7 @@ public class DefaultMessageStore implements MessageStore {
                     }
 
                     if (match) {
-                        SelectMapedBufferResult result = this.commitLog.getData(offset, false);
+                        SelectMappedBufferResult result = this.commitLog.getData(offset, false);
                         if (result != null) {
                             int size = result.getByteBuffer().getInt(0);
                             result.getByteBuffer().limit(size);
@@ -924,7 +924,7 @@ public class DefaultMessageStore implements MessageStore {
 
 
     public MessageExt lookMessageByOffset(long commitLogOffset, int size) {
-        SelectMapedBufferResult sbr = this.commitLog.getMessage(commitLogOffset, size);
+        SelectMappedBufferResult sbr = this.commitLog.getMessage(commitLogOffset, size);
         if (null != sbr) {
             try {
                 return MessageDecoder.decode(sbr.getByteBuffer(), true, false);
@@ -1164,8 +1164,8 @@ public class DefaultMessageStore implements MessageStore {
     }
 
 
-    public AllocateMapedFileService getAllocateMapedFileService() {
-        return allocateMapedFileService;
+    public AllocateMappedFileService getAllocateMappedFileService() {
+        return allocateMappedFileService;
     }
 
 
@@ -1716,7 +1716,7 @@ public class DefaultMessageStore implements MessageStore {
 
         private void doReput() {
             for (boolean doNext = true; doNext;) {
-                SelectMapedBufferResult result = DefaultMessageStore.this.commitLog.getData(reputFromOffset);
+                SelectMappedBufferResult result = DefaultMessageStore.this.commitLog.getData(reputFromOffset);
                 if (result != null) {
                     try {
                         for (int readSize = 0; readSize < result.getSize() && doNext;) {
@@ -1789,7 +1789,7 @@ public class DefaultMessageStore implements MessageStore {
     public long getCommitLogOffsetInQueue(String topic, int queueId, long cqOffset) {
         ConsumeQueue consumeQueue = findConsumeQueue(topic, queueId);
         if (consumeQueue != null) {
-            SelectMapedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(cqOffset);
+            SelectMappedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(cqOffset);
             if (bufferConsumeQueue != null) {
                 try {
                     long offsetPy = bufferConsumeQueue.getByteBuffer().getLong();
@@ -1864,7 +1864,7 @@ public class DefaultMessageStore implements MessageStore {
 
             long nextOffset = minOffset;
             while (nextOffset < maxOffset) {
-                SelectMapedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(nextOffset);
+                SelectMappedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(nextOffset);
                 if (bufferConsumeQueue != null) {
                     try {
                         int i = 0;
@@ -1907,7 +1907,7 @@ public class DefaultMessageStore implements MessageStore {
     public boolean checkInDiskByConsumeOffset(final String topic, final int queueId, long consumeOffset) {
         ConsumeQueue consumeQueue = findConsumeQueue(topic, queueId);
         if (consumeQueue != null) {
-            SelectMapedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(consumeOffset);
+            SelectMappedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(consumeOffset);
             if (bufferConsumeQueue != null) {
                 try {
                     int i = 0;

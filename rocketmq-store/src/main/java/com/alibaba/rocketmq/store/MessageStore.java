@@ -103,10 +103,10 @@ public interface MessageStore {
     /**
      * 通过物理队列Offset，查询消息。 如果发生错误，则返回null
      */
-    public SelectMapedBufferResult selectOneMessageByOffset(final long commitLogOffset);
+    public SelectMappedBufferResult selectOneMessageByOffset(final long commitLogOffset);
 
 
-    public SelectMapedBufferResult selectOneMessageByOffset(final long commitLogOffset, final int msgSize);
+    public SelectMappedBufferResult selectOneMessageByOffset(final long commitLogOffset, final int msgSize);
 
 
     /**
@@ -148,7 +148,7 @@ public interface MessageStore {
     /**
      * 数据复制使用：获取CommitLog数据
      */
-    public SelectMapedBufferResult getCommitLogData(final long offset);
+    public SelectMappedBufferResult getCommitLogData(final long offset);
 
 
     /**

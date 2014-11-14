@@ -24,7 +24,7 @@ import java.nio.ByteBuffer;
  * @author shijia.wxr<vintage.wang@gmail.com>
  * @since 2013-7-21
  */
-public class SelectMapedBufferResult {
+public class SelectMappedBufferResult {
     // 从队列中哪个绝对Offset开始
     private final long startOffset;
     // position从0开始
@@ -35,7 +35,7 @@ public class SelectMapedBufferResult {
     private MappedFile mappedFile;
 
 
-    public SelectMapedBufferResult(long startOffset, ByteBuffer byteBuffer, int size, MappedFile mappedFile) {
+    public SelectMappedBufferResult(long startOffset, ByteBuffer byteBuffer, int size, MappedFile mappedFile) {
         this.startOffset = startOffset;
         this.byteBuffer = byteBuffer;
         this.size = size;

@@ -319,7 +319,7 @@ public class MappedFile extends ReferenceResource {
     }
 
 
-    public SelectMapedBufferResult selectMapedBuffer(int pos, int size) {
+    public SelectMappedBufferResult selectMapedBuffer(int pos, int size) {
         // 有消息
         if ((pos + size) <= this.wrotePosition.get()) {
             // 从MapedBuffer读
@@ -328,7 +328,7 @@ public class MappedFile extends ReferenceResource {
                 byteBuffer.position(pos);
                 ByteBuffer byteBufferNew = byteBuffer.slice();
                 byteBufferNew.limit(size);
-                return new SelectMapedBufferResult(this.fileFromOffset + pos, byteBufferNew, size, this);
+                return new SelectMappedBufferResult(this.fileFromOffset + pos, byteBufferNew, size, this);
             }
             else {
                 log.warn("matched, but hold failed, request pos: " + pos + ", fileFromOffset: "
@@ -349,7 +349,7 @@ public class MappedFile extends ReferenceResource {
     /**
      * 读逻辑分区
      */
-    public SelectMapedBufferResult selectMapedBuffer(int pos) {
+    public SelectMappedBufferResult selectMapedBuffer(int pos) {
         if (pos < this.wrotePosition.get() && pos >= 0) {
             if (this.hold()) {
                 ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
@@ -357,7 +357,7 @@ public class MappedFile extends ReferenceResource {
                 int size = this.wrotePosition.get() - pos;
                 ByteBuffer byteBufferNew = byteBuffer.slice();
                 byteBufferNew.limit(size);
-                return new SelectMapedBufferResult(this.fileFromOffset + pos, byteBufferNew, size, this);
+                return new SelectMappedBufferResult(this.fileFromOffset + pos, byteBufferNew, size, this);
             }
         }
 

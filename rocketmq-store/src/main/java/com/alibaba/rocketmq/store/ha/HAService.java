@@ -15,15 +15,19 @@
  */
 package com.alibaba.rocketmq.store.ha;
 
+import com.alibaba.rocketmq.common.ServiceThread;
+import com.alibaba.rocketmq.common.constant.LoggerName;
+import com.alibaba.rocketmq.remoting.common.RemotingUtil;
+import com.alibaba.rocketmq.store.CommitLog.GroupCommitRequest;
+import com.alibaba.rocketmq.store.DefaultMessageStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,15 +35,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alibaba.rocketmq.common.ServiceThread;
-import com.alibaba.rocketmq.common.constant.LoggerName;
-import com.alibaba.rocketmq.remoting.common.RemotingUtil;
-import com.alibaba.rocketmq.store.CommitLog.GroupCommitRequest;
-import com.alibaba.rocketmq.store.DefaultMessageStore;
 
 
 /**
@@ -355,7 +350,7 @@ public class HAService {
         private long lastWriteTimestamp = System.currentTimeMillis();
         // Slave向Master汇报Offset，汇报到哪里
         private long currentReportedOffset = 0;
-        private int dispatchPostion = 0;
+        private int dispatchPosition = 0;
         // 从Master接收数据Buffer
         private ByteBuffer byteBufferRead = ByteBuffer.allocate(ReadMaxBufferSize);
         private ByteBuffer byteBufferBackup = ByteBuffer.allocate(ReadMaxBufferSize);
@@ -410,9 +405,9 @@ public class HAService {
 
         // private void reallocateByteBuffer() {
         // ByteBuffer bb = ByteBuffer.allocate(ReadMaxBufferSize);
-        // int remain = this.byteBufferRead.limit() - this.dispatchPostion;
-        // bb.put(this.byteBufferRead.array(), this.dispatchPostion, remain);
-        // this.dispatchPostion = 0;
+        // int remain = this.byteBufferRead.limit() - this.dispatchPosition;
+        // bb.put(this.byteBufferRead.array(), this.dispatchPosition, remain);
+        // this.dispatchPosition = 0;
         // this.byteBufferRead = bb;
         // }
 
@@ -420,9 +415,9 @@ public class HAService {
          * Buffer满了以后，重新整理一次
          */
         private void reallocateByteBuffer() {
-            int remain = ReadMaxBufferSize - this.dispatchPostion;
+            int remain = ReadMaxBufferSize - this.dispatchPosition;
             if (remain > 0) {
-                this.byteBufferRead.position(this.dispatchPostion);
+                this.byteBufferRead.position(this.dispatchPosition);
 
                 this.byteBufferBackup.position(0);
                 this.byteBufferBackup.limit(ReadMaxBufferSize);
@@ -433,7 +428,7 @@ public class HAService {
 
             this.byteBufferRead.position(remain);
             this.byteBufferRead.limit(ReadMaxBufferSize);
-            this.dispatchPostion = 0;
+            this.dispatchPosition = 0;
         }
 
 
@@ -484,10 +479,10 @@ public class HAService {
             int readSocketPos = this.byteBufferRead.position();
 
             while (true) {
-                int diff = this.byteBufferRead.position() - this.dispatchPostion;
+                int diff = this.byteBufferRead.position() - this.dispatchPosition;
                 if (diff >= MSG_HEADER_SIZE) {
-                    long masterPhyOffset = this.byteBufferRead.getLong(this.dispatchPostion);
-                    int bodySize = this.byteBufferRead.getInt(this.dispatchPostion + 8);
+                    long masterPhyOffset = this.byteBufferRead.getLong(this.dispatchPosition);
+                    int bodySize = this.byteBufferRead.getInt(this.dispatchPosition + 8);
 
                     long slavePhyOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
 
@@ -503,14 +498,14 @@ public class HAService {
                     // 可以凑够一个请求
                     if (diff >= (MSG_HEADER_SIZE + bodySize)) {
                         byte[] bodyData = new byte[bodySize];
-                        this.byteBufferRead.position(this.dispatchPostion + MSG_HEADER_SIZE);
+                        this.byteBufferRead.position(this.dispatchPosition + MSG_HEADER_SIZE);
                         this.byteBufferRead.get(bodyData);
 
                         // TODO 结果是否需要处理，暂时不处理
                         HAService.this.defaultMessageStore.appendToCommitLog(masterPhyOffset, bodyData);
 
                         this.byteBufferRead.position(readSocketPos);
-                        this.dispatchPostion += MSG_HEADER_SIZE + bodySize;
+                        this.dispatchPosition += MSG_HEADER_SIZE + bodySize;
 
                         if (!reportSlaveMaxOffsetPlus()) {
                             return false;
@@ -590,7 +585,7 @@ public class HAService {
                 }
 
                 this.lastWriteTimestamp = 0;
-                this.dispatchPostion = 0;
+                this.dispatchPosition = 0;
 
                 this.byteBufferBackup.position(0);
                 this.byteBufferBackup.limit(ReadMaxBufferSize);

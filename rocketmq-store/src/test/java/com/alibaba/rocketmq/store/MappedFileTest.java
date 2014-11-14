@@ -37,9 +37,9 @@ public class MappedFileTest {
             assertTrue(result);
             System.out.println("write OK");
 
-            SelectMapedBufferResult selectMapedBufferResult = mappedFile.selectMapedBuffer(0);
+            SelectMappedBufferResult selectMappedBufferResult = mappedFile.selectMapedBuffer(0);
             byte[] data = new byte[StoreMessage.length()];
-            selectMapedBufferResult.getByteBuffer().get(data);
+            selectMappedBufferResult.getByteBuffer().get(data);
             String readString = new String(data);
 
             System.out.println("Read: " + readString);
@@ -52,7 +52,7 @@ public class MappedFileTest {
             assertTrue(!mappedFile.isAvailable());
 
             // 释放读到的Buffer
-            selectMapedBufferResult.release();
+            selectMappedBufferResult.release();
 
             // 内存真正释放掉
             assertTrue(mappedFile.isCleanupOver());
@@ -77,12 +77,12 @@ public class MappedFileTest {
             assertTrue(result);
             System.out.println("write OK");
 
-            SelectMapedBufferResult selectMapedBufferResult = mappedFile.selectMapedBuffer(0);
-            selectMapedBufferResult.release();
+            SelectMappedBufferResult selectMappedBufferResult = mappedFile.selectMapedBuffer(0);
+            selectMappedBufferResult.release();
             mappedFile.shutdown(1000);
 
             byte[] data = new byte[StoreMessage.length()];
-            selectMapedBufferResult.getByteBuffer().get(data);
+            selectMappedBufferResult.getByteBuffer().get(data);
             String readString = new String(data);
             System.out.println(readString);
         }

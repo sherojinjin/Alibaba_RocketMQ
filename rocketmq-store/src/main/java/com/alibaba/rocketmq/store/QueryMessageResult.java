@@ -28,8 +28,8 @@ import java.util.List;
  */
 public class QueryMessageResult {
     // 多个连续的消息集合
-    private final List<SelectMapedBufferResult> messageMapedList =
-            new ArrayList<SelectMapedBufferResult>(100);
+    private final List<SelectMappedBufferResult> messageMapedList =
+            new ArrayList<SelectMappedBufferResult>(100);
     // 用来向Consumer传送消息
     private final List<ByteBuffer> messageBufferList = new ArrayList<ByteBuffer>(100);
     private long indexLastUpdateTimestamp;
@@ -38,7 +38,7 @@ public class QueryMessageResult {
     private int bufferTotalSize = 0;
 
 
-    public void addMessage(final SelectMapedBufferResult mapedBuffer) {
+    public void addMessage(final SelectMappedBufferResult mapedBuffer) {
         this.messageMapedList.add(mapedBuffer);
         this.messageBufferList.add(mapedBuffer.getByteBuffer());
         this.bufferTotalSize += mapedBuffer.getSize();
@@ -46,7 +46,7 @@ public class QueryMessageResult {
 
 
     public void release() {
-        for (SelectMapedBufferResult select : this.messageMapedList) {
+        for (SelectMappedBufferResult select : this.messageMapedList) {
             select.release();
         }
     }

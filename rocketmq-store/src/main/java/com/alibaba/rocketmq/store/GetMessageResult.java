@@ -28,8 +28,8 @@ import java.util.List;
  */
 public class GetMessageResult {
     // 多个连续的消息集合
-    private final List<SelectMapedBufferResult> messageMapedList =
-            new ArrayList<SelectMapedBufferResult>(100);
+    private final List<SelectMappedBufferResult> messageMapedList =
+            new ArrayList<SelectMappedBufferResult>(100);
     // 用来向Consumer传送消息
     private final List<ByteBuffer> messageBufferList = new ArrayList<ByteBuffer>(100);
     // 枚举变量，取消息结果
@@ -90,7 +90,7 @@ public class GetMessageResult {
     }
 
 
-    public List<SelectMapedBufferResult> getMessageMapedList() {
+    public List<SelectMappedBufferResult> getMessageMapedList() {
         return messageMapedList;
     }
 
@@ -100,7 +100,7 @@ public class GetMessageResult {
     }
 
 
-    public void addMessage(final SelectMapedBufferResult mapedBuffer) {
+    public void addMessage(final SelectMappedBufferResult mapedBuffer) {
         this.messageMapedList.add(mapedBuffer);
         this.messageBufferList.add(mapedBuffer.getByteBuffer());
         this.bufferTotalSize += mapedBuffer.getSize();
@@ -108,7 +108,7 @@ public class GetMessageResult {
 
 
     public void release() {
-        for (SelectMapedBufferResult select : this.messageMapedList) {
+        for (SelectMappedBufferResult select : this.messageMapedList) {
             select.release();
         }
     }

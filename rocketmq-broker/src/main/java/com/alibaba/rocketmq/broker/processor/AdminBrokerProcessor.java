@@ -95,7 +95,7 @@ import com.alibaba.rocketmq.remoting.netty.NettyRequestProcessor;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
 import com.alibaba.rocketmq.remoting.protocol.RemotingSerializable;
 import com.alibaba.rocketmq.store.DefaultMessageStore;
-import com.alibaba.rocketmq.store.SelectMapedBufferResult;
+import com.alibaba.rocketmq.store.SelectMappedBufferResult;
 
 
 /**
@@ -285,21 +285,21 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                     .decodeCommandCustomHeader(ConsumeMessageDirectlyResultRequestHeader.class);
 
         request.getExtFields().put("brokerName", this.brokerController.getBrokerConfig().getBrokerName());
-        SelectMapedBufferResult selectMapedBufferResult = null;
+        SelectMappedBufferResult selectMappedBufferResult = null;
         try {
             MessageId messageId = MessageDecoder.decodeMessageId(requestHeader.getMsgId());
-            selectMapedBufferResult =
+            selectMappedBufferResult =
                     this.brokerController.getMessageStore().selectOneMessageByOffset(messageId.getOffset());
 
-            byte[] body = new byte[selectMapedBufferResult.getSize()];
-            selectMapedBufferResult.getByteBuffer().get(body);
+            byte[] body = new byte[selectMappedBufferResult.getSize()];
+            selectMappedBufferResult.getByteBuffer().get(body);
             request.setBody(body);
         }
         catch (UnknownHostException e) {
         }
         finally {
-            if (selectMapedBufferResult != null) {
-                selectMapedBufferResult.release();
+            if (selectMappedBufferResult != null) {
+                selectMappedBufferResult.release();
             }
         }
 

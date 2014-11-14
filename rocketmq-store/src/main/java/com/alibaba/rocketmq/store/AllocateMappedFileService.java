@@ -15,18 +15,17 @@
  */
 package com.alibaba.rocketmq.store;
 
+import com.alibaba.rocketmq.common.ServiceThread;
+import com.alibaba.rocketmq.common.UtilAll;
+import com.alibaba.rocketmq.common.constant.LoggerName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alibaba.rocketmq.common.ServiceThread;
-import com.alibaba.rocketmq.common.UtilAll;
-import com.alibaba.rocketmq.common.constant.LoggerName;
 
 
 /**
@@ -35,7 +34,7 @@ import com.alibaba.rocketmq.common.constant.LoggerName;
  * @author shijia.wxr<vintage.wang@gmail.com>
  * @since 2013-7-21
  */
-public class AllocateMapedFileService extends ServiceThread {
+public class AllocateMappedFileService extends ServiceThread {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
     private static int WaitTimeOut = 1000 * 5;
     private ConcurrentHashMap<String, AllocateRequest> requestTable =
@@ -45,7 +44,7 @@ public class AllocateMapedFileService extends ServiceThread {
     private volatile boolean hasException = false;
 
 
-    public MappedFile putRequestAndReturnMapedFile(String nextFilePath, String nextNextFilePath, int fileSize) {
+    public MappedFile putRequestAndReturnMappedFile(String nextFilePath, String nextNextFilePath, int fileSize) {
         AllocateRequest nextReq = new AllocateRequest(nextFilePath, fileSize);
         AllocateRequest nextNextReq = new AllocateRequest(nextNextFilePath, fileSize);
         boolean nextPutOK = (this.requestTable.putIfAbsent(nextFilePath, nextReq) == null);
@@ -94,7 +93,7 @@ public class AllocateMapedFileService extends ServiceThread {
 
     @Override
     public String getServiceName() {
-        return AllocateMapedFileService.class.getSimpleName();
+        return AllocateMappedFileService.class.getSimpleName();
     }
 
 

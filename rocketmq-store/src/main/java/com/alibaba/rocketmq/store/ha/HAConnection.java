@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.alibaba.rocketmq.common.ServiceThread;
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
-import com.alibaba.rocketmq.store.SelectMapedBufferResult;
+import com.alibaba.rocketmq.store.SelectMappedBufferResult;
 
 
 /**
@@ -247,7 +247,7 @@ public class HAConnection {
         private final int HEADER_SIZE = 8 + 4;
         private final ByteBuffer byteBufferHeader = ByteBuffer.allocate(HEADER_SIZE);
         private long nextTransferFromWhere = -1;
-        private SelectMapedBufferResult selectMapedBufferResult;
+        private SelectMappedBufferResult selectMappedBufferResult;
         private boolean lastWriteOver = true;
         private long lastWriteTimestamp = System.currentTimeMillis();
 
@@ -331,7 +331,7 @@ public class HAConnection {
 
                     // 传输数据,
                     // selectResult会赋值给this.selectMapedBufferResult，出现异常也会清理掉
-                    SelectMapedBufferResult selectResult =
+                    SelectMappedBufferResult selectResult =
                             HAConnection.this.haService.getDefaultMessageStore().getCommitLogData(
                                 this.nextTransferFromWhere);
                     if (selectResult != null) {
@@ -347,7 +347,7 @@ public class HAConnection {
                         this.nextTransferFromWhere += size;
 
                         selectResult.getByteBuffer().limit(size);
-                        this.selectMapedBufferResult = selectResult;
+                        this.selectMappedBufferResult = selectResult;
 
                         // Build Header
                         this.byteBufferHeader.position(0);
@@ -371,8 +371,8 @@ public class HAConnection {
             }
 
             // 清理资源
-            if (this.selectMapedBufferResult != null) {
-                this.selectMapedBufferResult.release();
+            if (this.selectMappedBufferResult != null) {
+                this.selectMappedBufferResult.release();
             }
 
             this.makeStop();
@@ -420,7 +420,7 @@ public class HAConnection {
                 }
             }
 
-            if (null == this.selectMapedBufferResult) {
+            if (null == this.selectMappedBufferResult) {
                 return !this.byteBufferHeader.hasRemaining();
             }
 
@@ -428,8 +428,8 @@ public class HAConnection {
 
             // Write Body
             if (!this.byteBufferHeader.hasRemaining()) {
-                while (this.selectMapedBufferResult.getByteBuffer().hasRemaining()) {
-                    int writeSize = this.socketChannel.write(this.selectMapedBufferResult.getByteBuffer());
+                while (this.selectMappedBufferResult.getByteBuffer().hasRemaining()) {
+                    int writeSize = this.socketChannel.write(this.selectMappedBufferResult.getByteBuffer());
                     if (writeSize > 0) {
                         writeSizeZeroTimes = 0;
                         this.lastWriteTimestamp =
@@ -448,11 +448,11 @@ public class HAConnection {
 
             boolean result =
                     !this.byteBufferHeader.hasRemaining()
-                            && !this.selectMapedBufferResult.getByteBuffer().hasRemaining();
+                            && !this.selectMappedBufferResult.getByteBuffer().hasRemaining();
 
-            if (!this.selectMapedBufferResult.getByteBuffer().hasRemaining()) {
-                this.selectMapedBufferResult.release();
-                this.selectMapedBufferResult = null;
+            if (!this.selectMappedBufferResult.getByteBuffer().hasRemaining()) {
+                this.selectMappedBufferResult.release();
+                this.selectMappedBufferResult = null;
             }
 
             return result;

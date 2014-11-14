@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.rocketmq.store.ConsumeQueue;
 import com.alibaba.rocketmq.store.MappedFile;
-import com.alibaba.rocketmq.store.MapedFileQueue;
-import com.alibaba.rocketmq.store.SelectMapedBufferResult;
+import com.alibaba.rocketmq.store.MappedFileQueue;
+import com.alibaba.rocketmq.store.SelectMappedBufferResult;
 import com.alibaba.rocketmq.store.config.StorePathConfigHelper;
 
 
@@ -23,7 +23,7 @@ public class Store {
     // 文件末尾空洞对应的MAGIC CODE cbd43194
     private final static int BlankMagicCode = 0xBBCCDDEE ^ 1880681586 + 8;
     // 存储消息的队列
-    private MapedFileQueue mapedFileQueue;
+    private MappedFileQueue mappedFileQueue;
     // ConsumeQueue集合
     private ConcurrentHashMap<String/* topic */, ConcurrentHashMap<Integer/* queueId */, ConsumeQueue>> consumeQueueTable;
 
@@ -38,14 +38,14 @@ public class Store {
         this.cSize = cSize;
         this.lStorePath = lStorePath;
         this.lSize = lSize;
-        mapedFileQueue = new MapedFileQueue(cStorePath, cSize, null);
+        mappedFileQueue = new MappedFileQueue(cStorePath, cSize, null);
         consumeQueueTable =
                 new ConcurrentHashMap<String/* topic */, ConcurrentHashMap<Integer/* queueId */, ConsumeQueue>>();
     }
 
 
     public boolean load() {
-        boolean result = this.mapedFileQueue.load();
+        boolean result = this.mappedFileQueue.load();
         System.out.println("load commit log " + (result ? "OK" : "Failed"));
         if (result) {
             result = loadConsumeQueue();
@@ -135,7 +135,7 @@ public class Store {
     public void traval(boolean openAll) {
         boolean success = true;
         byte[] bytesContent = new byte[1024];
-        List<MappedFile> mappedFiles = this.mapedFileQueue.getMappedFiles();
+        List<MappedFile> mappedFiles = this.mappedFileQueue.getMappedFiles();
         ALL: for (MappedFile mappedFile : mappedFiles) {
             long startOffset = mappedFile.getFileFromOffset();
             int position = 0;
@@ -220,7 +220,7 @@ public class Store {
                 }
 
                 ConsumeQueue consumeQueue = findConsumeQueue(topic, queueId);
-                SelectMapedBufferResult smb = consumeQueue.getIndexBuffer(queueOffset);
+                SelectMappedBufferResult smb = consumeQueue.getIndexBuffer(queueOffset);
                 try {
                     long offsetPy = smb.getByteBuffer().getLong();
                     int sizePy = smb.getByteBuffer().getInt();
