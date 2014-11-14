@@ -109,6 +109,8 @@ public class NamesrvStartup {
                 }
             }
 
+            MixAll.updateSSL(nettyServerConfig);
+
             // 打印默认配置
             if (commandLine.hasOption('p')) {
                 MixAll.printObjectProperties(null, namesrvConfig);
