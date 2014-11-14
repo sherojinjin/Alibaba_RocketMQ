@@ -15,6 +15,11 @@
  */
 package com.alibaba.rocketmq.store;
 
+import com.alibaba.rocketmq.common.UtilAll;
+import com.alibaba.rocketmq.common.constant.LoggerName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,12 +34,6 @@ import java.security.PrivilegedAction;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alibaba.rocketmq.common.UtilAll;
-import com.alibaba.rocketmq.common.constant.LoggerName;
-
 
 /**
  * Pagecache文件访问封装
@@ -42,13 +41,13 @@ import com.alibaba.rocketmq.common.constant.LoggerName;
  * @author shijia.wxr<vintage.wang@gmail.com>
  * @since 2013-7-21
  */
-public class MapedFile extends ReferenceResource {
+public class MappedFile extends ReferenceResource {
     public static final int OS_PAGE_SIZE = 1024 * 4;
     private static final Logger log = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
     // 当前JVM中映射的虚拟内存总大小
-    private static final AtomicLong TotalMapedVitualMemory = new AtomicLong(0);
+    private static final AtomicLong TotalMappedVirtualMemory = new AtomicLong(0);
     // 当前JVM中mmap句柄数量
-    private static final AtomicInteger TotalMapedFiles = new AtomicInteger(0);
+    private static final AtomicInteger TotalMappedFiles = new AtomicInteger(0);
     // 映射的文件名
     private final String fileName;
     // 映射的起始偏移量
@@ -60,7 +59,7 @@ public class MapedFile extends ReferenceResource {
     // 映射的内存对象，position永远不变
     private final MappedByteBuffer mappedByteBuffer;
     // 当前写到什么位置
-    private final AtomicInteger wrotePostion = new AtomicInteger(0);
+    private final AtomicInteger wrotePosition = new AtomicInteger(0);
     // Flush到什么位置
     private final AtomicInteger committedPosition = new AtomicInteger(0);
     // 映射的FileChannel对象
@@ -70,7 +69,7 @@ public class MapedFile extends ReferenceResource {
     private boolean firstCreateInQueue = false;
 
 
-    public MapedFile(final String fileName, final int fileSize) throws IOException {
+    public MappedFile(final String fileName, final int fileSize) throws IOException {
         this.fileName = fileName;
         this.fileSize = fileSize;
         this.file = new File(fileName);
@@ -82,8 +81,8 @@ public class MapedFile extends ReferenceResource {
         try {
             this.fileChannel = new RandomAccessFile(this.file, "rw").getChannel();
             this.mappedByteBuffer = this.fileChannel.map(MapMode.READ_WRITE, 0, fileSize);
-            TotalMapedVitualMemory.addAndGet(fileSize);
-            TotalMapedFiles.incrementAndGet();
+            TotalMappedVirtualMemory.addAndGet(fileSize);
+            TotalMappedFiles.incrementAndGet();
             ok = true;
         }
         catch (FileNotFoundException e) {
@@ -168,12 +167,12 @@ public class MapedFile extends ReferenceResource {
 
 
     public static int getTotalmapedfiles() {
-        return TotalMapedFiles.get();
+        return TotalMappedFiles.get();
     }
 
 
-    public static long getTotalMapedVitualMemory() {
-        return TotalMapedVitualMemory.get();
+    public static long getTotalMappedVirtualMemory() {
+        return TotalMappedVirtualMemory.get();
     }
 
 
@@ -213,7 +212,7 @@ public class MapedFile extends ReferenceResource {
         assert msg != null;
         assert cb != null;
 
-        int currentPos = this.wrotePostion.get();
+        int currentPos = this.wrotePosition.get();
 
         // 表示有空余空间
         if (currentPos < this.fileSize) {
@@ -221,13 +220,13 @@ public class MapedFile extends ReferenceResource {
             byteBuffer.position(currentPos);
             AppendMessageResult result =
                     cb.doAppend(this.getFileFromOffset(), byteBuffer, this.fileSize - currentPos, msg);
-            this.wrotePostion.addAndGet(result.getWroteBytes());
+            this.wrotePosition.addAndGet(result.getWroteBytes());
             this.storeTimestamp = result.getStoreTimestamp();
             return result;
         }
 
         // 上层应用应该保证不会走到这里
-        log.error("MapedFile.appendMessage return null, wrotePostion: " + currentPos + " fileSize: "
+        log.error("MappedFile.appendMessage return null, wrotePosition: " + currentPos + " fileSize: "
                 + this.fileSize);
         return new AppendMessageResult(AppendMessageStatus.UNKNOWN_ERROR);
     }
@@ -247,14 +246,14 @@ public class MapedFile extends ReferenceResource {
      * @return 返回写入了多少数据
      */
     public boolean appendMessage(final byte[] data) {
-        int currentPos = this.wrotePostion.get();
+        int currentPos = this.wrotePosition.get();
 
         // 表示有空余空间
         if ((currentPos + data.length) <= this.fileSize) {
             ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
             byteBuffer.position(currentPos);
             byteBuffer.put(data);
-            this.wrotePostion.addAndGet(data.length);
+            this.wrotePosition.addAndGet(data.length);
             return true;
         }
 
@@ -272,14 +271,14 @@ public class MapedFile extends ReferenceResource {
     public int commit(final int flushLeastPages) {
         if (this.isAbleToFlush(flushLeastPages)) {
             if (this.hold()) {
-                int value = this.wrotePostion.get();
+                int value = this.wrotePosition.get();
                 this.mappedByteBuffer.force();
                 this.committedPosition.set(value);
                 this.release();
             }
             else {
                 log.warn("in commit, hold failed, commit offset = " + this.committedPosition.get());
-                this.committedPosition.set(this.wrotePostion.get());
+                this.committedPosition.set(this.wrotePosition.get());
             }
         }
 
@@ -299,7 +298,7 @@ public class MapedFile extends ReferenceResource {
 
     private boolean isAbleToFlush(final int flushLeastPages) {
         int flush = this.committedPosition.get();
-        int write = this.wrotePostion.get();
+        int write = this.wrotePosition.get();
 
         // 如果当前文件已经写满，应该立刻刷盘
         if (this.isFull()) {
@@ -316,13 +315,13 @@ public class MapedFile extends ReferenceResource {
 
 
     public boolean isFull() {
-        return this.fileSize == this.wrotePostion.get();
+        return this.fileSize == this.wrotePosition.get();
     }
 
 
     public SelectMapedBufferResult selectMapedBuffer(int pos, int size) {
         // 有消息
-        if ((pos + size) <= this.wrotePostion.get()) {
+        if ((pos + size) <= this.wrotePosition.get()) {
             // 从MapedBuffer读
             if (this.hold()) {
                 ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
@@ -351,11 +350,11 @@ public class MapedFile extends ReferenceResource {
      * 读逻辑分区
      */
     public SelectMapedBufferResult selectMapedBuffer(int pos) {
-        if (pos < this.wrotePostion.get() && pos >= 0) {
+        if (pos < this.wrotePosition.get() && pos >= 0) {
             if (this.hold()) {
                 ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
                 byteBuffer.position(pos);
-                int size = this.wrotePostion.get() - pos;
+                int size = this.wrotePosition.get() - pos;
                 ByteBuffer byteBufferNew = byteBuffer.slice();
                 byteBufferNew.limit(size);
                 return new SelectMapedBufferResult(this.fileFromOffset + pos, byteBufferNew, size, this);
@@ -385,8 +384,8 @@ public class MapedFile extends ReferenceResource {
         }
 
         clean(this.mappedByteBuffer);
-        TotalMapedVitualMemory.addAndGet(this.fileSize * (-1));
-        TotalMapedFiles.decrementAndGet();
+        TotalMappedVirtualMemory.addAndGet(this.fileSize * (-1));
+        TotalMappedFiles.decrementAndGet();
         log.info("unmap file[REF:" + currentRef + "] " + this.fileName + " OK");
         return true;
     }
@@ -408,7 +407,7 @@ public class MapedFile extends ReferenceResource {
                 long beginTime = System.currentTimeMillis();
                 boolean result = this.file.delete();
                 log.info("delete file[REF:" + this.getRefCount() + "] " + this.fileName
-                        + (result ? " OK, " : " Failed, ") + "W:" + this.getWrotePostion() + " M:"
+                        + (result ? " OK, " : " Failed, ") + "W:" + this.getWrotePosition() + " M:"
                         + this.getCommittedPosition() + ", "
                         + UtilAll.computeEclipseTimeMilliseconds(beginTime));
             }
@@ -427,13 +426,13 @@ public class MapedFile extends ReferenceResource {
     }
 
 
-    public int getWrotePostion() {
-        return wrotePostion.get();
+    public int getWrotePosition() {
+        return wrotePosition.get();
     }
 
 
-    public void setWrotePostion(int pos) {
-        this.wrotePostion.set(pos);
+    public void setWrotePosition(int pos) {
+        this.wrotePosition.set(pos);
     }
 
 

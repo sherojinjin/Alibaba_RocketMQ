@@ -102,9 +102,9 @@ public class RecoverTest {
 
         MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
         // 每个物理映射文件
-        messageStoreConfig.setMapedFileSizeCommitLog(1024 * 32);
+        messageStoreConfig.setMappedFileSizeCommitLog(1024 * 32);
         // 每个逻辑映射文件
-        messageStoreConfig.setMapedFileSizeConsumeQueue(100 * 20);
+        messageStoreConfig.setMappedFileSizeConsumeQueue(100 * 20);
         messageStoreConfig.setMessageIndexEnable(false);
 
         MessageStore messageStore = new DefaultMessageStore(messageStoreConfig, null);
@@ -161,9 +161,9 @@ public class RecoverTest {
 
         MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
         // 每个物理映射文件
-        messageStoreConfig.setMapedFileSizeCommitLog(1024 * 32);
+        messageStoreConfig.setMappedFileSizeCommitLog(1024 * 32);
         // 每个逻辑映射文件
-        messageStoreConfig.setMapedFileSizeConsumeQueue(100 * 20);
+        messageStoreConfig.setMappedFileSizeConsumeQueue(100 * 20);
         messageStoreConfig.setMessageIndexEnable(false);
 
         storeRead = new DefaultMessageStore(messageStoreConfig, null);

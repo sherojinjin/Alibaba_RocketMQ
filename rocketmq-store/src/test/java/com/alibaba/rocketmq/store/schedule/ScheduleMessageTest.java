@@ -72,8 +72,8 @@ public class ScheduleMessageTest {
 
         MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
         // 每个物理映射文件 4K
-        messageStoreConfig.setMapedFileSizeCommitLog(1024 * 32);
-        messageStoreConfig.setMapedFileSizeConsumeQueue(1024 * 16);
+        messageStoreConfig.setMappedFileSizeCommitLog(1024 * 32);
+        messageStoreConfig.setMappedFileSizeConsumeQueue(1024 * 16);
         messageStoreConfig.setMaxHashSlotNum(100);
         messageStoreConfig.setMaxIndexNum(1000 * 10);
 

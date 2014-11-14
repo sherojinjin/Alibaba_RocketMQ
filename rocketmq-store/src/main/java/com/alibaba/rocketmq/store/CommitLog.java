@@ -72,7 +72,7 @@ public class CommitLog {
     public CommitLog(final DefaultMessageStore defaultMessageStore) {
         this.mapedFileQueue =
                 new MapedFileQueue(defaultMessageStore.getMessageStoreConfig().getStorePathCommitLog(),
-                    defaultMessageStore.getMessageStoreConfig().getMapedFileSizeCommitLog(),
+                    defaultMessageStore.getMessageStoreConfig().getMappedFileSizeCommitLog(),
                     defaultMessageStore.getAllocateMapedFileService());
         this.defaultMessageStore = defaultMessageStore;
 
@@ -107,13 +107,13 @@ public class CommitLog {
 
 
     public long getMinOffset() {
-        MapedFile mapedFile = this.mapedFileQueue.getFirstMapedFileOnLock();
-        if (mapedFile != null) {
-            if (mapedFile.isAvailable()) {
-                return mapedFile.getFileFromOffset();
+        MappedFile mappedFile = this.mapedFileQueue.getFirstMapedFileOnLock();
+        if (mappedFile != null) {
+            if (mappedFile.isAvailable()) {
+                return mappedFile.getFileFromOffset();
             }
             else {
-                return this.rollNextFile(mapedFile.getFileFromOffset());
+                return this.rollNextFile(mappedFile.getFileFromOffset());
             }
         }
 
@@ -122,7 +122,7 @@ public class CommitLog {
 
 
     public long rollNextFile(final long offset) {
-        int mapedFileSize = this.defaultMessageStore.getMessageStoreConfig().getMapedFileSizeCommitLog();
+        int mapedFileSize = this.defaultMessageStore.getMessageStoreConfig().getMappedFileSizeCommitLog();
         return (offset + mapedFileSize - offset % mapedFileSize);
     }
 
@@ -152,11 +152,11 @@ public class CommitLog {
 
 
     public SelectMapedBufferResult getData(final long offset, final boolean returnFirstOnNotFound) {
-        int mapedFileSize = this.defaultMessageStore.getMessageStoreConfig().getMapedFileSizeCommitLog();
-        MapedFile mapedFile = this.mapedFileQueue.findMapedFileByOffset(offset, returnFirstOnNotFound);
-        if (mapedFile != null) {
+        int mapedFileSize = this.defaultMessageStore.getMessageStoreConfig().getMappedFileSizeCommitLog();
+        MappedFile mappedFile = this.mapedFileQueue.findMapedFileByOffset(offset, returnFirstOnNotFound);
+        if (mappedFile != null) {
             int pos = (int) (offset % mapedFileSize);
-            SelectMapedBufferResult result = mapedFile.selectMapedBuffer(pos);
+            SelectMapedBufferResult result = mappedFile.selectMapedBuffer(pos);
             return result;
         }
 
@@ -169,16 +169,16 @@ public class CommitLog {
      */
     public void recoverNormally() {
         boolean checkCRCOnRecover = this.defaultMessageStore.getMessageStoreConfig().isCheckCRCOnRecover();
-        final List<MapedFile> mapedFiles = this.mapedFileQueue.getMapedFiles();
-        if (!mapedFiles.isEmpty()) {
+        final List<MappedFile> mappedFiles = this.mapedFileQueue.getMappedFiles();
+        if (!mappedFiles.isEmpty()) {
             // 从倒数第三个文件开始恢复
-            int index = mapedFiles.size() - 3;
+            int index = mappedFiles.size() - 3;
             if (index < 0)
                 index = 0;
 
-            MapedFile mapedFile = mapedFiles.get(index);
-            ByteBuffer byteBuffer = mapedFile.sliceByteBuffer();
-            long processOffset = mapedFile.getFileFromOffset();
+            MappedFile mappedFile = mappedFiles.get(index);
+            ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
+            long processOffset = mappedFile.getFileFromOffset();
             long mapedFileOffset = 0;
             while (true) {
                 DispatchRequest dispatchRequest =
@@ -190,25 +190,25 @@ public class CommitLog {
                 }
                 // 文件中间读到错误
                 else if (size == -1) {
-                    log.info("recover physics file end, " + mapedFile.getFileName());
+                    log.info("recover physics file end, " + mappedFile.getFileName());
                     break;
                 }
                 // 走到文件末尾，切换至下一个文件
                 // 由于返回0代表是遇到了最后的空洞，这个可以不计入truncate offset中
                 else if (size == 0) {
                     index++;
-                    if (index >= mapedFiles.size()) {
+                    if (index >= mappedFiles.size()) {
                         // 当前条件分支不可能发生
                         log.info("recover last 3 physics file over, last maped file "
-                                + mapedFile.getFileName());
+                                + mappedFile.getFileName());
                         break;
                     }
                     else {
-                        mapedFile = mapedFiles.get(index);
-                        byteBuffer = mapedFile.sliceByteBuffer();
-                        processOffset = mapedFile.getFileFromOffset();
+                        mappedFile = mappedFiles.get(index);
+                        byteBuffer = mappedFile.sliceByteBuffer();
+                        processOffset = mappedFile.getFileFromOffset();
                         mapedFileOffset = 0;
-                        log.info("recover next physics file, " + mapedFile.getFileName());
+                        log.info("recover next physics file, " + mappedFile.getFileName());
                     }
                 }
             }
@@ -381,26 +381,26 @@ public class CommitLog {
     public void recoverAbnormally() {
         // 根据最小时间戳来恢复
         boolean checkCRCOnRecover = this.defaultMessageStore.getMessageStoreConfig().isCheckCRCOnRecover();
-        final List<MapedFile> mapedFiles = this.mapedFileQueue.getMapedFiles();
-        if (!mapedFiles.isEmpty()) {
+        final List<MappedFile> mappedFiles = this.mapedFileQueue.getMappedFiles();
+        if (!mappedFiles.isEmpty()) {
             // 寻找从哪个文件开始恢复
-            int index = mapedFiles.size() - 1;
-            MapedFile mapedFile = null;
+            int index = mappedFiles.size() - 1;
+            MappedFile mappedFile = null;
             for (; index >= 0; index--) {
-                mapedFile = mapedFiles.get(index);
-                if (this.isMapedFileMatchedRecover(mapedFile)) {
-                    log.info("recover from this maped file " + mapedFile.getFileName());
+                mappedFile = mappedFiles.get(index);
+                if (this.isMapedFileMatchedRecover(mappedFile)) {
+                    log.info("recover from this maped file " + mappedFile.getFileName());
                     break;
                 }
             }
 
             if (index < 0) {
                 index = 0;
-                mapedFile = mapedFiles.get(index);
+                mappedFile = mappedFiles.get(index);
             }
 
-            ByteBuffer byteBuffer = mapedFile.sliceByteBuffer();
-            long processOffset = mapedFile.getFileFromOffset();
+            ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
+            long processOffset = mappedFile.getFileFromOffset();
             long mapedFileOffset = 0;
             while (true) {
                 DispatchRequest dispatchRequest =
@@ -413,24 +413,24 @@ public class CommitLog {
                 }
                 // 文件中间读到错误
                 else if (size == -1) {
-                    log.info("recover physics file end, " + mapedFile.getFileName());
+                    log.info("recover physics file end, " + mappedFile.getFileName());
                     break;
                 }
                 // 走到文件末尾，切换至下一个文件
                 // 由于返回0代表是遇到了最后的空洞，这个可以不计入truncate offset中
                 else if (size == 0) {
                     index++;
-                    if (index >= mapedFiles.size()) {
+                    if (index >= mappedFiles.size()) {
                         // 当前条件分支正常情况下不应该发生
-                        log.info("recover physics file over, last maped file " + mapedFile.getFileName());
+                        log.info("recover physics file over, last maped file " + mappedFile.getFileName());
                         break;
                     }
                     else {
-                        mapedFile = mapedFiles.get(index);
-                        byteBuffer = mapedFile.sliceByteBuffer();
-                        processOffset = mapedFile.getFileFromOffset();
+                        mappedFile = mappedFiles.get(index);
+                        byteBuffer = mappedFile.sliceByteBuffer();
+                        processOffset = mappedFile.getFileFromOffset();
                         mapedFileOffset = 0;
-                        log.info("recover next physics file, " + mapedFile.getFileName());
+                        log.info("recover next physics file, " + mappedFile.getFileName());
                     }
                 }
             }
@@ -450,8 +450,8 @@ public class CommitLog {
     }
 
 
-    private boolean isMapedFileMatchedRecover(final MapedFile mapedFile) {
-        ByteBuffer byteBuffer = mapedFile.sliceByteBuffer();
+    private boolean isMapedFileMatchedRecover(final MappedFile mappedFile) {
+        ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
 
         int magicCode = byteBuffer.getInt(MessageDecoder.MessageMagicCodePostion);
         if (magicCode != MessageMagicCode) {
@@ -538,13 +538,13 @@ public class CommitLog {
             msg.setStoreTimestamp(beginLockTimestamp);
 
             // 尝试写入
-            MapedFile mapedFile = this.mapedFileQueue.getLastMapedFile();
-            if (null == mapedFile) {
+            MappedFile mappedFile = this.mapedFileQueue.getLastMapedFile();
+            if (null == mappedFile) {
                 log.error("create maped file1 error, topic: " + msg.getTopic() + " clientAddr: "
                         + msg.getBornHostString());
                 return new PutMessageResult(PutMessageStatus.CREATE_MAPEDFILE_FAILED, null);
             }
-            result = mapedFile.appendMessage(msg, this.appendMessageCallback);
+            result = mappedFile.appendMessage(msg, this.appendMessageCallback);
             switch (result.getStatus()) {
             // 成功追加消息
             case PUT_OK:
@@ -552,14 +552,14 @@ public class CommitLog {
             // 走到文件末尾
             case END_OF_FILE:
                 // 创建新文件，重新写消息
-                mapedFile = this.mapedFileQueue.getLastMapedFile();
-                if (null == mapedFile) {
+                mappedFile = this.mapedFileQueue.getLastMapedFile();
+                if (null == mappedFile) {
                     // XXX: warn and notify me
                     log.error("create maped file2 error, topic: " + msg.getTopic() + " clientAddr: "
                             + msg.getBornHostString());
                     return new PutMessageResult(PutMessageStatus.CREATE_MAPEDFILE_FAILED, result);
                 }
-                result = mapedFile.appendMessage(msg, this.appendMessageCallback);
+                result = mappedFile.appendMessage(msg, this.appendMessageCallback);
                 break;
             // 消息大小超限
             case MESSAGE_SIZE_EXCEEDED:
@@ -689,11 +689,11 @@ public class CommitLog {
      * 读取消息
      */
     public SelectMapedBufferResult getMessage(final long offset, final int size) {
-        int mapedFileSize = this.defaultMessageStore.getMessageStoreConfig().getMapedFileSizeCommitLog();
-        MapedFile mapedFile = this.mapedFileQueue.findMapedFileByOffset(offset, (0 == offset ? true : false));
-        if (mapedFile != null) {
+        int mapedFileSize = this.defaultMessageStore.getMessageStoreConfig().getMappedFileSizeCommitLog();
+        MappedFile mappedFile = this.mapedFileQueue.findMapedFileByOffset(offset, (0 == offset ? true : false));
+        if (mappedFile != null) {
             int pos = (int) (offset % mapedFileSize);
-            SelectMapedBufferResult result = mapedFile.selectMapedBuffer(pos, size);
+            SelectMapedBufferResult result = mappedFile.selectMapedBuffer(pos, size);
             return result;
         }
 
@@ -720,13 +720,13 @@ public class CommitLog {
         // 写文件要加锁
         synchronized (this) {
             // 尝试写入
-            MapedFile mapedFile = this.mapedFileQueue.getLastMapedFile(startOffset);
-            if (null == mapedFile) {
+            MappedFile mappedFile = this.mapedFileQueue.getLastMapedFile(startOffset);
+            if (null == mappedFile) {
                 log.error("appendData getLastMapedFile error  " + startOffset);
                 return false;
             }
 
-            return mapedFile.appendMessage(data);
+            return mappedFile.appendMessage(data);
         }
     }
 

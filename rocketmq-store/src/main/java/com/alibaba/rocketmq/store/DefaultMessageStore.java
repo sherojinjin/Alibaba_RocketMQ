@@ -118,7 +118,7 @@ public class DefaultMessageStore implements MessageStore {
         this.cleanCommitLogService = new CleanCommitLogService();
         this.cleanConsumeQueueService = new CleanConsumeQueueService();
         this.dispatchMessageService =
-                new DispatchMessageService(this.messageStoreConfig.getPutMsgIndexHightWater());
+                new DispatchMessageService(this.messageStoreConfig.getPutMsgIndexHighWater());
         this.storeStatsService = new StoreStatsService();
         this.indexService = new IndexService(this);
         this.haService = new HAService(this);
@@ -960,7 +960,7 @@ public class DefaultMessageStore implements MessageStore {
                         queueId,//
                         StorePathConfigHelper.getStorePathConsumeQueue(this.messageStoreConfig
                             .getStorePathRootDir()),//
-                        this.getMessageStoreConfig().getMapedFileSizeConsumeQueue(),//
+                        this.getMessageStoreConfig().getMappedFileSizeConsumeQueue(),//
                         this);
             ConsumeQueue oldLogic = map.putIfAbsent(queueId, newLogic);
             if (oldLogic != null) {
@@ -1026,7 +1026,7 @@ public class DefaultMessageStore implements MessageStore {
     private void createTempFile() throws IOException {
         String fileName = StorePathConfigHelper.getAbortFile(this.messageStoreConfig.getStorePathRootDir());
         File file = new File(fileName);
-        MapedFile.ensureDirOK(file.getParent());
+        MappedFile.ensureDirOK(file.getParent());
         boolean result = file.createNewFile();
         log.info(fileName + (result ? " create OK" : " already exists"));
     }
@@ -1059,7 +1059,7 @@ public class DefaultMessageStore implements MessageStore {
                                     queueId,//
                                     StorePathConfigHelper.getStorePathConsumeQueue(this.messageStoreConfig
                                         .getStorePathRootDir()),//
-                                    this.getMessageStoreConfig().getMapedFileSizeConsumeQueue(),//
+                                    this.getMessageStoreConfig().getMappedFileSizeConsumeQueue(),//
                                     this);
                         this.putConsumeQueue(topic, queueId, logic);
                         if (!logic.load()) {
@@ -1255,7 +1255,7 @@ public class DefaultMessageStore implements MessageStore {
                 this.lastRedeleteTimestamp = currentTimestamp;
                 int destroyMapedFileIntervalForcibly =
                         DefaultMessageStore.this.getMessageStoreConfig()
-                            .getDestroyMapedFileIntervalForcibly();
+                            .getDestroyMappedFileIntervalForcibly();
                 if (DefaultMessageStore.this.commitLog.retryDeleteFirstFile(destroyMapedFileIntervalForcibly)) {
                     // TODO
                 }
@@ -1269,7 +1269,7 @@ public class DefaultMessageStore implements MessageStore {
             int deletePhysicFilesInterval =
                     DefaultMessageStore.this.getMessageStoreConfig().getDeleteCommitLogFilesInterval();
             int destroyMapedFileIntervalForcibly =
-                    DefaultMessageStore.this.getMessageStoreConfig().getDestroyMapedFileIntervalForcibly();
+                    DefaultMessageStore.this.getMessageStoreConfig().getDestroyMappedFileIntervalForcibly();
 
             boolean timeup = this.isTimeToDelete();
             boolean spacefull = this.isSpaceToDelete();
@@ -1589,7 +1589,7 @@ public class DefaultMessageStore implements MessageStore {
         public void putRequest(final DispatchRequest dispatchRequest) {
             int requestsWriteSize = 0;
             int putMsgIndexHightWater =
-                    DefaultMessageStore.this.getMessageStoreConfig().getPutMsgIndexHightWater();
+                    DefaultMessageStore.this.getMessageStoreConfig().getPutMsgIndexHighWater();
             synchronized (this) {
                 this.requestsWrite.add(dispatchRequest);
                 requestsWriteSize = this.requestsWrite.size();

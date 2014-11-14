@@ -15,22 +15,8 @@
  */
 package com.alibaba.rocketmq.broker;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.PosixParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
-
 import com.alibaba.rocketmq.common.BrokerConfig;
 import com.alibaba.rocketmq.common.MQVersion;
 import com.alibaba.rocketmq.common.MixAll;
@@ -43,6 +29,18 @@ import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
 import com.alibaba.rocketmq.srvutil.ServerUtil;
 import com.alibaba.rocketmq.store.config.BrokerRole;
 import com.alibaba.rocketmq.store.config.MessageStoreConfig;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.PosixParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -165,10 +163,8 @@ public class BrokerStartup {
             if (null != namesrvAddr) {
                 try {
                     String[] addrArray = namesrvAddr.split(";");
-                    if (addrArray != null) {
-                        for (String addr : addrArray) {
-                            RemotingUtil.string2SocketAddress(addr);
-                        }
+                    for (String addr : addrArray) {
+                        RemotingUtil.string2SocketAddress(addr);
                     }
                 }
                 catch (Exception e) {
@@ -238,9 +234,9 @@ public class BrokerStartup {
                         log.info("shutdown hook was invoked, " + this.shutdownTimes.incrementAndGet());
                         if (!this.hasShutdown) {
                             this.hasShutdown = true;
-                            long begineTime = System.currentTimeMillis();
+                            long beginTime = System.currentTimeMillis();
                             controller.shutdown();
-                            long consumingTimeTotal = System.currentTimeMillis() - begineTime;
+                            long consumingTimeTotal = System.currentTimeMillis() - beginTime;
                             log.info("shutdown hook over, consuming time total(ms): " + consumingTimeTotal);
                         }
                     }

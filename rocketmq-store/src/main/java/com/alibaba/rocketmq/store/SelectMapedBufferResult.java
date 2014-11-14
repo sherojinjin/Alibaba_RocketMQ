@@ -32,14 +32,14 @@ public class SelectMapedBufferResult {
     // 有效数据大小
     private int size;
     // 用来释放内存
-    private MapedFile mapedFile;
+    private MappedFile mappedFile;
 
 
-    public SelectMapedBufferResult(long startOffset, ByteBuffer byteBuffer, int size, MapedFile mapedFile) {
+    public SelectMapedBufferResult(long startOffset, ByteBuffer byteBuffer, int size, MappedFile mappedFile) {
         this.startOffset = startOffset;
         this.byteBuffer = byteBuffer;
         this.size = size;
-        this.mapedFile = mapedFile;
+        this.mappedFile = mappedFile;
     }
 
 
@@ -59,14 +59,14 @@ public class SelectMapedBufferResult {
     }
 
 
-    public MapedFile getMapedFile() {
-        return mapedFile;
+    public MappedFile getMappedFile() {
+        return mappedFile;
     }
 
 
     @Override
     protected void finalize() {
-        if (this.mapedFile != null) {
+        if (this.mappedFile != null) {
             this.release();
         }
     }
@@ -76,9 +76,9 @@ public class SelectMapedBufferResult {
      * 此方法只能被调用一次，重复调用无效
      */
     public synchronized void release() {
-        if (this.mapedFile != null) {
-            this.mapedFile.release();
-            this.mapedFile = null;
+        if (this.mappedFile != null) {
+            this.mappedFile.release();
+            this.mappedFile = null;
         }
     }
 

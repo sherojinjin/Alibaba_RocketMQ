@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.rocketmq.store.ConsumeQueue;
-import com.alibaba.rocketmq.store.MapedFile;
+import com.alibaba.rocketmq.store.MappedFile;
 import com.alibaba.rocketmq.store.MapedFileQueue;
 import com.alibaba.rocketmq.store.SelectMapedBufferResult;
 import com.alibaba.rocketmq.store.config.StorePathConfigHelper;
@@ -135,16 +135,16 @@ public class Store {
     public void traval(boolean openAll) {
         boolean success = true;
         byte[] bytesContent = new byte[1024];
-        List<MapedFile> mapedFiles = this.mapedFileQueue.getMapedFiles();
-        ALL: for (MapedFile mapedFile : mapedFiles) {
-            long startOffset = mapedFile.getFileFromOffset();
+        List<MappedFile> mappedFiles = this.mapedFileQueue.getMappedFiles();
+        ALL: for (MappedFile mappedFile : mappedFiles) {
+            long startOffset = mappedFile.getFileFromOffset();
             int position = 0;
             int msgCount = 0;
             int errorCount = 0;
 
-            System.out.println("start travel " + mapedFile.getFileName());
+            System.out.println("start travel " + mappedFile.getFileName());
             long startTime = System.currentTimeMillis();
-            ByteBuffer byteBuffer = mapedFile.sliceByteBuffer();
+            ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
             while (byteBuffer.hasRemaining()) {
                 // 1 TOTALSIZE
                 int totalSize = byteBuffer.getInt();
@@ -254,7 +254,7 @@ public class Store {
                 byteBuffer.position(position);
             }
 
-            System.out.println("end travel " + mapedFile.getFileName() + ", total msg=" + msgCount
+            System.out.println("end travel " + mappedFile.getFileName() + ", total msg=" + msgCount
                     + ", error count=" + errorCount + ", cost:" + (System.currentTimeMillis() - startTime));
         }
 

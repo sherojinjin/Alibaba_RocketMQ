@@ -73,8 +73,8 @@ public class DefaultMessageStoreTest {
 
         MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
         // 每个物理映射文件 4K
-        messageStoreConfig.setMapedFileSizeCommitLog(1024 * 8);
-        messageStoreConfig.setMapedFileSizeConsumeQueue(1024 * 4);
+        messageStoreConfig.setMappedFileSizeCommitLog(1024 * 8);
+        messageStoreConfig.setMappedFileSizeConsumeQueue(1024 * 4);
         messageStoreConfig.setMaxHashSlotNum(100);
         messageStoreConfig.setMaxIndexNum(100 * 10);
 
@@ -128,7 +128,7 @@ public class DefaultMessageStoreTest {
 
         MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
         // 每个物理映射文件 4K
-        messageStoreConfig.setMapedFileSizeCommitLog(1024 * 8);
+        messageStoreConfig.setMappedFileSizeCommitLog(1024 * 8);
 
         // 开启GroupCommit功能
         messageStoreConfig.setFlushDiskType(FlushDiskType.SYNC_FLUSH);

@@ -15,10 +15,10 @@
  */
 package com.alibaba.rocketmq.store.config;
 
-import java.io.File;
-
 import com.alibaba.rocketmq.common.annotation.ImportantField;
 import com.alibaba.rocketmq.store.ConsumeQueue;
+
+import java.io.File;
 
 
 /**
@@ -38,9 +38,9 @@ public class MessageStoreConfig {
             + File.separator + "commitlog";
 
     // CommitLog每个文件大小 1G
-    private int mapedFileSizeCommitLog = 1024 * 1024 * 1024;
+    private int mappedFileSizeCommitLog = 1024 * 1024 * 1024;
     // ConsumeQueue每个文件大小 默认存储30W条消息
-    private int mapedFileSizeConsumeQueue = 300000 * ConsumeQueue.CQStoreUnitSize;
+    private int mappedFileSizeConsumeQueue = 300000 * ConsumeQueue.CQStoreUnitSize;
     // CommitLog刷盘间隔时间（单位毫秒）
     @ImportantField
     private int flushIntervalCommitLog = 1000;
@@ -56,7 +56,7 @@ public class MessageStoreConfig {
     // 删除多个ConsumeQueue文件的间隔时间（单位毫秒）
     private int deleteConsumeQueueFilesInterval = 100;
     // 强制删除文件间隔时间（单位毫秒）
-    private int destroyMapedFileIntervalForcibly = 1000 * 120;
+    private int destroyMappedFileIntervalForcibly = 1000 * 120;
     // 定期检查Hanged文件间隔时间（单位毫秒）
     private int redeleteHangedFileInterval = 1000 * 120;
     // 何时触发删除文件, 默认凌晨4点删除文件
@@ -68,7 +68,7 @@ public class MessageStoreConfig {
     @ImportantField
     private int fileReservedTime = 72;
     // 写消息索引到ConsumeQueue，缓冲区高水位，超过则开始流控
-    private int putMsgIndexHightWater = 600000;
+    private int putMsgIndexHighWater = 600000;
     // 最大消息大小，默认512K
     private int maxMessageSize = 1024 * 512;
     // 重启时，是否校验CRC
@@ -116,7 +116,7 @@ public class MessageStoreConfig {
     @ImportantField
     private String haMasterAddress = null;
     // Slave落后Master超过此值，则认为存在异常
-    private int haSlaveFallbehindMax = 1024 * 1024 * 256;
+    private int haSlaveFallBehindMax = 1024 * 1024 * 256;
     @ImportantField
     private BrokerRole brokerRole = BrokerRole.ASYNC_MASTER;
     @ImportantField
@@ -131,25 +131,25 @@ public class MessageStoreConfig {
     private boolean cleanFileForciblyEnable = true;
 
 
-    public int getMapedFileSizeCommitLog() {
-        return mapedFileSizeCommitLog;
+    public int getMappedFileSizeCommitLog() {
+        return mappedFileSizeCommitLog;
     }
 
 
-    public void setMapedFileSizeCommitLog(int mapedFileSizeCommitLog) {
-        this.mapedFileSizeCommitLog = mapedFileSizeCommitLog;
+    public void setMappedFileSizeCommitLog(int mappedFileSizeCommitLog) {
+        this.mappedFileSizeCommitLog = mappedFileSizeCommitLog;
     }
 
 
-    public int getMapedFileSizeConsumeQueue() {
+    public int getMappedFileSizeConsumeQueue() {
         // 此处需要向上取整
-        int factor = (int) Math.ceil(this.mapedFileSizeConsumeQueue / (ConsumeQueue.CQStoreUnitSize * 1.0));
+        int factor = (int) Math.ceil(this.mappedFileSizeConsumeQueue / (ConsumeQueue.CQStoreUnitSize * 1.0));
         return (int) (factor * ConsumeQueue.CQStoreUnitSize);
     }
 
 
-    public void setMapedFileSizeConsumeQueue(int mapedFileSizeConsumeQueue) {
-        this.mapedFileSizeConsumeQueue = mapedFileSizeConsumeQueue;
+    public void setMappedFileSizeConsumeQueue(int mappedFileSizeConsumeQueue) {
+        this.mappedFileSizeConsumeQueue = mappedFileSizeConsumeQueue;
     }
 
 
@@ -173,13 +173,13 @@ public class MessageStoreConfig {
     }
 
 
-    public int getPutMsgIndexHightWater() {
-        return putMsgIndexHightWater;
+    public int getPutMsgIndexHighWater() {
+        return putMsgIndexHighWater;
     }
 
 
-    public void setPutMsgIndexHightWater(int putMsgIndexHightWater) {
-        this.putMsgIndexHightWater = putMsgIndexHightWater;
+    public void setPutMsgIndexHighWater(int putMsgIndexHighWater) {
+        this.putMsgIndexHighWater = putMsgIndexHighWater;
     }
 
 
@@ -354,13 +354,13 @@ public class MessageStoreConfig {
     }
 
 
-    public int getDestroyMapedFileIntervalForcibly() {
-        return destroyMapedFileIntervalForcibly;
+    public int getDestroyMappedFileIntervalForcibly() {
+        return destroyMappedFileIntervalForcibly;
     }
 
 
-    public void setDestroyMapedFileIntervalForcibly(int destroyMapedFileIntervalForcibly) {
-        this.destroyMapedFileIntervalForcibly = destroyMapedFileIntervalForcibly;
+    public void setDestroyMappedFileIntervalForcibly(int destroyMappedFileIntervalForcibly) {
+        this.destroyMappedFileIntervalForcibly = destroyMappedFileIntervalForcibly;
     }
 
 
@@ -489,13 +489,13 @@ public class MessageStoreConfig {
     }
 
 
-    public int getHaSlaveFallbehindMax() {
-        return haSlaveFallbehindMax;
+    public int getHaSlaveFallBehindMax() {
+        return haSlaveFallBehindMax;
     }
 
 
-    public void setHaSlaveFallbehindMax(int haSlaveFallbehindMax) {
-        this.haSlaveFallbehindMax = haSlaveFallbehindMax;
+    public void setHaSlaveFallBehindMax(int haSlaveFallBehindMax) {
+        this.haSlaveFallBehindMax = haSlaveFallBehindMax;
     }
 
 

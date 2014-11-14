@@ -45,7 +45,7 @@ public class AllocateMapedFileService extends ServiceThread {
     private volatile boolean hasException = false;
 
 
-    public MapedFile putRequestAndReturnMapedFile(String nextFilePath, String nextNextFilePath, int fileSize) {
+    public MappedFile putRequestAndReturnMapedFile(String nextFilePath, String nextNextFilePath, int fileSize) {
         AllocateRequest nextReq = new AllocateRequest(nextFilePath, fileSize);
         AllocateRequest nextNextReq = new AllocateRequest(nextNextFilePath, fileSize);
         boolean nextPutOK = (this.requestTable.putIfAbsent(nextFilePath, nextReq) == null);
@@ -78,7 +78,7 @@ public class AllocateMapedFileService extends ServiceThread {
                     log.warn("create mmap timeout " + result.getFilePath() + " " + result.getFileSize());
                 }
                 this.requestTable.remove(nextFilePath);
-                return result.getMapedFile();
+                return result.getMappedFile();
             }
             else {
                 log.error("find preallocate mmap failed, this never happen");
@@ -110,9 +110,9 @@ public class AllocateMapedFileService extends ServiceThread {
         }
 
         for (AllocateRequest req : this.requestTable.values()) {
-            if (req.mapedFile != null) {
-                log.info("delete pre allocated maped file, {}", req.mapedFile.getFileName());
-                req.mapedFile.destroy(1000);
+            if (req.mappedFile != null) {
+                log.info("delete pre allocated maped file, {}", req.mappedFile.getFileName());
+                req.mappedFile.destroy(1000);
             }
         }
     }
@@ -141,18 +141,18 @@ public class AllocateMapedFileService extends ServiceThread {
                 return true;
             }
 
-            if (req.getMapedFile() == null) {
+            if (req.getMappedFile() == null) {
                 long beginTime = System.currentTimeMillis();
-                MapedFile mapedFile = new MapedFile(req.getFilePath(), req.getFileSize());
+                MappedFile mappedFile = new MappedFile(req.getFilePath(), req.getFileSize());
                 long eclipseTime = UtilAll.computeEclipseTimeMilliseconds(beginTime);
                 // 记录大于10ms的
                 if (eclipseTime > 10) {
                     int queueSize = this.requestQueue.size();
-                    log.warn("create mapedFile spent time(ms) " + eclipseTime + " queue size " + queueSize
+                    log.warn("create mappedFile spent time(ms) " + eclipseTime + " queue size " + queueSize
                             + " " + req.getFilePath() + " " + req.getFileSize());
                 }
 
-                req.setMapedFile(mapedFile);
+                req.setMappedFile(mappedFile);
                 this.hasException = false;
             }
         }
@@ -179,8 +179,8 @@ public class AllocateMapedFileService extends ServiceThread {
         private int fileSize;
         // 计数器
         private CountDownLatch countDownLatch = new CountDownLatch(1);
-        // MapedFile
-        private volatile MapedFile mapedFile = null;
+        // MappedFile
+        private volatile MappedFile mappedFile = null;
 
 
         public AllocateRequest(String filePath, int fileSize) {
@@ -219,13 +219,13 @@ public class AllocateMapedFileService extends ServiceThread {
         }
 
 
-        public MapedFile getMapedFile() {
-            return mapedFile;
+        public MappedFile getMappedFile() {
+            return mappedFile;
         }
 
 
-        public void setMapedFile(MapedFile mapedFile) {
-            this.mapedFile = mapedFile;
+        public void setMappedFile(MappedFile mappedFile) {
+            this.mappedFile = mappedFile;
         }
 
 

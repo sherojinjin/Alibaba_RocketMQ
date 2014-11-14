@@ -1,5 +1,5 @@
 /**
- * $Id: MapedFileQueueTest.java 1831 2013-05-16 01:39:51Z shijia.wxr $
+ * $Id: MappedFileQueueTest.java 1831 2013-05-16 01:39:51Z shijia.wxr $
  */
 package com.alibaba.rocketmq.store;
 
@@ -14,7 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 
-public class MapedFileQueueTest {
+public class MappedFileQueueTest {
 
     // private static final String StoreMessage =
     // "Once, there was a chance for me! but I did not treasure it. if";
@@ -49,9 +49,9 @@ public class MapedFileQueueTest {
                 new MapedFileQueue("./unit_test_store/a/", 1024, allocateMapedFileService);
 
         for (int i = 0; i < 1024; i++) {
-            MapedFile mapedFile = mapedFileQueue.getLastMapedFile();
-            assertTrue(mapedFile != null);
-            boolean result = mapedFile.appendMessage(fixedMsg.getBytes());
+            MappedFile mappedFile = mapedFileQueue.getLastMapedFile();
+            assertTrue(mappedFile != null);
+            boolean result = mappedFile.appendMessage(fixedMsg.getBytes());
             if (!result) {
                 System.out.println("appendMessage " + i);
             }
@@ -75,48 +75,48 @@ public class MapedFileQueueTest {
                 new MapedFileQueue("./unit_test_store/b/", 1024, allocateMapedFileService);
 
         for (int i = 0; i < 1024; i++) {
-            MapedFile mapedFile = mapedFileQueue.getLastMapedFile();
-            assertTrue(mapedFile != null);
-            boolean result = mapedFile.appendMessage(fixedMsg.getBytes());
+            MappedFile mappedFile = mapedFileQueue.getLastMapedFile();
+            assertTrue(mappedFile != null);
+            boolean result = mappedFile.appendMessage(fixedMsg.getBytes());
             // System.out.println("appendMessage " + bytes);
             assertTrue(result);
         }
 
-        MapedFile mapedFile = mapedFileQueue.findMapedFileByOffset(0);
-        assertTrue(mapedFile != null);
-        assertEquals(mapedFile.getFileFromOffset(), 0);
-        System.out.println(mapedFile.getFileFromOffset());
+        MappedFile mappedFile = mapedFileQueue.findMapedFileByOffset(0);
+        assertTrue(mappedFile != null);
+        assertEquals(mappedFile.getFileFromOffset(), 0);
+        System.out.println(mappedFile.getFileFromOffset());
 
-        mapedFile = mapedFileQueue.findMapedFileByOffset(100);
-        assertTrue(mapedFile != null);
-        assertEquals(mapedFile.getFileFromOffset(), 0);
-        System.out.println(mapedFile.getFileFromOffset());
+        mappedFile = mapedFileQueue.findMapedFileByOffset(100);
+        assertTrue(mappedFile != null);
+        assertEquals(mappedFile.getFileFromOffset(), 0);
+        System.out.println(mappedFile.getFileFromOffset());
 
-        mapedFile = mapedFileQueue.findMapedFileByOffset(1024);
-        assertTrue(mapedFile != null);
-        assertEquals(mapedFile.getFileFromOffset(), 1024);
-        System.out.println(mapedFile.getFileFromOffset());
+        mappedFile = mapedFileQueue.findMapedFileByOffset(1024);
+        assertTrue(mappedFile != null);
+        assertEquals(mappedFile.getFileFromOffset(), 1024);
+        System.out.println(mappedFile.getFileFromOffset());
 
-        mapedFile = mapedFileQueue.findMapedFileByOffset(1024 + 100);
-        assertTrue(mapedFile != null);
-        assertEquals(mapedFile.getFileFromOffset(), 1024);
-        System.out.println(mapedFile.getFileFromOffset());
+        mappedFile = mapedFileQueue.findMapedFileByOffset(1024 + 100);
+        assertTrue(mappedFile != null);
+        assertEquals(mappedFile.getFileFromOffset(), 1024);
+        System.out.println(mappedFile.getFileFromOffset());
 
-        mapedFile = mapedFileQueue.findMapedFileByOffset(1024 * 2);
-        assertTrue(mapedFile != null);
-        assertEquals(mapedFile.getFileFromOffset(), 1024 * 2);
-        System.out.println(mapedFile.getFileFromOffset());
+        mappedFile = mapedFileQueue.findMapedFileByOffset(1024 * 2);
+        assertTrue(mappedFile != null);
+        assertEquals(mappedFile.getFileFromOffset(), 1024 * 2);
+        System.out.println(mappedFile.getFileFromOffset());
 
-        mapedFile = mapedFileQueue.findMapedFileByOffset(1024 * 2 + 100);
-        assertTrue(mapedFile != null);
-        assertEquals(mapedFile.getFileFromOffset(), 1024 * 2);
-        System.out.println(mapedFile.getFileFromOffset());
+        mappedFile = mapedFileQueue.findMapedFileByOffset(1024 * 2 + 100);
+        assertTrue(mappedFile != null);
+        assertEquals(mappedFile.getFileFromOffset(), 1024 * 2);
+        System.out.println(mappedFile.getFileFromOffset());
 
-        mapedFile = mapedFileQueue.findMapedFileByOffset(1024 * 4);
-        assertTrue(mapedFile == null);
+        mappedFile = mapedFileQueue.findMapedFileByOffset(1024 * 4);
+        assertTrue(mappedFile == null);
 
-        mapedFile = mapedFileQueue.findMapedFileByOffset(1024 * 4 + 100);
-        assertTrue(mapedFile == null);
+        mappedFile = mapedFileQueue.findMapedFileByOffset(1024 * 4 + 100);
+        assertTrue(mappedFile == null);
 
         mapedFileQueue.shutdown(1000);
         mapedFileQueue.destroy();
@@ -135,9 +135,9 @@ public class MapedFileQueueTest {
                 new MapedFileQueue("./unit_test_store/c/", 1024, allocateMapedFileService);
 
         for (int i = 0; i < 1024; i++) {
-            MapedFile mapedFile = mapedFileQueue.getLastMapedFile();
-            assertTrue(mapedFile != null);
-            boolean result = mapedFile.appendMessage(fixedMsg.getBytes());
+            MappedFile mappedFile = mapedFileQueue.getLastMapedFile();
+            assertTrue(mappedFile != null);
+            boolean result = mappedFile.appendMessage(fixedMsg.getBytes());
             assertTrue(result);
         }
 
@@ -189,9 +189,9 @@ public class MapedFileQueueTest {
                 new MapedFileQueue("./unit_test_store/d/", 1024, allocateMapedFileService);
 
         for (int i = 0; i < 1024; i++) {
-            MapedFile mapedFile = mapedFileQueue.getLastMapedFile();
-            assertTrue(mapedFile != null);
-            boolean result = mapedFile.appendMessage(fixedMsg.getBytes());
+            MappedFile mappedFile = mapedFileQueue.getLastMapedFile();
+            assertTrue(mappedFile != null);
+            boolean result = mappedFile.appendMessage(fixedMsg.getBytes());
             assertTrue(result);
         }
 

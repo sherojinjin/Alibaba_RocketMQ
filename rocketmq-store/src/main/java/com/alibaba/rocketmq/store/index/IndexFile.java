@@ -22,11 +22,11 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.List;
 
+import com.alibaba.rocketmq.store.MappedFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.rocketmq.common.constant.LoggerName;
-import com.alibaba.rocketmq.store.MapedFile;
 
 
 /**
@@ -42,7 +42,7 @@ public class IndexFile {
     private static int INVALID_INDEX = 0;
     private final int hashSlotNum;
     private final int indexNum;
-    private final MapedFile mapedFile;
+    private final MappedFile mappedFile;
     private final FileChannel fileChannel;
     private final MappedByteBuffer mappedByteBuffer;
     private final IndexHeader indexHeader;
@@ -52,9 +52,9 @@ public class IndexFile {
             final long endPhyOffset, final long endTimestamp) throws IOException {
         int fileTotalSize =
                 IndexHeader.INDEX_HEADER_SIZE + (hashSlotNum * HASH_SLOT_SIZE) + (indexNum * INDEX_SIZE);
-        this.mapedFile = new MapedFile(fileName, fileTotalSize);
-        this.fileChannel = this.mapedFile.getFileChannel();
-        this.mappedByteBuffer = this.mapedFile.getMappedByteBuffer();
+        this.mappedFile = new MappedFile(fileName, fileTotalSize);
+        this.fileChannel = this.mappedFile.getFileChannel();
+        this.mappedByteBuffer = this.mappedFile.getMappedByteBuffer();
         this.hashSlotNum = hashSlotNum;
         this.indexNum = indexNum;
 
@@ -74,7 +74,7 @@ public class IndexFile {
 
 
     public String getFileName() {
-        return this.mapedFile.getFileName();
+        return this.mappedFile.getFileName();
     }
 
 
@@ -85,10 +85,10 @@ public class IndexFile {
 
     public void flush() {
         long beginTime = System.currentTimeMillis();
-        if (this.mapedFile.hold()) {
+        if (this.mappedFile.hold()) {
             this.indexHeader.updateByteBuffer();
             this.mappedByteBuffer.force();
-            this.mapedFile.release();
+            this.mappedFile.release();
             log.info("flush index file eclipse time(ms) " + (System.currentTimeMillis() - beginTime));
         }
     }
@@ -103,7 +103,7 @@ public class IndexFile {
 
 
     public boolean destroy(final long intervalForcibly) {
-        return this.mapedFile.destroy(intervalForcibly);
+        return this.mappedFile.destroy(intervalForcibly);
     }
 
 
@@ -240,7 +240,7 @@ public class IndexFile {
      */
     public void selectPhyOffset(final List<Long> phyOffsets, final String key, final int maxNum,
             final long begin, final long end, boolean lock) {
-        if (this.mapedFile.hold()) {
+        if (this.mappedFile.hold()) {
             int keyHash = indexKeyHashMethod(key);
             int slotPos = keyHash % this.hashSlotNum;
             int absSlotPos = IndexHeader.INDEX_HEADER_SIZE + slotPos * HASH_SLOT_SIZE;
@@ -315,7 +315,7 @@ public class IndexFile {
                     }
                 }
 
-                this.mapedFile.release();
+                this.mappedFile.release();
             }
         }
     }
