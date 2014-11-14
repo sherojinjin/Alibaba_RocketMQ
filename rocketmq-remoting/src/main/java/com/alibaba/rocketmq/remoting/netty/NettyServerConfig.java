@@ -34,6 +34,8 @@ public class NettyServerConfig {
     private int serverSocketRcvBufSize = NettySystemConfig.SocketRcvbufSize;
     private boolean serverPooledByteBufAllocatorEnable = false;
 
+    private boolean ssl = false;
+
 
     public int getListenPort() {
         return listenPort;
@@ -132,5 +134,13 @@ public class NettyServerConfig {
 
     public void setServerPooledByteBufAllocatorEnable(boolean serverPooledByteBufAllocatorEnable) {
         this.serverPooledByteBufAllocatorEnable = serverPooledByteBufAllocatorEnable;
+    }
+
+    public boolean isSsl() {
+        return ssl;
+    }
+
+    public void setSsl(boolean ssl) {
+        this.ssl = ssl;
     }
 }

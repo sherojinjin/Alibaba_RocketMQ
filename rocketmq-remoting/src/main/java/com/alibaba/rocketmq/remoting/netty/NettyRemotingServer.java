@@ -32,6 +32,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -39,7 +41,9 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
+import java.security.cert.CertificateException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -124,6 +128,20 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                             this.threadIndex.incrementAndGet()));
                     }
                 });
+
+        if (nettyServerConfig.isSsl()) {
+            log.debug("Detected SSL enabled");
+            try {
+                SelfSignedCertificate ssc = new SelfSignedCertificate();
+                sslContext = SslContext.newServerContext(ssc.certificate(), ssc.privateKey());
+            } catch (SSLException e) {
+                log.error(e.getMessage());
+                e.printStackTrace();
+                System.exit(1);
+            } catch (CertificateException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -162,15 +180,26 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(
-                                //
-                                defaultEventExecutorGroup, //
-                                new NettyEncoder(), //
-                                new NettyDecoder(), //
-                                new IdleStateHandler(0, 0, nettyServerConfig
-                                    .getServerChannelMaxIdleTimeSeconds()),//
-                                new NettyConnetManageHandler(), //
-                                new NettyServerHandler());
+                            if (null == sslContext) {
+                                ch.pipeline().addLast(
+                                    defaultEventExecutorGroup, //
+                                    new NettyEncoder(), //
+                                    new NettyDecoder(), //
+                                    new IdleStateHandler(0, 0, nettyServerConfig.getServerChannelMaxIdleTimeSeconds()),//
+                                    new NettyConnectManageHandler(), //
+                                    new NettyServerHandler());
+                            } else {
+                                ch.pipeline().addLast(
+                                        defaultEventExecutorGroup, //
+                                        sslContext.newHandler(ch.alloc()),
+                                        new FileRegionEncoder(),
+                                        new NettyEncoder(), //
+                                        new NettyDecoder(), //
+                                        new IdleStateHandler(0, 0, nettyServerConfig.getServerChannelMaxIdleTimeSeconds()),//
+                                        new NettyConnectManageHandler(), //
+                                        new NettyServerHandler());
+                            }
+
                         }
                     });
 
@@ -189,7 +218,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         }
 
         if (this.channelEventListener != null) {
-            this.nettyEventExecuter.start();
+            this.nettyEventExecutor.start();
         }
 
         // 每隔1秒扫描下异步调用超时情况
@@ -247,7 +276,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
     public void invokeOneway(Channel channel, RemotingCommand request, long timeoutMillis)
             throws InterruptedException, RemotingTooMuchRequestException, RemotingTimeoutException,
             RemotingSendRequestException {
-        this.invokeOnewayImpl(channel, request, timeoutMillis);
+        this.invokeOneWayImpl(channel, request, timeoutMillis);
     }
 
 
@@ -262,8 +291,8 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
             this.eventLoopGroupWorker.shutdownGracefully();
 
-            if (this.nettyEventExecuter != null) {
-                this.nettyEventExecuter.shutdown();
+            if (this.nettyEventExecutor != null) {
+                this.nettyEventExecutor.shutdown();
             }
 
             if (this.defaultEventExecutorGroup != null) {
@@ -304,7 +333,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         }
     }
 
-    class NettyConnetManageHandler extends ChannelDuplexHandler {
+    class NettyConnectManageHandler extends ChannelDuplexHandler {
         @Override
         public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
             final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
@@ -350,8 +379,8 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             if (evt instanceof IdleStateEvent) {
-                IdleStateEvent evnet = (IdleStateEvent) evt;
-                if (evnet.state().equals(IdleState.ALL_IDLE)) {
+                IdleStateEvent event = (IdleStateEvent) evt;
+                if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                     log.warn("NETTY SERVER PIPELINE: IDLE exception [{}]", remoteAddress);
                     RemotingUtil.closeChannel(ctx.channel());

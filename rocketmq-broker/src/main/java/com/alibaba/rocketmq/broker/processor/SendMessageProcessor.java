@@ -94,7 +94,7 @@ public class SendMessageProcessor implements NettyRequestProcessor {
                     (SendMessageRequestHeaderV2) request
                         .decodeCommandCustomHeader(SendMessageRequestHeaderV2.class);
         case RequestCode.SEND_MESSAGE:
-            SendMessageContext mqtraceContext = null;
+            SendMessageContext mqTraceContext = null;
             SendMessageRequestHeader requestHeader = null;
 
             if (null == requestHeaderV2) {
@@ -108,20 +108,20 @@ public class SendMessageProcessor implements NettyRequestProcessor {
 
             // 消息轨迹：记录到达 broker 的消息
             if (this.hasSendMessageHook()) {
-                mqtraceContext = new SendMessageContext();
-                mqtraceContext.setProducerGroup(requestHeader.getProducerGroup());
-                mqtraceContext.setTopic(requestHeader.getTopic());
-                mqtraceContext.setMsgProps(requestHeader.getProperties());
-                mqtraceContext.setBornHost(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-                mqtraceContext.setBrokerAddr(this.brokerController.getBrokerAddr());
-                this.executeSendMessageHookBefore(ctx, request, mqtraceContext);
+                mqTraceContext = new SendMessageContext();
+                mqTraceContext.setProducerGroup(requestHeader.getProducerGroup());
+                mqTraceContext.setTopic(requestHeader.getTopic());
+                mqTraceContext.setMsgProps(requestHeader.getProperties());
+                mqTraceContext.setBornHost(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+                mqTraceContext.setBrokerAddr(this.brokerController.getBrokerAddr());
+                this.executeSendMessageHookBefore(ctx, request, mqTraceContext);
             }
 
-            final RemotingCommand response = this.sendMessage(ctx, request, mqtraceContext, requestHeader);
+            final RemotingCommand response = this.sendMessage(ctx, request, mqTraceContext, requestHeader);
 
             // 消息轨迹：记录发送成功的消息
             if (this.hasSendMessageHook()) {
-                this.executeSendMessageHookAfter(response, mqtraceContext);
+                this.executeSendMessageHookAfter(response, mqTraceContext);
             }
             return response;
         case RequestCode.CONSUMER_SEND_MSG_BACK:
@@ -412,7 +412,7 @@ public class SendMessageProcessor implements NettyRequestProcessor {
          * Broker本身不做Topic的权限验证，由Name Server负责通知Client处理
          */
         // // 检查topic权限
-        // if (!PermName.isWriteable(topicConfig.getPerm())) {
+        // if (!PermName.isWritable(topicConfig.getPerm())) {
         // response.setCode(ResponseCode.NO_PERMISSION);
         // response.setRemark("the topic[" + requestHeader.getOriginTopic() +
         // "] sending message is forbidden");
@@ -423,7 +423,7 @@ public class SendMessageProcessor implements NettyRequestProcessor {
         int queueIdInt = requestHeader.getQueueId();
         int idValid = Math.max(topicConfig.getWriteQueueNums(), topicConfig.getReadQueueNums());
         if (queueIdInt >= idValid) {
-            String errorInfo = String.format("request queueId[%d] is illagal, %s Producer: %s",//
+            String errorInfo = String.format("request queueId[%d] is illegal, %s Producer: %s",//
                 queueIdInt,//
                 topicConfig.toString(),//
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
