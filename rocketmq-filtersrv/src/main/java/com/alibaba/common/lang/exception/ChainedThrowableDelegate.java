@@ -94,7 +94,7 @@ public class ChainedThrowableDelegate implements ChainedThrowable {
 
         if (throwable instanceof ChainedThrowable) {
             isWellKnownType = true;
-            cause = ((ChainedThrowable) throwable).getCause();
+            cause = throwable.getCause();
         }
         else if (throwable instanceof SQLException) {
             isWellKnownType = true;
@@ -133,7 +133,7 @@ public class ChainedThrowableDelegate implements ChainedThrowable {
         Method method = null;
 
         try {
-            method = throwableClass.getMethod(methodName, new Class[0]);
+            method = throwableClass.getMethod(methodName);
         }
         catch (NoSuchMethodException ignored) {
         }
@@ -142,7 +142,7 @@ public class ChainedThrowableDelegate implements ChainedThrowable {
             Throwable cause = null;
 
             try {
-                cause = (Throwable) method.invoke(throwable, new Object[0]);
+                cause = (Throwable) method.invoke(throwable);
             }
             catch (IllegalAccessException ignored) {
             }

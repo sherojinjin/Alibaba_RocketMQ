@@ -96,7 +96,7 @@ public class UpdateOrderConfCommand implements SubCommand {
 
                 defaultMQAdminExt.createOrUpdateOrderConf(topic, orderConf, true);
                 System.out.printf("update orderConf success. topic=[%s], orderConf=[%s]", topic,
-                    orderConf.toString());
+                        orderConf);
                 return;
             }
             else if ("delete".equals(type)) {

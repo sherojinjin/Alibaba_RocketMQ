@@ -15,9 +15,6 @@
  */
 package com.alibaba.rocketmq.client.consumer;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.alibaba.rocketmq.client.ClientConfig;
 import com.alibaba.rocketmq.client.QueryResult;
 import com.alibaba.rocketmq.client.consumer.rebalance.AllocateMessageQueueAveragely;
@@ -31,6 +28,9 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.RPCHook;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -73,7 +73,7 @@ public class DefaultMQPullConsumer extends ClientConfig implements MQPullConsume
     /**
      * 需要监听哪些Topic的队列变化
      */
-    private Set<String> registerTopics = new HashSet<String>();
+    private final Set<String> registerTopics = new HashSet<String>();
     /**
      * 队列分配算法，应用可重写
      */
@@ -229,12 +229,6 @@ public class DefaultMQPullConsumer extends ClientConfig implements MQPullConsume
     public Set<String> getRegisterTopics() {
         return registerTopics;
     }
-
-
-    public void setRegisterTopics(Set<String> registerTopics) {
-        this.registerTopics = registerTopics;
-    }
-
 
     @Override
     public void sendMessageBack(MessageExt msg, int delayLevel) throws RemotingException, MQBrokerException,

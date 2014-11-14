@@ -1,32 +1,21 @@
 package com.alibaba.rocketmq.filtersrv.filter;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.common.lang.ArrayUtil;
 import com.alibaba.common.lang.StringUtil;
 import com.alibaba.rocketmq.common.UtilAll;
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.common.filter.FilterAPI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLDecoder;
+import java.util.*;
 
 
 /**
@@ -73,7 +62,7 @@ public class DynaCode {
     /**
      * 已经加载好的class
      */
-    private Map<String/* fullClassName */, Class<?>/* class */> loadClass;
+    private final Map<String/* fullClassName */, Class<?>/* class */> loadClass;
 
     /**
      * 编译参数,使用的classpath，如果不指定则使用当前给定的 classloder所具有的classpath进行编译

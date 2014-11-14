@@ -15,17 +15,16 @@
  */
 package com.alibaba.rocketmq.broker.longpolling;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.broker.BrokerController;
 import com.alibaba.rocketmq.common.ServiceThread;
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.remoting.exception.RemotingCommandException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -36,7 +35,7 @@ import com.alibaba.rocketmq.remoting.exception.RemotingCommandException;
  */
 public class PullRequestHoldService extends ServiceThread {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BrokerLoggerName);
-    private static final String TOPIC_QUEUEID_SEPARATOR = "@";
+    private static final String TOPIC_QUEUE_ID_SEPARATOR = "@";
 
     private ConcurrentHashMap<String/* topic@queueid */, ManyPullRequest> pullRequestTable =
             new ConcurrentHashMap<String, ManyPullRequest>(1024);
@@ -52,7 +51,7 @@ public class PullRequestHoldService extends ServiceThread {
     private String buildKey(final String topic, final int queueId) {
         StringBuilder sb = new StringBuilder();
         sb.append(topic);
-        sb.append(TOPIC_QUEUEID_SEPARATOR);
+        sb.append(TOPIC_QUEUE_ID_SEPARATOR);
         sb.append(queueId);
         return sb.toString();
     }
@@ -75,8 +74,8 @@ public class PullRequestHoldService extends ServiceThread {
 
     private void checkHoldRequest() {
         for (String key : this.pullRequestTable.keySet()) {
-            String[] kArray = key.split(TOPIC_QUEUEID_SEPARATOR);
-            if (kArray != null && 2 == kArray.length) {
+            String[] kArray = key.split(TOPIC_QUEUE_ID_SEPARATOR);
+            if (2 == kArray.length) {
                 String topic = kArray[0];
                 int queueId = Integer.parseInt(kArray[1]);
                 final long offset =

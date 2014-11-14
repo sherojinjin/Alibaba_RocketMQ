@@ -15,6 +15,9 @@
  */
 package com.alibaba.rocketmq.common;
 
+import com.alibaba.rocketmq.common.annotation.ImportantField;
+import org.slf4j.Logger;
+
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -24,10 +27,6 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-
-import com.alibaba.rocketmq.common.annotation.ImportantField;
 
 
 /**
@@ -42,10 +41,8 @@ public class MixAll {
     public static final String NAMESRV_ADDR_ENV = "NAMESRV_ADDR";
     public static final String NAMESRV_ADDR_PROPERTY = "rocketmq.namesrv.addr";
     public static final String MESSAGE_COMPRESS_LEVEL = "rocketmq.message.compressLevel";
-    public static final String WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain",
-        "jmenv.tbsite.net");
-    public static final String WS_DOMAIN_SUBGROUP = System.getProperty("rocketmq.namesrv.domain.subgroup",
-        "nsaddr");
+    public static final String WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain", "jmenv.tbsite.net");
+    public static final String WS_DOMAIN_SUBGROUP = System.getProperty("rocketmq.namesrv.domain.subgroup", "nsaddr");
     // http://jmenv.tbsite.net:8080/rocketmq/nsaddr
     public static final String WS_ADDR = "http://" + WS_DOMAIN_NAME + ":8080/rocketmq/" + WS_DOMAIN_SUBGROUP;
     public static final String DEFAULT_TOPIC = "TBW102";
@@ -142,11 +139,9 @@ public class MixAll {
         try {
             fileWriter = new FileWriter(file);
             fileWriter.write(str);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw e;
-        }
-        finally {
+        } finally {
             if (fileWriter != null) {
                 try {
                     fileWriter.close();
@@ -175,15 +170,12 @@ public class MixAll {
             byte[] data = new byte[len];
             in.read(data, 0, len);
             return new String(data, "UTF-8");
-        }
-        catch (Exception e) {
-        }
-        finally {
+        } catch (Exception e) {
+        } finally {
             if (null != in) {
                 try {
                     in.close();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                 }
             }
         }
@@ -284,7 +276,7 @@ public class MixAll {
         for (Object key : sets) {
             Object value = properties.get(key);
             if (value != null) {
-                sb.append(key.toString() + "=" + value.toString() + "\n");
+                sb.append(key.toString()).append("=").append(value.toString()).append("\n");
             }
         }
 
@@ -385,7 +377,7 @@ public class MixAll {
                             else {
                                 continue;
                             }
-                            method.invoke(object, new Object[] { arg });
+                            method.invoke(object, arg);
                         }
                     }
                 }

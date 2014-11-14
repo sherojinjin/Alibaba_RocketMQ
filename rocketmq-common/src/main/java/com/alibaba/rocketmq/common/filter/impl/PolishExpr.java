@@ -1,12 +1,10 @@
 package com.alibaba.rocketmq.common.filter.impl;
 
-import static com.alibaba.rocketmq.common.filter.impl.Operator.LEFTPARENTHESIS;
-import static com.alibaba.rocketmq.common.filter.impl.Operator.RIGHTPARENTHESIS;
-import static com.alibaba.rocketmq.common.filter.impl.Operator.createOperator;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+
+import static com.alibaba.rocketmq.common.filter.impl.Operator.*;
 
 
 /**
@@ -188,11 +186,11 @@ public class PolishExpr {
 
 
     public static boolean isLeftParenthesis(Op token) {
-        return token instanceof Operator && LEFTPARENTHESIS == (Operator) token;
+        return token instanceof Operator && LEFTPARENTHESIS == token;
     }
 
 
     public static boolean isRightParenthesis(Op token) {
-        return token instanceof Operator && RIGHTPARENTHESIS == (Operator) token;
+        return token instanceof Operator && RIGHTPARENTHESIS == token;
     }
 }

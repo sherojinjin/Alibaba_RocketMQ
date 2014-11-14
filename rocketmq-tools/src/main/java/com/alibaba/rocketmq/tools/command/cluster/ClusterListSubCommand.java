@@ -15,15 +15,6 @@
  */
 package com.alibaba.rocketmq.tools.command.cluster;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
 import com.alibaba.rocketmq.common.protocol.body.ClusterInfo;
 import com.alibaba.rocketmq.common.protocol.body.KVTable;
@@ -34,6 +25,14 @@ import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.alibaba.rocketmq.tools.command.SubCommand;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 
 /**
@@ -94,45 +93,41 @@ public class ClusterListSubCommand implements SubCommand {
                 BrokerData brokerData = clusterInfoSerializeWrapper.getBrokerAddrTable().get(brokerName);
                 if (brokerData != null) {
 
-                    Iterator<Map.Entry<Long, String>> itAddr =
-                            brokerData.getBrokerAddrs().entrySet().iterator();
-                    while (itAddr.hasNext()) {
-                        Map.Entry<Long, String> next1 = itAddr.next();
+                    for (Map.Entry<Long, String> entry : brokerData.getBrokerAddrs().entrySet()) {
                         double in = 0;
                         double out = 0;
                         String version = "";
 
                         try {
-                            KVTable kvTable = defaultMQAdminExt.fetchBrokerRuntimeStats(next1.getValue());
+                            KVTable kvTable = defaultMQAdminExt.fetchBrokerRuntimeStats(entry.getValue());
                             String putTps = kvTable.getTable().get("putTps");
-                            String getTransferedTps = kvTable.getTable().get("getTransferedTps");
+                            String getTransferredTps = kvTable.getTable().get("getTransferredTps");
                             version = kvTable.getTable().get("brokerVersionDesc");
                             {
                                 String[] tpss = putTps.split(" ");
-                                if (tpss != null && tpss.length > 0) {
+                                if (tpss.length > 0) {
                                     in = Double.parseDouble(tpss[0]);
                                 }
                             }
 
                             {
-                                String[] tpss = getTransferedTps.split(" ");
-                                if (tpss != null && tpss.length > 0) {
+                                String[] tpss = getTransferredTps.split(" ");
+                                if (tpss.length > 0) {
                                     out = Double.parseDouble(tpss[0]);
                                 }
                             }
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                         }
 
                         System.out.printf("%-16s  %-32s  %-4s  %-22s %-22s %11.2f %11.2f\n",//
-                            clusterName,//
-                            brokerName,//
-                            next1.getKey().longValue(),//
-                            next1.getValue(),//
-                            version,//
-                            in,//
-                            out//
-                            );
+                                clusterName,//
+                                brokerName,//
+                                entry.getKey().longValue(),//
+                                entry.getValue(),//
+                                version,//
+                                in,//
+                                out//
+                        );
                     }
                 }
             }
@@ -171,17 +166,14 @@ public class ClusterListSubCommand implements SubCommand {
                 BrokerData brokerData = clusterInfoSerializeWrapper.getBrokerAddrTable().get(brokerName);
                 if (brokerData != null) {
 
-                    Iterator<Map.Entry<Long, String>> itAddr =
-                            brokerData.getBrokerAddrs().entrySet().iterator();
-                    while (itAddr.hasNext()) {
-                        Map.Entry<Long, String> next1 = itAddr.next();
+                    for (Map.Entry<Long, String> entry : brokerData.getBrokerAddrs().entrySet()) {
                         long InTotalYest = 0;
                         long OutTotalYest = 0;
                         long InTotalToday = 0;
                         long OutTotalToday = 0;
 
                         try {
-                            KVTable kvTable = defaultMQAdminExt.fetchBrokerRuntimeStats(next1.getValue());
+                            KVTable kvTable = defaultMQAdminExt.fetchBrokerRuntimeStats(entry.getValue());
                             String msgPutTotalYesterdayMorning =
                                     kvTable.getTable().get("msgPutTotalYesterdayMorning");
                             String msgPutTotalTodayMorning =
@@ -207,18 +199,17 @@ public class ClusterListSubCommand implements SubCommand {
                                     Long.parseLong(msgGetTotalTodayNow)
                                             - Long.parseLong(msgGetTotalTodayMorning);
 
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                         }
 
                         System.out.printf("%-16s  %-32s %14d %14d %14d %14d\n",//
-                            clusterName,//
-                            brokerName,//
-                            InTotalYest,//
-                            OutTotalYest,//
-                            InTotalToday,//
-                            OutTotalToday//
-                            );
+                                clusterName,//
+                                brokerName,//
+                                InTotalYest,//
+                                OutTotalYest,//
+                                InTotalToday,//
+                                OutTotalToday//
+                        );
                     }
                 }
             }

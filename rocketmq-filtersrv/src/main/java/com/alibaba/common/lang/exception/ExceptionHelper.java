@@ -29,7 +29,7 @@ public class ExceptionHelper {
     static {
         // JDK1.4支持Throwable.getStackTrace()方法
         try {
-            GET_STACK_TRACE_METHOD = Throwable.class.getMethod(GET_STACK_TRACE_METHOD_NAME, new Class[0]);
+            GET_STACK_TRACE_METHOD = Throwable.class.getMethod(GET_STACK_TRACE_METHOD_NAME);
         }
         catch (NoSuchMethodException e) {
         }
@@ -125,8 +125,8 @@ public class ExceptionHelper {
 
             printThrowableMessage(throwable, writer, false);
 
-            for (int i = 0; i < currentStack.length; i++) {
-                writer.println(currentStack[i]);
+            for (String stackElement : currentStack) {
+                writer.println(stackElement);
             }
 
             printStackTraceRecursive(throwable, writer, currentStack);

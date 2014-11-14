@@ -529,7 +529,7 @@ public class DefaultMessageStore implements MessageStore {
                                 SelectMappedBufferResult selectResult =
                                         this.commitLog.getMessage(offsetPy, sizePy);
                                 if (selectResult != null) {
-                                    this.storeStatsService.getGetMessageTransferedMsgCount()
+                                    this.storeStatsService.getGetMessageTransferredMsgCount()
                                         .incrementAndGet();
                                     getResult.addMessage(selectResult);
                                     status = GetMessageStatus.FOUND;

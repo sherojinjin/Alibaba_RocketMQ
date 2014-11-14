@@ -15,18 +15,6 @@
  */
 package com.alibaba.rocketmq.broker.client.net;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.FileRegion;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.broker.BrokerController;
 import com.alibaba.rocketmq.broker.client.ClientChannelInfo;
 import com.alibaba.rocketmq.broker.client.ConsumerGroupInfo;
@@ -49,6 +37,16 @@ import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
 import com.alibaba.rocketmq.store.SelectMappedBufferResult;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.FileRegion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -196,7 +194,7 @@ public class Broker2Client {
                     try {
                         this.brokerController.getRemotingServer().invokeOneway(channel, request, 5000);
                         log.info("[reset-offset] reset offset success. topic={}, group={}, clientId={}",
-                            new Object[] { topic, group, channelInfoTable.get(channel).getClientId() });
+                                topic, group, channelInfoTable.get(channel).getClientId());
                     }
                     catch (Exception e) {
                         log.error("[reset-offset] reset offset exception. topic={}, group={}",
@@ -287,7 +285,7 @@ public class Broker2Client {
                             consumerStatusTable.put(clientId, body.getMessageQueueTable());
                             log.info(
                                 "[get-consumer-status] get consumer status success. topic={}, group={}, channelRemoteAddr={}",
-                                new Object[] { topic, group, clientId });
+                                    topic, group, clientId);
                         }
                     }
                     default:

@@ -1,11 +1,7 @@
 package com.alibaba.common.lang;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -1784,9 +1780,7 @@ public class ArrayUtil {
                 list = new ArrayList(objectArray.length);
             }
 
-            for (int i = 0; i < objectArray.length; i++) {
-                list.add(objectArray[i]);
-            }
+            Collections.addAll(list, objectArray);
         }
 
         return list;
@@ -1918,7 +1912,7 @@ public class ArrayUtil {
             return null;
         }
 
-        return (Object[]) array.clone();
+        return array.clone();
     }
 
 
@@ -1939,7 +1933,7 @@ public class ArrayUtil {
             return null;
         }
 
-        return (long[]) array.clone();
+        return array.clone();
     }
 
 
@@ -1960,7 +1954,7 @@ public class ArrayUtil {
             return null;
         }
 
-        return (int[]) array.clone();
+        return array.clone();
     }
 
 
@@ -1981,7 +1975,7 @@ public class ArrayUtil {
             return null;
         }
 
-        return (short[]) array.clone();
+        return array.clone();
     }
 
 
@@ -2002,7 +1996,7 @@ public class ArrayUtil {
             return null;
         }
 
-        return (byte[]) array.clone();
+        return array.clone();
     }
 
 
@@ -2023,7 +2017,7 @@ public class ArrayUtil {
             return null;
         }
 
-        return (double[]) array.clone();
+        return array.clone();
     }
 
 
@@ -2044,7 +2038,7 @@ public class ArrayUtil {
             return null;
         }
 
-        return (float[]) array.clone();
+        return array.clone();
     }
 
 
@@ -2065,7 +2059,7 @@ public class ArrayUtil {
             return null;
         }
 
-        return (boolean[]) array.clone();
+        return array.clone();
     }
 
 
@@ -2086,7 +2080,7 @@ public class ArrayUtil {
             return null;
         }
 
-        return (char[]) array.clone();
+        return array.clone();
     }
 
 

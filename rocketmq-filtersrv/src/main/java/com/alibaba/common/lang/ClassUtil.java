@@ -47,7 +47,7 @@ public class ClassUtil {
     public static final String INNER_CLASS_SEPARATOR = String.valueOf(INNER_CLASS_SEPARATOR_CHAR);
 
     /** 所有类的信息表，包括父类, 接口, 数组的维数等信息。 */
-    private static Map TYPE_MAP = Collections.synchronizedMap(new WeakHashMap());
+    private static final Map TYPE_MAP = Collections.synchronizedMap(new WeakHashMap());
 
 
     /*
