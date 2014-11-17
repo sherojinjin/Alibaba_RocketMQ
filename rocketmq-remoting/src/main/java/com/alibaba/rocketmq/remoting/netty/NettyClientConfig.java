@@ -39,6 +39,11 @@ public class NettyClientConfig {
 
     private boolean ssl = false;
 
+    public NettyClientConfig() {
+        if ("true".equals(System.getenv("ROCKETMQ_ENABLE_SSL")) || "true".equals(System.getProperty("enable_ssl"))) {
+            ssl = true;
+        }
+    }
 
     public int getClientWorkerThreads() {
         return clientWorkerThreads;

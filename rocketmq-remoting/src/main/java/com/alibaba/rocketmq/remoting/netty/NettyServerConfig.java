@@ -36,6 +36,11 @@ public class NettyServerConfig {
 
     private boolean ssl = false;
 
+    public NettyServerConfig() {
+        if ("true".equals(System.getenv("ROCKETMQ_ENABLE_SSL")) || "true".equals(System.getProperty("enable_ssl"))) {
+            ssl = true;
+        }
+    }
 
     public int getListenPort() {
         return listenPort;

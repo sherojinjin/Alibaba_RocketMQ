@@ -10,3 +10,4 @@ export PATH=/opt/taobao/mvn/bin:$JAVA_HOME/bin:$PATH
 mvn -Dmaven.test.skip=true clean package install assembly:assembly -U
 
 ln -s target/alibaba-rocketmq-3.2.2/alibaba-rocketmq devenv
+cp ${JAVA_HOME}/jre/lib/ext/sunjce_provider.jar devenv/lib/
