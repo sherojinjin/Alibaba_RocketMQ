@@ -32,8 +32,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -251,7 +249,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
         if (nettyClientConfig.isSsl()) {
 
             try {
-                sslContext = SslContext.newClientContext(InsecureTrustManagerFactory.INSTANCE);
+                sslContext = SslHelper.getClientSSLContext();
             } catch (SSLException e) {
                 e.printStackTrace();
             }

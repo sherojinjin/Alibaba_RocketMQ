@@ -50,3 +50,5 @@ target/
 
 .idea
 *.iml
+cert.pub
+private.key

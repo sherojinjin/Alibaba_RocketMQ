@@ -33,7 +33,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -132,8 +131,8 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         if (nettyServerConfig.isSsl()) {
             log.debug("Detected SSL enabled");
             try {
-                SelfSignedCertificate ssc = new SelfSignedCertificate();
-                sslContext = SslContext.newServerContext(ssc.certificate(), ssc.privateKey());
+
+                sslContext = SslContext.newServerContext(SslHelper.certificate(), SslHelper.privateKey());
             } catch (SSLException e) {
                 log.error(e.getMessage());
                 e.printStackTrace();
