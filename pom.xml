@@ -60,6 +60,13 @@
 			<email>allen.jie.zhu@gmail.com</email>
 			<timezone>8</timezone>
 		</developer>
+
+		<developer>
+			<name>Li Zhanhui</name>
+			<url>https://github.com/lizhanhui</url>
+			<email>lizhanhui@gmail.com</email>
+			<timezone>8</timezone>
+		</developer>
 	</developers>
 
 	<licenses>
@@ -220,6 +227,14 @@
 				<filtering>false</filtering>
 			</resource>
 		</resources>
+
+		<extensions>
+			<extension>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>1.2.3.Final</version>
+			</extension>
+		</extensions>
 	</build>
 
 	<profiles>
