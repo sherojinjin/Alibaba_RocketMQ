@@ -326,7 +326,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     public void pullMessage(final PullRequest pullRequest) {
         final ProcessQueue processQueue = pullRequest.getProcessQueue();
         if (processQueue.isDroped()) {
-            log.info("the pull request[{}] is droped.", pullRequest.toString());
+            log.info("the pull request[{}] is dropped.", pullRequest.toString());
             return;
         }
 
