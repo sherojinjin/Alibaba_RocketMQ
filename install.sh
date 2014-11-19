@@ -1,13 +1,6 @@
 #!/bin/sh
 git pull
 
-if [ ! -f conf/private.key ]; then
-  echo "Generating New SSL Key Pair";
-  openssl genrsa -out conf/private.key 2048
-  openssl rsa -in conf/private.key -pubout -out conf/cert.pub
-  echo "Done"
-fi
-
 rm -rf target
 rm -f devenv
 if [ -z "$JAVA_HOME" ]; then
