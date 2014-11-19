@@ -39,6 +39,7 @@
 		<module>rocketmq-example</module>
 		<module>rocketmq-filtersrv</module>
 		<module>rocketmq-srvutil</module>
+		<module>rocketmq-security</module>
 	</modules>
 
 	<developers>
@@ -93,7 +94,7 @@
 		<java_target_version>1.6</java_target_version>
 		<file_encoding>UTF-8</file_encoding>
 		<private.key>/home/lizhanhui/dev/Alibaba_RocketMQ/devenv/conf/private.key</private.key>
-		<certificate>/home/lizhanhui/dev/Alibaba_RocketMQ/devenv/conf/cert.pub</certificate>
+		<certificate>/home/lizhanhui/dev/Alibaba_RocketMQ/devenv/conf/pub.cer</certificate>
 	</properties>
 
 	<build>
