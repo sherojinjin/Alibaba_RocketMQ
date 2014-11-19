@@ -42,6 +42,21 @@ public class SslHelper {
         return new File(SSL.getProperty("ssl.key"));
     }
 
+    public static String privateKeyPassword() throws SSLException {
+        String password = null;
+        password = System.getenv("ROCKETMQ_KEY_PASSWORD");
+        if (null != password) {
+            return password;
+        } else {
+            password = System.getProperty("ssl_key.password");
+            if (null != password) {
+                return password;
+            }
+            throw new SSLException("Unable to find password for the private key. Please set -Dssl_key.password properly");
+        }
+
+    }
+
     public static SslContext getClientSSLContext() throws SSLException {
         return SslContext.newClientContext((TrustManagerFactory)null);
     }
