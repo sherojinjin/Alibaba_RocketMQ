@@ -39,8 +39,6 @@ public class Consumer {
          */
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
 
-        consumer.setNamesrvAddr("localhost:9876");
-
         consumer.subscribe("TopicTest", "*");
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
