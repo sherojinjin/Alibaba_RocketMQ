@@ -15,18 +15,6 @@
  */
 package com.alibaba.rocketmq.broker.topic;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.broker.BrokerController;
 import com.alibaba.rocketmq.broker.BrokerPathConfigHelper;
 import com.alibaba.rocketmq.common.ConfigManager;
@@ -38,6 +26,16 @@ import com.alibaba.rocketmq.common.constant.PermName;
 import com.alibaba.rocketmq.common.protocol.body.KVTable;
 import com.alibaba.rocketmq.common.protocol.body.TopicConfigSerializeWrapper;
 import com.alibaba.rocketmq.common.sysflag.TopicSysFlag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -447,10 +445,8 @@ public class TopicConfigManager extends ConfigManager {
 
 
     private void printLoadDataWhenFirstBoot(final TopicConfigSerializeWrapper tcs) {
-        Iterator<Entry<String, TopicConfig>> it = tcs.getTopicConfigTable().entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, TopicConfig> next = it.next();
-            log.info("load exist local topic, {}", next.getValue().toString());
+        for (Entry<String, TopicConfig> entry : tcs.getTopicConfigTable().entrySet()) {
+            log.info("load exist local topic, {}", entry.getValue().toString());
         }
     }
 

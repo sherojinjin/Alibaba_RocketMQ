@@ -15,17 +15,6 @@
  */
 package com.alibaba.rocketmq.broker.client;
 
-import io.netty.channel.Channel;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
@@ -33,6 +22,15 @@ import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
+import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -91,17 +89,15 @@ public class ConsumerManager {
 
 
     public void doChannelCloseEvent(final String remoteAddr, final Channel channel) {
-        Iterator<Entry<String, ConsumerGroupInfo>> it = this.consumerTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, ConsumerGroupInfo> next = it.next();
+        for (Entry<String, ConsumerGroupInfo> next : this.consumerTable.entrySet()) {
             ConsumerGroupInfo info = next.getValue();
             boolean removed = info.doChannelCloseEvent(remoteAddr, channel);
             if (removed) {
                 if (info.getChannelInfoTable().isEmpty()) {
                     ConsumerGroupInfo remove = this.consumerTable.remove(next.getKey());
                     if (remove != null) {
-                        log.info("ungister consumer ok, no any connection, and remove consumer group, {}",
-                            next.getKey());
+                        log.info("Unregister consumer ok, no any connection, and remove consumer group, {}",
+                                next.getKey());
                     }
                 }
 
@@ -144,7 +140,7 @@ public class ConsumerManager {
             if (consumerGroupInfo.getChannelInfoTable().isEmpty()) {
                 ConsumerGroupInfo remove = this.consumerTable.remove(group);
                 if (remove != null) {
-                    log.info("ungister consumer ok, no any connection, and remove consumer group, {}", group);
+                    log.info("Unregister consumer ok, no any connection, and remove consumer group, {}", group);
                 }
             }
             this.consumerIdsChangeListener.consumerIdsChanged(group, consumerGroupInfo.getAllChannel());
@@ -158,8 +154,7 @@ public class ConsumerManager {
             Entry<String, ConsumerGroupInfo> next = it.next();
             String group = next.getKey();
             ConsumerGroupInfo consumerGroupInfo = next.getValue();
-            ConcurrentHashMap<Channel, ClientChannelInfo> channelInfoTable =
-                    consumerGroupInfo.getChannelInfoTable();
+            ConcurrentHashMap<Channel, ClientChannelInfo> channelInfoTable = consumerGroupInfo.getChannelInfoTable();
 
             Iterator<Entry<Channel, ClientChannelInfo>> itChannel = channelInfoTable.entrySet().iterator();
             while (itChannel.hasNext()) {
@@ -187,9 +182,7 @@ public class ConsumerManager {
 
     public HashSet<String> queryTopicConsumeByWho(final String topic) {
         HashSet<String> groups = new HashSet<String>();
-        Iterator<Entry<String, ConsumerGroupInfo>> it = this.consumerTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, ConsumerGroupInfo> entry = it.next();
+        for (Entry<String, ConsumerGroupInfo> entry : this.consumerTable.entrySet()) {
             ConcurrentHashMap<String, SubscriptionData> subscriptionTable =
                     entry.getValue().getSubscriptionTable();
             if (subscriptionTable.containsKey(topic)) {

@@ -15,13 +15,6 @@
  */
 package com.alibaba.rocketmq.broker.subscription;
 
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.broker.BrokerController;
 import com.alibaba.rocketmq.broker.BrokerPathConfigHelper;
 import com.alibaba.rocketmq.common.ConfigManager;
@@ -30,6 +23,11 @@ import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.common.subscription.SubscriptionGroupConfig;
 import com.alibaba.rocketmq.remoting.protocol.RemotingSerializable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -132,10 +130,7 @@ public class SubscriptionGroupManager extends ConfigManager {
 
 
     private void printLoadDataWhenFirstBoot(final SubscriptionGroupManager sgm) {
-        Iterator<Entry<String, SubscriptionGroupConfig>> it =
-                sgm.getSubscriptionGroupTable().entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, SubscriptionGroupConfig> next = it.next();
+        for (Entry<String, SubscriptionGroupConfig> next : sgm.getSubscriptionGroupTable().entrySet()) {
             log.info("load exist subscription group, {}", next.getValue().toString());
         }
     }

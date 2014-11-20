@@ -15,18 +15,18 @@
  */
 package com.alibaba.rocketmq.example.benchmark;
 
+import com.alibaba.rocketmq.client.exception.MQBrokerException;
+import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
+import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.remoting.exception.RemotingException;
+
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.alibaba.rocketmq.client.exception.MQBrokerException;
-import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.remoting.exception.RemotingException;
 
 
 /**
@@ -36,10 +36,9 @@ public class Producer {
     public static void main(String[] args) throws MQClientException {
         final int threadCount = args.length >= 1 ? Integer.parseInt(args[0]) : 64;
         final int messageSize = args.length >= 2 ? Integer.parseInt(args[1]) : 128;
-        final boolean keyEnable = args.length >= 3 ? Boolean.parseBoolean(args[2]) : false;
+        final boolean keyEnable = args.length >= 3 && Boolean.parseBoolean(args[2]);
 
-        System.out
-            .printf("threadCount %d messageSize %d keyEnable %s\n", threadCount, messageSize, keyEnable);
+        System.out.printf("threadCount %d messageSize %d keyEnable %s\n", threadCount, messageSize, keyEnable);
 
         final Message msg = buildMessage(messageSize);
 

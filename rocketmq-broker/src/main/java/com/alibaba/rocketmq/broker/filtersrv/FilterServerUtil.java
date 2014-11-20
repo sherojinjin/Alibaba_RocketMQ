@@ -1,11 +1,11 @@
 package com.alibaba.rocketmq.broker.filtersrv;
 
+import org.slf4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import org.slf4j.Logger;
 
 
 public class FilterServerUtil {
@@ -39,8 +39,9 @@ public class FilterServerUtil {
             BufferedReader br2 = new BufferedReader(new InputStreamReader(is2));
             StringBuilder buf = new StringBuilder(); // 保存输出结果流
             String line = null;
-            while ((line = br2.readLine()) != null)
+            while ((line = br2.readLine()) != null) {
                 buf.append(line); // 循环等待ffmpeg进程结束
+            }
 
             log.info("callShell: <{}> OK", shellString);
         }

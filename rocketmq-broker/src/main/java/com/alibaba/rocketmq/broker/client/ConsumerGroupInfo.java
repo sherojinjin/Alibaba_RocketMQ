@@ -15,7 +15,14 @@
  */
 package com.alibaba.rocketmq.broker.client;
 
+import com.alibaba.rocketmq.common.constant.LoggerName;
+import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
+import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
+import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
+import com.alibaba.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,15 +30,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alibaba.rocketmq.common.constant.LoggerName;
-import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
-import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
-import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
-import com.alibaba.rocketmq.common.protocol.heartbeat.SubscriptionData;
 
 
 /**
@@ -63,9 +61,7 @@ public class ConsumerGroupInfo {
 
 
     public ClientChannelInfo findChannel(final String clientId) {
-        Iterator<Entry<Channel, ClientChannelInfo>> it = this.channelInfoTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<Channel, ClientChannelInfo> next = it.next();
+        for (Entry<Channel, ClientChannelInfo> next : this.channelInfoTable.entrySet()) {
             if (next.getValue().getClientId().equals(clientId)) {
                 return next.getValue();
             }
@@ -97,10 +93,7 @@ public class ConsumerGroupInfo {
     public List<String> getAllClientId() {
         List<String> result = new ArrayList<String>();
 
-        Iterator<Entry<Channel, ClientChannelInfo>> it = this.channelInfoTable.entrySet().iterator();
-
-        while (it.hasNext()) {
-            Entry<Channel, ClientChannelInfo> entry = it.next();
+        for (Entry<Channel, ClientChannelInfo> entry : this.channelInfoTable.entrySet()) {
             ClientChannelInfo clientChannelInfo = entry.getValue();
             result.add(clientChannelInfo.getClientId());
         }

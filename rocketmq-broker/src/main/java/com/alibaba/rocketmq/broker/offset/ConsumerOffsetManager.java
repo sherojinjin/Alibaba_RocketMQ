@@ -15,23 +15,18 @@
  */
 package com.alibaba.rocketmq.broker.offset;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.broker.BrokerController;
 import com.alibaba.rocketmq.broker.BrokerPathConfigHelper;
 import com.alibaba.rocketmq.common.ConfigManager;
 import com.alibaba.rocketmq.common.UtilAll;
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.remoting.protocol.RemotingSerializable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -68,7 +63,7 @@ public class ConsumerOffsetManager extends ConfigManager {
             Entry<String, ConcurrentHashMap<Integer, Long>> next = it.next();
             String topicAtGroup = next.getKey();
             String[] arrays = topicAtGroup.split(TOPIC_GROUP_SEPARATOR);
-            if (arrays != null && arrays.length == 2) {
+            if (arrays.length == 2) {
                 String topic = arrays[0];
                 String group = arrays[1];
                 // 当前订阅关系里面没有group-topic订阅关系（消费端当前是停机的状态）并且offset落后很多,则删除消费进度
@@ -103,12 +98,10 @@ public class ConsumerOffsetManager extends ConfigManager {
     public Set<String> whichTopicByConsumer(final String group) {
         Set<String> topics = new HashSet<String>();
 
-        Iterator<Entry<String, ConcurrentHashMap<Integer, Long>>> it = this.offsetTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, ConcurrentHashMap<Integer, Long>> next = it.next();
+        for (Entry<String, ConcurrentHashMap<Integer, Long>> next : this.offsetTable.entrySet()) {
             String topicAtGroup = next.getKey();
             String[] arrays = topicAtGroup.split(TOPIC_GROUP_SEPARATOR);
-            if (arrays != null && arrays.length == 2) {
+            if (arrays.length == 2) {
                 if (group.equals(arrays[1])) {
                     topics.add(arrays[0]);
                 }
@@ -122,12 +115,10 @@ public class ConsumerOffsetManager extends ConfigManager {
     public Set<String> whichGroupByTopic(final String topic) {
         Set<String> groups = new HashSet<String>();
 
-        Iterator<Entry<String, ConcurrentHashMap<Integer, Long>>> it = this.offsetTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, ConcurrentHashMap<Integer, Long>> next = it.next();
+        for (Entry<String, ConcurrentHashMap<Integer, Long>> next : this.offsetTable.entrySet()) {
             String topicAtGroup = next.getKey();
             String[] arrays = topicAtGroup.split(TOPIC_GROUP_SEPARATOR);
-            if (arrays != null && arrays.length == 2) {
+            if (arrays.length == 2) {
                 if (topic.equals(arrays[0])) {
                     groups.add(arrays[1]);
                 }
@@ -255,11 +246,11 @@ public class ConsumerOffsetManager extends ConfigManager {
     }
 
 
-    public void cloneOffset(final String srcGroup, final String destGroup, final String topic) {
+    public void cloneOffset(final String srcGroup, final String dstGroup, final String topic) {
         ConcurrentHashMap<Integer, Long> offsets =
                 this.offsetTable.get(topic + TOPIC_GROUP_SEPARATOR + srcGroup);
         if (offsets != null) {
-            this.offsetTable.put(topic + TOPIC_GROUP_SEPARATOR + destGroup, offsets);
+            this.offsetTable.put(topic + TOPIC_GROUP_SEPARATOR + dstGroup, offsets);
         }
     }
 }

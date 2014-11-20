@@ -297,12 +297,11 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                 RemotingCommand.createResponseCommand(RegisterFilterServerResponseHeader.class);
         final RegisterFilterServerResponseHeader responseHeader =
                 (RegisterFilterServerResponseHeader) response.readCustomHeader();
-        final RegisterFilterServerRequestHeader requestHeader =
-                (RegisterFilterServerRequestHeader) request
-                    .decodeCommandCustomHeader(RegisterFilterServerRequestHeader.class);
+        final RegisterFilterServerRequestHeader requestHeader = (RegisterFilterServerRequestHeader)request
+                .decodeCommandCustomHeader(RegisterFilterServerRequestHeader.class);
 
         this.brokerController.getFilterServerManager().registerFilterServer(ctx.channel(),
-            requestHeader.getFilterServerAddr());
+                requestHeader.getFilterServerAddr());
 
         responseHeader.setBrokerId(this.brokerController.getBrokerConfig().getBrokerId());
         responseHeader.setBrokerName(this.brokerController.getBrokerConfig().getBrokerName());
@@ -322,9 +321,8 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
 
         ConsumeStats consumeStats = new ConsumeStats();
 
-        Set<String> topics =
-                this.brokerController.getConsumerOffsetManager().whichTopicByConsumer(
-                    requestHeader.getConsumerGroup());
+        Set<String> topics = this.brokerController.getConsumerOffsetManager()
+                .whichTopicByConsumer(requestHeader.getConsumerGroup());
 
         for (String topic : topics) {
             TopicConfig topicConfig = this.brokerController.getTopicConfigManager().selectTopicConfig(topic);
@@ -414,9 +412,8 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                 this.brokerController.getProducerManager().getGroupChannelTable()
                     .get(requestHeader.getProducerGroup());
         if (channelInfoHashMap != null) {
-            Iterator<Map.Entry<Channel, ClientChannelInfo>> it = channelInfoHashMap.entrySet().iterator();
-            while (it.hasNext()) {
-                ClientChannelInfo info = it.next().getValue();
+            for (Map.Entry<Channel, ClientChannelInfo> channelClientChannelInfoEntry : channelInfoHashMap.entrySet()) {
+                ClientChannelInfo info = channelClientChannelInfoEntry.getValue();
                 Connection connection = new Connection();
                 connection.setClientId(info.getClientId());
                 connection.setLanguage(info.getLanguage());
@@ -456,10 +453,10 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
             bodydata.setMessageModel(consumerGroupInfo.getMessageModel());
             bodydata.getSubscriptionTable().putAll(consumerGroupInfo.getSubscriptionTable());
 
-            Iterator<Map.Entry<Channel, ClientChannelInfo>> it =
-                    consumerGroupInfo.getChannelInfoTable().entrySet().iterator();
-            while (it.hasNext()) {
-                ClientChannelInfo info = it.next().getValue();
+            for (Map.Entry<Channel, ClientChannelInfo> channelClientChannelInfoEntry :
+                    consumerGroupInfo.getChannelInfoTable().entrySet()) {
+
+                ClientChannelInfo info = channelClientChannelInfoEntry.getValue();
                 Connection connection = new Connection();
                 connection.setClientId(info.getClientId());
                 connection.setLanguage(info.getLanguage());
@@ -821,8 +818,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
         final GetMinOffsetResponseHeader responseHeader =
                 (GetMinOffsetResponseHeader) response.readCustomHeader();
         final GetMinOffsetRequestHeader requestHeader =
-                (GetMinOffsetRequestHeader) request
-                    .decodeCommandCustomHeader(GetMinOffsetRequestHeader.class);
+                (GetMinOffsetRequestHeader) request.decodeCommandCustomHeader(GetMinOffsetRequestHeader.class);
 
         long offset =
                 this.brokerController.getMessageStore().getMinOffsetInQuque(requestHeader.getTopic(),
@@ -847,7 +843,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
 
         long timestamp =
                 this.brokerController.getMessageStore().getEarliestMessageTime(requestHeader.getTopic(),
-                    requestHeader.getQueueId());
+                        requestHeader.getQueueId());
 
         responseHeader.setTimestamp(timestamp);
         response.setCode(ResponseCode.SUCCESS);

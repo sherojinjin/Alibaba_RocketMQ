@@ -202,9 +202,7 @@ public class BrokerOuterAPI {
         requestHeader.setBrokerId(brokerId);
         requestHeader.setBrokerName(brokerName);
         requestHeader.setClusterName(clusterName);
-        RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.UNREGISTER_BROKER, requestHeader);
-
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.UNREGISTER_BROKER, requestHeader);
         RemotingCommand response = this.remotingClient.invokeSync(namesrvAddr, request, 3000);
         assert response != null;
         switch (response.getCode()) {
@@ -242,8 +240,7 @@ public class BrokerOuterAPI {
 
     public TopicConfigSerializeWrapper getAllTopicConfig(final String addr) throws RemotingConnectException,
             RemotingSendRequestException, RemotingTimeoutException, InterruptedException, MQBrokerException {
-        RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.GET_ALL_TOPIC_CONFIG, null);
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_TOPIC_CONFIG, null);
 
         RemotingCommand response = this.remotingClient.invokeSync(addr, request, 3000);
         assert response != null;
@@ -268,8 +265,7 @@ public class BrokerOuterAPI {
     public ConsumerOffsetSerializeWrapper getAllConsumerOffset(final String addr)
             throws InterruptedException, RemotingTimeoutException, RemotingSendRequestException,
             RemotingConnectException, MQBrokerException {
-        RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.GET_ALL_CONSUMER_OFFSET, null);
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_CONSUMER_OFFSET, null);
         RemotingCommand response = this.remotingClient.invokeSync(addr, request, 3000);
         assert response != null;
         switch (response.getCode()) {
@@ -293,8 +289,7 @@ public class BrokerOuterAPI {
      */
     public String getAllDelayOffset(final String addr) throws InterruptedException, RemotingTimeoutException,
             RemotingSendRequestException, RemotingConnectException, MQBrokerException {
-        RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.GET_ALL_DELAY_OFFSET, null);
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_DELAY_OFFSET, null);
         RemotingCommand response = this.remotingClient.invokeSync(addr, request, 3000);
         assert response != null;
         switch (response.getCode()) {
@@ -318,8 +313,7 @@ public class BrokerOuterAPI {
     public SubscriptionGroupWrapper getAllSubscriptionGroupConfig(final String addr)
             throws InterruptedException, RemotingTimeoutException, RemotingSendRequestException,
             RemotingConnectException, MQBrokerException {
-        RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.GET_ALL_SUBSCRIPTIONGROUP_CONFIG, null);
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_SUBSCRIPTIONGROUP_CONFIG, null);
         RemotingCommand response = this.remotingClient.invokeSync(addr, request, 3000);
         assert response != null;
         switch (response.getCode()) {
