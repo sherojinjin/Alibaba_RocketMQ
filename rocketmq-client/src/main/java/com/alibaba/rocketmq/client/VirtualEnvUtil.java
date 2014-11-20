@@ -10,8 +10,8 @@ import com.alibaba.rocketmq.common.UtilAll;
  * @since 2013-8-26
  */
 public class VirtualEnvUtil {
-    public static final String VIRTUAL_APPGROUP_PREFIX = "%%PROJECT_%s%%";
 
+    public static final String VIRTUAL_APP_GROUP_PREFIX = "%%PROJECT_%s%%";
 
     /**
      * 添加虚拟运行环境相关的projectGroupPrefix
@@ -22,7 +22,7 @@ public class VirtualEnvUtil {
      */
     public static String buildWithProjectGroup(String origin, String projectGroup) {
         if (!UtilAll.isBlank(projectGroup)) {
-            String prefix = String.format(VIRTUAL_APPGROUP_PREFIX, projectGroup);
+            String prefix = String.format(VIRTUAL_APP_GROUP_PREFIX, projectGroup);
             if (!origin.endsWith(prefix)) {
                 return origin + prefix;
             }
@@ -44,7 +44,7 @@ public class VirtualEnvUtil {
      * @return
      */
     public static String clearProjectGroup(String origin, String projectGroup) {
-        String prefix = String.format(VIRTUAL_APPGROUP_PREFIX, projectGroup);
+        String prefix = String.format(VIRTUAL_APP_GROUP_PREFIX, projectGroup);
         if (!UtilAll.isBlank(prefix) && origin.endsWith(prefix)) {
             return origin.substring(0, origin.lastIndexOf(prefix));
         }

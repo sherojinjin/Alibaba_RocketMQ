@@ -312,7 +312,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                 TransactionCheckListener transactionCheckListener =
                         DefaultMQProducerImpl.this.checkListener();
                 if (transactionCheckListener != null) {
-                    LocalTransactionState localTransactionState = LocalTransactionState.UNKNOW;
+                    LocalTransactionState localTransactionState = LocalTransactionState.UNKNOWN;
                     Throwable exception = null;
                     try {
                         localTransactionState = transactionCheckListener.checkLocalTransactionState(message);
@@ -353,7 +353,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                     thisHeader.setCommitOrRollback(MessageSysFlag.TransactionRollbackType);
                     log.warn("when broker check, client rollback this transaction, {}", thisHeader);
                     break;
-                case UNKNOW:
+                case UNKNOWN:
                     thisHeader.setCommitOrRollback(MessageSysFlag.TransactionNotType);
                     log.warn("when broker check, client donot know this transaction state, {}", thisHeader);
                     break;
@@ -914,7 +914,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
 
 
     public TransactionSendResult sendMessageInTransaction(final Message msg,
-            final LocalTransactionExecuter tranExecuter, final Object arg) throws MQClientException {
+            final LocalTransactionExecutor tranExecuter, final Object arg) throws MQClientException {
         // 有效性检查
         if (null == tranExecuter) {
             throw new MQClientException("tranExecutor is null", null);
@@ -934,14 +934,14 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         }
 
         // 第二步，回调本地事务
-        LocalTransactionState localTransactionState = LocalTransactionState.UNKNOW;
+        LocalTransactionState localTransactionState = LocalTransactionState.UNKNOWN;
         Throwable localException = null;
         switch (sendResult.getSendStatus()) {
         case SEND_OK: {
             try {
                 localTransactionState = tranExecuter.executeLocalTransactionBranch(msg, arg);
                 if (null == localTransactionState) {
-                    localTransactionState = LocalTransactionState.UNKNOW;
+                    localTransactionState = LocalTransactionState.UNKNOWN;
                 }
 
                 if (localTransactionState != LocalTransactionState.COMMIT_MESSAGE) {
@@ -1000,7 +1000,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         case ROLLBACK_MESSAGE:
             requestHeader.setCommitOrRollback(MessageSysFlag.TransactionRollbackType);
             break;
-        case UNKNOW:
+        case UNKNOWN:
             requestHeader.setCommitOrRollback(MessageSysFlag.TransactionNotType);
             break;
         default:

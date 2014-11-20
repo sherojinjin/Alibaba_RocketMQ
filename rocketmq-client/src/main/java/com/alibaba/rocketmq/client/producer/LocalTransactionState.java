@@ -24,7 +24,9 @@ package com.alibaba.rocketmq.client.producer;
 public enum LocalTransactionState {
     // 提交事务
     COMMIT_MESSAGE,
+
     // 回滚事务
     ROLLBACK_MESSAGE,
-    UNKNOW,
+
+    UNKNOWN,
 }

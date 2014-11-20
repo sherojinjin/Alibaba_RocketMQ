@@ -15,17 +15,6 @@
  */
 package com.alibaba.rocketmq.client.consumer.store;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.impl.factory.MQClientInstance;
 import com.alibaba.rocketmq.client.log.ClientLogger;
@@ -33,6 +22,15 @@ import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.UtilAll;
 import com.alibaba.rocketmq.common.help.FAQUrl;
 import com.alibaba.rocketmq.common.message.MessageQueue;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -50,8 +48,7 @@ public class LocalFileOffsetStore implements OffsetStore {
     private final String groupName;
     // 本地Offset存储路径
     private final String storePath;
-    private ConcurrentHashMap<MessageQueue, AtomicLong> offsetTable =
-            new ConcurrentHashMap<MessageQueue, AtomicLong>();
+    private ConcurrentHashMap<MessageQueue, AtomicLong> offsetTable = new ConcurrentHashMap<MessageQueue, AtomicLong>();
 
 
     public LocalFileOffsetStore(MQClientInstance mQClientFactory, String groupName) {
@@ -222,9 +219,7 @@ public class LocalFileOffsetStore implements OffsetStore {
     @Override
     public Map<MessageQueue, Long> cloneOffsetTable(String topic) {
         Map<MessageQueue, Long> cloneOffsetTable = new HashMap<MessageQueue, Long>();
-        Iterator<MessageQueue> iterator = this.offsetTable.keySet().iterator();
-        while (iterator.hasNext()) {
-            MessageQueue mq = iterator.next();
+        for (MessageQueue mq : this.offsetTable.keySet()) {
             if (!UtilAll.isBlank(topic) && !topic.equals(mq.getTopic())) {
                 continue;
             }

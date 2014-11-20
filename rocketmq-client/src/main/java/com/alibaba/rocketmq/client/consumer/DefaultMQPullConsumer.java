@@ -40,6 +40,7 @@ import java.util.Set;
  * @since 2013-7-24
  */
 public class DefaultMQPullConsumer extends ClientConfig implements MQPullConsumer {
+
     protected final transient DefaultMQPullConsumerImpl defaultMQPullConsumerImpl;
 
     /**

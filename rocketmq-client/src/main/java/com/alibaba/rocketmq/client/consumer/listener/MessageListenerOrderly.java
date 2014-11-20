@@ -15,9 +15,9 @@
  */
 package com.alibaba.rocketmq.client.consumer.listener;
 
-import java.util.List;
-
 import com.alibaba.rocketmq.common.message.MessageExt;
+
+import java.util.List;
 
 
 /**
@@ -37,6 +37,5 @@ public interface MessageListenerOrderly extends MessageListener {
      * @param context
      * @return
      */
-    public ConsumeOrderlyStatus consumeMessage(final List<MessageExt> msgs,
-            final ConsumeOrderlyContext context);
+    public ConsumeOrderlyStatus consumeMessage(final List<MessageExt> msgs, final ConsumeOrderlyContext context);
 }

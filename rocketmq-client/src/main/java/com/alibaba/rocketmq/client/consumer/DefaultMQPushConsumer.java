@@ -15,10 +15,6 @@
  */
 package com.alibaba.rocketmq.client.consumer;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.alibaba.rocketmq.client.ClientConfig;
 import com.alibaba.rocketmq.client.QueryResult;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListener;
@@ -36,6 +32,10 @@ import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.RPCHook;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 
 /**
  * 类似于Broker Push消息到Consumer方式，但实际仍然是Consumer内部后台从Broker Pull消息<br>
@@ -45,27 +45,31 @@ import com.alibaba.rocketmq.remoting.exception.RemotingException;
  * @since 2013-7-24
  */
 public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsumer {
+
     protected final transient DefaultMQPushConsumerImpl defaultMQPushConsumerImpl;
+
     /**
      * 做同样事情的Consumer归为同一个Group，应用必须设置，并保证命名唯一
      */
     private String consumerGroup;
+
     /**
      * 集群消费/广播消费
      */
     private MessageModel messageModel = MessageModel.CLUSTERING;
+
     /**
      * Consumer第一次启动时，从哪里开始消费
      */
     private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
+
     /**
      * Consumer第一次启动时，如果回溯消费，默认回溯到哪个时间点，数据格式如下，时间精度秒：<br>
      * 20131223171201<br>
      * 表示2013年12月23日17点12分01秒<br>
      * 默认回溯到相对启动时间的半小时前
      */
-    private String consumeTimestamp = UtilAll.timeMillisToHumanString3(System.currentTimeMillis()
-            - (1000 * 60 * 30));
+    private String consumeTimestamp = UtilAll.timeMillisToHumanString3(System.currentTimeMillis() - (1000 * 60 * 30));
     /**
      * 队列分配算法，应用可重写
      */

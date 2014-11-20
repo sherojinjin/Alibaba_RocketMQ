@@ -32,7 +32,7 @@ public class ClientConfig {
     private String clientIP = RemotingUtil.getLocalAddress();
     private String instanceName = System.getProperty("rocketmq.client.name", "DEFAULT");
     private int clientCallbackExecutorThreads = Runtime.getRuntime().availableProcessors();
-    private int pollNameServerInteval = 1000 * 30;
+    private int pollNameServerInterval = 1000 * 30;
     private int heartbeatBrokerInterval = 1000 * 30;
     private int persistConsumerOffsetInterval = 1000 * 5;
 
@@ -60,7 +60,7 @@ public class ClientConfig {
         this.clientIP = cc.clientIP;
         this.instanceName = cc.instanceName;
         this.clientCallbackExecutorThreads = cc.clientCallbackExecutorThreads;
-        this.pollNameServerInteval = cc.pollNameServerInteval;
+        this.pollNameServerInterval = cc.pollNameServerInterval;
         this.heartbeatBrokerInterval = cc.heartbeatBrokerInterval;
         this.persistConsumerOffsetInterval = cc.persistConsumerOffsetInterval;
     }
@@ -72,7 +72,7 @@ public class ClientConfig {
         cc.clientIP = clientIP;
         cc.instanceName = instanceName;
         cc.clientCallbackExecutorThreads = clientCallbackExecutorThreads;
-        cc.pollNameServerInteval = pollNameServerInteval;
+        cc.pollNameServerInterval = pollNameServerInterval;
         cc.heartbeatBrokerInterval = heartbeatBrokerInterval;
         cc.persistConsumerOffsetInterval = persistConsumerOffsetInterval;
         return cc;
@@ -119,13 +119,13 @@ public class ClientConfig {
     }
 
 
-    public int getPollNameServerInteval() {
-        return pollNameServerInteval;
+    public int getPollNameServerInterval() {
+        return pollNameServerInterval;
     }
 
 
-    public void setPollNameServerInteval(int pollNameServerInteval) {
-        this.pollNameServerInteval = pollNameServerInteval;
+    public void setPollNameServerInterval(int pollNameServerInterval) {
+        this.pollNameServerInterval = pollNameServerInterval;
     }
 
 
@@ -153,7 +153,7 @@ public class ClientConfig {
     public String toString() {
         return "ClientConfig [namesrvAddr=" + namesrvAddr + ", clientIP=" + clientIP + ", instanceName="
                 + instanceName + ", clientCallbackExecutorThreads=" + clientCallbackExecutorThreads
-                + ", pollNameServerInteval=" + pollNameServerInteval + ", heartbeatBrokerInterval="
+                + ", pollNameServerInterval=" + pollNameServerInterval + ", heartbeatBrokerInterval="
                 + heartbeatBrokerInterval + ", persistConsumerOffsetInterval="
                 + persistConsumerOffsetInterval + "]";
     }

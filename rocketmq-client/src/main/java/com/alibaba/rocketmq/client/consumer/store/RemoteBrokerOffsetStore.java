@@ -15,16 +15,6 @@
  */
 package com.alibaba.rocketmq.client.consumer.store;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.impl.FindBrokerResult;
@@ -36,6 +26,11 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.common.protocol.header.QueryConsumerOffsetRequestHeader;
 import com.alibaba.rocketmq.common.protocol.header.UpdateConsumerOffsetRequestHeader;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
+import org.slf4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -49,8 +44,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
     private final MQClientInstance mQClientFactory;
     private final String groupName;
     private final AtomicLong storeTimesTotal = new AtomicLong(0);
-    private ConcurrentHashMap<MessageQueue, AtomicLong> offsetTable =
-            new ConcurrentHashMap<MessageQueue, AtomicLong>();
+    private ConcurrentHashMap<MessageQueue, AtomicLong> offsetTable = new ConcurrentHashMap<MessageQueue, AtomicLong>();
 
 
     public RemoteBrokerOffsetStore(MQClientInstance mQClientFactory, String groupName) {
@@ -132,7 +126,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
         final HashSet<MessageQueue> unusedMQ = new HashSet<MessageQueue>();
         long times = this.storeTimesTotal.getAndIncrement();
 
-        if (mqs != null && !mqs.isEmpty()) {
+        if (!mqs.isEmpty()) {
             for (MessageQueue mq : this.offsetTable.keySet()) {
                 AtomicLong offset = this.offsetTable.get(mq);
                 if (offset != null) {
@@ -249,9 +243,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
     @Override
     public Map<MessageQueue, Long> cloneOffsetTable(String topic) {
         Map<MessageQueue, Long> cloneOffsetTable = new HashMap<MessageQueue, Long>();
-        Iterator<MessageQueue> iterator = this.offsetTable.keySet().iterator();
-        while (iterator.hasNext()) {
-            MessageQueue mq = iterator.next();
+        for (MessageQueue mq : this.offsetTable.keySet()) {
             if (!UtilAll.isBlank(topic) && !topic.equals(mq.getTopic())) {
                 continue;
             }

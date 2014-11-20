@@ -15,14 +15,13 @@
  */
 package com.alibaba.rocketmq.client.log;
 
-import java.lang.reflect.Method;
-import java.net.URL;
-
+import com.alibaba.rocketmq.common.constant.LoggerName;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.rocketmq.common.constant.LoggerName;
+import java.lang.reflect.Method;
+import java.net.URL;
 
 
 /**
@@ -32,6 +31,7 @@ import com.alibaba.rocketmq.common.constant.LoggerName;
  * @since 2013-7-24
  */
 public class ClientLogger {
+
     private static Logger log;
 
     static {
@@ -41,8 +41,7 @@ public class ClientLogger {
 
 
     private static Logger createLogger(final String loggerName) {
-        String logConfigFilePath =
-                System.getProperty("rocketmq.client.log.configFile",
+        String logConfigFilePath = System.getProperty("rocketmq.client.log.configFile",
                     System.getenv("ROCKETMQ_CLIENT_LOG_CONFIGFILE"));
         Boolean isloadconfig =
                 Boolean.parseBoolean(System.getProperty("rocketmq.client.log.loadconfig", "true"));
@@ -51,8 +50,7 @@ public class ClientLogger {
                 System.getProperty("rocketmq.client.log4j.resource.fileName", "log4j_rocketmq_client.xml");
 
         final String logback_resource_file =
-                System
-                    .getProperty("rocketmq.client.logback.resource.fileName", "logback_rocketmq_client.xml");
+                System.getProperty("rocketmq.client.logback.resource.fileName", "logback_rocketmq_client.xml");
 
         if (isloadconfig) {
             try {
@@ -91,8 +89,7 @@ public class ClientLogger {
                         doConfigure.invoke(joranConfiguratoroObj, url);
                     }
                     else {
-                        Method doConfigure =
-                                joranConfiguratoroObj.getClass().getMethod("doConfigure", String.class);
+                        Method doConfigure = joranConfiguratoroObj.getClass().getMethod("doConfigure", String.class);
                         doConfigure.invoke(joranConfiguratoroObj, logConfigFilePath);
                     }
 

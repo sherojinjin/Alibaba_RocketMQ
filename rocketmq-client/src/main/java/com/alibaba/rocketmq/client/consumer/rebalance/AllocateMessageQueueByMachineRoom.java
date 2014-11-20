@@ -15,12 +15,12 @@
  */
 package com.alibaba.rocketmq.client.consumer.rebalance;
 
+import com.alibaba.rocketmq.client.consumer.AllocateMessageQueueStrategy;
+import com.alibaba.rocketmq.common.message.MessageQueue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import com.alibaba.rocketmq.client.consumer.AllocateMessageQueueStrategy;
-import com.alibaba.rocketmq.common.message.MessageQueue;
 
 
 /**
@@ -30,7 +30,8 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
  * @since 2013-7-24
  */
 public class AllocateMessageQueueByMachineRoom implements AllocateMessageQueueStrategy {
-    private Set<String> consumeridcs;
+
+    private Set<String> consumerIDCs;
 
 
     @Override
@@ -50,16 +51,16 @@ public class AllocateMessageQueueByMachineRoom implements AllocateMessageQueueSt
         List<MessageQueue> premqAll = new ArrayList<MessageQueue>();
         for (MessageQueue mq : mqAll) {
             String[] temp = mq.getBrokerName().split("@");
-            if (temp.length == 2 && consumeridcs.contains(temp[0])) {
+            if (temp.length == 2 && consumerIDCs.contains(temp[0])) {
                 premqAll.add(mq);
             }
         }
         // Todo cid
         int mod = premqAll.size() / cidAll.size();
         int rem = premqAll.size() % cidAll.size();
-        int startindex = mod * currentIndex;
-        int endindex = startindex + mod;
-        for (int i = startindex; i < endindex; i++) {
+        int startIndex = mod * currentIndex;
+        int endIndex = startIndex + mod;
+        for (int i = startIndex; i < endIndex; i++) {
             result.add(mqAll.get(i));
         }
         if (rem > currentIndex) {
@@ -69,12 +70,12 @@ public class AllocateMessageQueueByMachineRoom implements AllocateMessageQueueSt
     }
 
 
-    public Set<String> getConsumeridcs() {
-        return consumeridcs;
+    public Set<String> getConsumerIDCs() {
+        return consumerIDCs;
     }
 
 
-    public void setConsumeridcs(Set<String> consumeridcs) {
-        this.consumeridcs = consumeridcs;
+    public void setConsumerIDCs(Set<String> consumerIDCs) {
+        this.consumerIDCs = consumerIDCs;
     }
 }
