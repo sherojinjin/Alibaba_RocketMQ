@@ -1,21 +1,19 @@
 package com.alibaba.rocketmq.filtersrv.filter;
 
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.UtilAll;
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.common.filter.MessageFilter;
 import com.alibaba.rocketmq.filtersrv.FiltersrvController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 public class FilterClassManager {
@@ -63,15 +61,14 @@ public class FilterClassManager {
 
 
     private void fetchClassFromRemoteHost() {
-        Iterator<Entry<String, FilterClassInfo>> it = this.filterClassTable.entrySet().iterator();
-        while (it.hasNext()) {
+        for (Entry<String, FilterClassInfo> stringFilterClassInfoEntry : this.filterClassTable.entrySet()) {
             try {
-                Entry<String, FilterClassInfo> next = it.next();
+                Entry<String, FilterClassInfo> next = stringFilterClassInfoEntry;
                 FilterClassInfo filterClassInfo = next.getValue();
                 String[] topicAndGroup = next.getKey().split("@");
                 String responseStr =
                         this.filterClassFetchMethod.fetch(topicAndGroup[0], topicAndGroup[1],
-                            filterClassInfo.getClassName());
+                                filterClassInfo.getClassName());
                 byte[] filterSourceBinary = responseStr.getBytes("UTF-8");
                 int classCRC = UtilAll.crc32(responseStr.getBytes("UTF-8"));
                 if (classCRC != filterClassInfo.getClassCRC()) {
@@ -83,10 +80,9 @@ public class FilterClassManager {
                     filterClassInfo.setClassCRC(classCRC);
 
                     log.info("fetch Remote class File OK, {} {}", next.getKey(),
-                        filterClassInfo.getClassName());
+                            filterClassInfo.getClassName());
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("fetchClassFromRemoteHost Exception", e);
             }
         }
