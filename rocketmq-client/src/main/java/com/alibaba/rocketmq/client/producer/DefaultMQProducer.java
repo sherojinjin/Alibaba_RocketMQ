@@ -15,8 +15,6 @@
  */
 package com.alibaba.rocketmq.client.producer;
 
-import java.util.List;
-
 import com.alibaba.rocketmq.client.ClientConfig;
 import com.alibaba.rocketmq.client.QueryResult;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
@@ -28,6 +26,8 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.remoting.RPCHook;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
+
+import java.util.List;
 
 
 /**
@@ -57,7 +57,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     /**
      * Message Body大小超过阀值，则压缩
      */
-    private int compressMsgBodyOverHowmuch = 1024 * 4;
+    private int compressMsgBodyThreshold = 1024 * 4;
     /**
      * 发送失败后，重试几次
      */
@@ -267,13 +267,13 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     }
 
 
-    public int getCompressMsgBodyOverHowmuch() {
-        return compressMsgBodyOverHowmuch;
+    public int getCompressMsgBodyThreshold() {
+        return compressMsgBodyThreshold;
     }
 
 
-    public void setCompressMsgBodyOverHowmuch(int compressMsgBodyOverHowmuch) {
-        this.compressMsgBodyOverHowmuch = compressMsgBodyOverHowmuch;
+    public void setCompressMsgBodyThreshold(int compressMsgBodyThreshold) {
+        this.compressMsgBodyThreshold = compressMsgBodyThreshold;
     }
 
 

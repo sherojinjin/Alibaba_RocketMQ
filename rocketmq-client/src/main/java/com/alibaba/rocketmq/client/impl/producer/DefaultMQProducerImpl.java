@@ -15,13 +15,6 @@
  */
 package com.alibaba.rocketmq.client.impl.producer;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.*;
-
-import org.slf4j.Logger;
-
 import com.alibaba.rocketmq.client.QueryResult;
 import com.alibaba.rocketmq.client.Validators;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
@@ -49,6 +42,12 @@ import com.alibaba.rocketmq.remoting.RPCHook;
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
+import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -754,7 +753,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
     private boolean tryToCompressMessage(final Message msg) {
         byte[] body = msg.getBody();
         if (body != null) {
-            if (body.length >= this.defaultMQProducer.getCompressMsgBodyOverHowmuch()) {
+            if (body.length >= this.defaultMQProducer.getCompressMsgBodyThreshold()) {
                 try {
                     byte[] data = UtilAll.compress(body, zipCompressLevel);
                     if (data != null) {
