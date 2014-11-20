@@ -1,15 +1,15 @@
 package com.alibaba.rocketmq.common.protocol.body;
 
+import com.alibaba.rocketmq.common.message.MessageQueue;
+import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
+import com.alibaba.rocketmq.common.protocol.heartbeat.SubscriptionData;
+import com.alibaba.rocketmq.remoting.protocol.RemotingSerializable;
+
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import com.alibaba.rocketmq.common.message.MessageQueue;
-import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
-import com.alibaba.rocketmq.common.protocol.heartbeat.SubscriptionData;
-import com.alibaba.rocketmq.remoting.protocol.RemotingSerializable;
 
 
 /**
@@ -81,11 +81,8 @@ public class ConsumerRunningInfo extends RemotingSerializable {
         // 1
         {
             sb.append("#Consumer Properties#\n");
-            Iterator<Entry<Object, Object>> it = this.properties.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<Object, Object> next = it.next();
-                String item =
-                        String.format("%-40s: %s\n", next.getKey().toString(), next.getValue().toString());
+            for (Entry<Object, Object> next : this.properties.entrySet()) {
+                String item = String.format("%-40s: %s\n", next.getKey().toString(), next.getValue().toString());
                 sb.append(item);
             }
         }
@@ -118,14 +115,12 @@ public class ConsumerRunningInfo extends RemotingSerializable {
                 "#Consumer Offset"//
             ));
 
-            Iterator<Entry<MessageQueue, ProcessQueueInfo>> it = this.mqTable.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<MessageQueue, ProcessQueueInfo> next = it.next();
+            for (Entry<MessageQueue, ProcessQueueInfo> next : this.mqTable.entrySet()) {
                 String item = String.format("%-32s  %-32s  %-4d  %-20d\n",//
-                    next.getKey().getTopic(),//
-                    next.getKey().getBrokerName(),//
-                    next.getKey().getQueueId(),//
-                    next.getValue().getCommitOffset());
+                        next.getKey().getTopic(),//
+                        next.getKey().getBrokerName(),//
+                        next.getKey().getQueueId(),//
+                        next.getValue().getCommitOffset());
 
                 sb.append(item);
             }
@@ -141,14 +136,12 @@ public class ConsumerRunningInfo extends RemotingSerializable {
                 "#ProcessQueueInfo"//
             ));
 
-            Iterator<Entry<MessageQueue, ProcessQueueInfo>> it = this.mqTable.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<MessageQueue, ProcessQueueInfo> next = it.next();
+            for (Entry<MessageQueue, ProcessQueueInfo> next : this.mqTable.entrySet()) {
                 String item = String.format("%-32s  %-32s  %-4d  %s\n",//
-                    next.getKey().getTopic(),//
-                    next.getKey().getBrokerName(),//
-                    next.getKey().getQueueId(),//
-                    next.getValue().toString());
+                        next.getKey().getTopic(),//
+                        next.getKey().getBrokerName(),//
+                        next.getKey().getQueueId(),//
+                        next.getValue().toString());
 
                 sb.append(item);
             }
@@ -167,18 +160,16 @@ public class ConsumerRunningInfo extends RemotingSerializable {
                 "#ConsumeFailedMsgsInHour"//
             ));
 
-            Iterator<Entry<String, ConsumeStatus>> it = this.statusTable.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<String, ConsumeStatus> next = it.next();
+            for (Entry<String, ConsumeStatus> next : this.statusTable.entrySet()) {
                 String item = String.format("%-32s  %14.2f %14.2f %14.2f %14.2f %18.2f %25d\n",//
-                    next.getKey(),//
-                    next.getValue().getPullRT(),//
-                    next.getValue().getPullTPS(),//
-                    next.getValue().getConsumeRT(),//
-                    next.getValue().getConsumeOKTPS(),//
-                    next.getValue().getConsumeFailedTPS(),//
-                    next.getValue().getConsumeFailedMsgs()//
-                    );
+                        next.getKey(),//
+                        next.getValue().getPullRT(),//
+                        next.getValue().getPullTPS(),//
+                        next.getValue().getConsumeRT(),//
+                        next.getValue().getConsumeOKTPS(),//
+                        next.getValue().getConsumeFailedTPS(),//
+                        next.getValue().getConsumeFailedMsgs()//
+                );
 
                 sb.append(item);
             }
@@ -218,9 +209,7 @@ public class ConsumerRunningInfo extends RemotingSerializable {
         if (push && startForAWhile) {
             // 分析订阅关系是否相同
             {
-                Iterator<Entry<String, ConsumerRunningInfo>> it = criTable.entrySet().iterator();
-                while (it.hasNext()) {
-                    Entry<String, ConsumerRunningInfo> next = it.next();
+                for (Entry<String, ConsumerRunningInfo> next : criTable.entrySet()) {
                     ConsumerRunningInfo current = next.getValue();
                     boolean equals = current.getSubscriptionSet().equals(prev.getSubscriptionSet());
                     // 发现订阅关系有误
@@ -266,9 +255,7 @@ public class ConsumerRunningInfo extends RemotingSerializable {
         }
 
         if (push) {
-            Iterator<Entry<MessageQueue, ProcessQueueInfo>> it = info.getMqTable().entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<MessageQueue, ProcessQueueInfo> next = it.next();
+            for (Entry<MessageQueue, ProcessQueueInfo> next : info.getMqTable().entrySet()) {
                 MessageQueue mq = next.getKey();
                 ProcessQueueInfo pq = next.getValue();
 
@@ -277,18 +264,18 @@ public class ConsumerRunningInfo extends RemotingSerializable {
                     // 没锁住
                     if (!pq.isLocked()) {
                         sb.append(String.format("%s %s can't lock for a while, %dms\n", //
-                            clientId,//
-                            mq,//
-                            System.currentTimeMillis() - pq.getLastLockTimestamp()));
+                                clientId,//
+                                mq,//
+                                System.currentTimeMillis() - pq.getLastLockTimestamp()));
                     }
                     // 锁住
                     else {
                         // Rebalance已经丢弃此队列，但是没有正常释放Lock
                         if (pq.isDroped() && (pq.getTryUnlockTimes() > 0)) {
                             sb.append(String.format("%s %s unlock %d times, still failed\n",//
-                                clientId,//
-                                mq,//
-                                pq.getTryUnlockTimes()));
+                                    clientId,//
+                                    mq,//
+                                    pq.getTryUnlockTimes()));
                         }
                     }
 
@@ -300,9 +287,9 @@ public class ConsumerRunningInfo extends RemotingSerializable {
                     // 在有消息的情况下，超过1分钟没再消费消息了
                     if (diff > (1000 * 60) && pq.getCachedMsgCount() > 0) {
                         sb.append(String.format("%s %s can't consume for a while, maybe blocked, %dms\n",//
-                            clientId,//
-                            mq, //
-                            diff));
+                                clientId,//
+                                mq, //
+                                diff));
                     }
                 }
             }
