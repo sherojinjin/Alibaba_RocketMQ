@@ -15,18 +15,6 @@
  */
 package com.alibaba.rocketmq.client.impl.consumer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeOrderlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeOrderlyStatus;
@@ -41,6 +29,12 @@ import com.alibaba.rocketmq.common.protocol.body.CMResult;
 import com.alibaba.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.*;
 
 
 /**
@@ -170,7 +164,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
 
         @Override
         public void run() {
-            if (this.processQueue.isDroped()) {
+            if (this.processQueue.isDropped()) {
                 log.warn("run, the message queue not be able to consume, because it's dropped. {}",
                     this.messageQueue);
                 return;
@@ -185,7 +179,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
                         || (this.processQueue.isLocked() && !this.processQueue.isLockExpired())) {
                     final long beginTime = System.currentTimeMillis();
                     for (boolean continueConsume = true; continueConsume;) {
-                        if (this.processQueue.isDroped()) {
+                        if (this.processQueue.isDropped()) {
                             log.warn("the message queue not be able to consume, because it's dropped. {}",
                                 this.messageQueue);
                             break;
@@ -250,7 +244,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
 
                             try {
                                 this.processQueue.getLockConsume().lock();
-                                if (this.processQueue.isDroped()) {
+                                if (this.processQueue.isDropped()) {
                                     log.warn(
                                         "consumeMessage, the message queue not be able to consume, because it's dropped. {}",
                                         this.messageQueue);
@@ -314,7 +308,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
                 }
                 // 没有拿到当前队列的锁，稍后再消费
                 else {
-                    if (this.processQueue.isDroped()) {
+                    if (this.processQueue.isDropped()) {
                         log.warn("the message queue not be able to consume, because it's dropped. {}",
                             this.messageQueue);
                         return;
@@ -453,8 +447,8 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
             final List<MessageExt> msgs, //
             final ProcessQueue processQueue, //
             final MessageQueue messageQueue, //
-            final boolean dispathToConsume) {
-        if (dispathToConsume) {
+            final boolean dispatchToConsume) {
+        if (dispatchToConsume) {
             ConsumeRequest consumeRequest = new ConsumeRequest(processQueue, messageQueue);
             this.consumeExecutor.submit(consumeRequest);
         }

@@ -1125,7 +1125,7 @@ public class MQClientInstance {
                 MessageQueue mq = itr.next();
                 if (topic.equals(mq.getTopic())) {
                     ProcessQueue pq = processQueueTable.get(mq);
-                    pq.setDroped(true);
+                    pq.setDropped(true);
                     pq.clear();
                 }
             }

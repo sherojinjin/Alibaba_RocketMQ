@@ -325,7 +325,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
 
     public void pullMessage(final PullRequest pullRequest) {
         final ProcessQueue processQueue = pullRequest.getProcessQueue();
-        if (processQueue.isDroped()) {
+        if (processQueue.isDropped()) {
             log.info("the pull request[{}] is dropped.", pullRequest.toString());
             return;
         }
@@ -464,7 +464,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                         pullRequest.setNextOffset(pullResult.getNextBeginOffset());
 
                         // 第一步、缓存队列里的消息全部废弃
-                        pullRequest.getProcessQueue().setDroped(true);
+                        pullRequest.getProcessQueue().setDropped(true);
                         // 第二步、等待10s后再执行，防止Offset更新后又被覆盖
                         DefaultMQPushConsumerImpl.this.executeTaskLater(new Runnable() {
 
@@ -622,8 +622,9 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     }
 
 
-    public void sendMessageBack(MessageExt msg, int delayLevel, final String brokerName)
-            throws RemotingException, MQBrokerException, InterruptedException, MQClientException {
+    public void sendMessageBack(MessageExt msg, int delayLevel, final String brokerName) throws RemotingException,
+            MQBrokerException, InterruptedException, MQClientException {
+
         try {
             String brokerAddr = (null != brokerName) ? //
             this.mQClientFactory.findBrokerAddressInPublish(brokerName) //
@@ -632,8 +633,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
 
             this.mQClientFactory.getMQClientAPIImpl().consumerSendMessageBack(brokerAddr, msg,
                 this.defaultMQPushConsumer.getConsumerGroup(), delayLevel, 5000);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("sendMessageBack Exception, " + this.defaultMQPushConsumer.getConsumerGroup(), e);
 
             Message newMsg =
@@ -753,8 +753,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
 
             this.consumeMessageService.start();
 
-            boolean registerOK =
-                    mQClientFactory.registerConsumer(this.defaultMQPushConsumer.getConsumerGroup(), this);
+            boolean registerOK = mQClientFactory.registerConsumer(this.defaultMQPushConsumer.getConsumerGroup(), this);
             if (!registerOK) {
                 this.serviceState = ServiceState.CREATE_JUST;
                 this.consumeMessageService.shutdown();
@@ -1077,18 +1076,16 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     }
 
 
-    private long computeDuijiTotal() {
-        long msgDuijiCntTotal = 0;
+    private long computeAccumulatingTotal() {
+        long accumulatingMsgCount = 0;
         ConcurrentHashMap<MessageQueue, ProcessQueue> processQueueTable =
                 this.rebalanceImpl.getProcessQueueTable();
-        Iterator<Entry<MessageQueue, ProcessQueue>> it = processQueueTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<MessageQueue, ProcessQueue> next = it.next();
+        for (Entry<MessageQueue, ProcessQueue> next : processQueueTable.entrySet()) {
             ProcessQueue value = next.getValue();
-            msgDuijiCntTotal += value.getMsgDuijiCnt();
+            accumulatingMsgCount += value.getAccumulatingMsgCnt();
         }
 
-        return msgDuijiCntTotal;
+        return accumulatingMsgCount;
     }
 
 
@@ -1096,7 +1093,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
      * 根据消息堆积数量，动态调整线程池数量
      */
     public void adjustThreadPool() {
-        long computeDuijiTotal = this.computeDuijiTotal();
+        long computeAccumulatingTotal = this.computeAccumulatingTotal();
         long adjustThreadPoolNumsThreshold = this.defaultMQPushConsumer.getAdjustThreadPoolNumsThreshold();
 
         long incThreshold = (long) (adjustThreadPoolNumsThreshold * 1.0);
@@ -1104,12 +1101,12 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
         long decThreshold = (long) (adjustThreadPoolNumsThreshold * 0.8);
 
         // 增加线程池线程数量
-        if (computeDuijiTotal >= incThreshold) {
+        if (computeAccumulatingTotal >= incThreshold) {
             this.consumeMessageService.incCorePoolSize();
         }
 
         // 开始减少线程池线程数量
-        if (computeDuijiTotal < decThreshold) {
+        if (computeAccumulatingTotal < decThreshold) {
             this.consumeMessageService.decCorePoolSize();
         }
     }

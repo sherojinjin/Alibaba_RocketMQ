@@ -75,8 +75,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             new ThreadFactoryImpl("ConsumeMessageThread_"));
 
         this.scheduledExecutorService =
-                Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl(
-                    "ConsumeMessageScheduledThread_"));
+                Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ConsumeMessageScheduledThread_"));
     }
 
 
@@ -109,9 +108,8 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
         @Override
         public void run() {
-            if (this.processQueue.isDroped()) {
-                log.info("the message queue not be able to consume, because it's dropped {}",
-                    this.messageQueue);
+            if (this.processQueue.isDropped()) {
+                log.info("the message queue not be able to consume, because it's dropped {}", this.messageQueue);
                 return;
             }
 
@@ -161,8 +159,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             if (ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl.hasHook()) {
                 consumeMessageContext.setStatus(status.toString());
                 consumeMessageContext.setSuccess(ConsumeConcurrentlyStatus.CONSUME_SUCCESS == status);
-                ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl
-                    .executeHookAfter(consumeMessageContext);
+                ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl.executeHookAfter(consumeMessageContext);
             }
 
             // 记录统计信息
@@ -170,7 +167,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 ConsumeMessageConcurrentlyService.this.consumerGroup, messageQueue.getTopic(), consumeRT);
 
             // 如果ProcessQueue是dropped状态，不需要直接更新 offset
-            if (!processQueue.isDroped()) {
+            if (!processQueue.isDropped()) {
                 ConsumeMessageConcurrentlyService.this.processConsumeResult(status, context, this);
             }
             else {
@@ -202,8 +199,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         int delayLevel = context.getDelayLevelWhenNextConsume();
 
         try {
-            this.defaultMQPushConsumerImpl.sendMessageBack(msg, delayLevel, context.getMessageQueue()
-                .getBrokerName());
+            this.defaultMQPushConsumerImpl.sendMessageBack(msg, delayLevel, context.getMessageQueue().getBrokerName());
             return true;
         }
         catch (Exception e) {
@@ -315,7 +311,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             final List<MessageExt> msgs, //
             final ProcessQueue processQueue, //
             final MessageQueue messageQueue, //
-            final boolean dispathToConsume) {
+            final boolean dispatchToConsume) {
         final int consumeBatchSize = this.defaultMQPushConsumer.getConsumeMessageBatchMaxSize();
         if (msgs.size() <= consumeBatchSize) {
             ConsumeRequest consumeRequest = new ConsumeRequest(msgs, processQueue, messageQueue);

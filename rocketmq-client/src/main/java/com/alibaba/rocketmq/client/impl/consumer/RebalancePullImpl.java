@@ -15,15 +15,15 @@
  */
 package com.alibaba.rocketmq.client.impl.consumer;
 
-import java.util.List;
-import java.util.Set;
-
 import com.alibaba.rocketmq.client.consumer.AllocateMessageQueueStrategy;
 import com.alibaba.rocketmq.client.consumer.MessageQueueListener;
 import com.alibaba.rocketmq.client.impl.factory.MQClientInstance;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
+
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -60,8 +60,8 @@ public class RebalancePullImpl extends RebalanceImpl {
 
     @Override
     public void messageQueueChanged(String topic, Set<MessageQueue> mqAll, Set<MessageQueue> mqDivided) {
-        MessageQueueListener messageQueueListener =
-                this.defaultMQPullConsumerImpl.getDefaultMQPullConsumer().getMessageQueueListener();
+        MessageQueueListener messageQueueListener = this.defaultMQPullConsumerImpl.getDefaultMQPullConsumer()
+                .getMessageQueueListener();
         if (messageQueueListener != null) {
             try {
                 messageQueueListener.messageQueueChanged(topic, mqAll, mqDivided);

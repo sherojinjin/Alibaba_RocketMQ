@@ -15,6 +15,12 @@
  */
 package com.alibaba.rocketmq.client.impl.consumer;
 
+import com.alibaba.rocketmq.client.log.ClientLogger;
+import com.alibaba.rocketmq.common.message.MessageConst;
+import com.alibaba.rocketmq.common.message.MessageExt;
+import com.alibaba.rocketmq.common.protocol.body.ProcessQueueInfo;
+import org.slf4j.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,13 +30,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.slf4j.Logger;
-
-import com.alibaba.rocketmq.client.log.ClientLogger;
-import com.alibaba.rocketmq.common.message.MessageConst;
-import com.alibaba.rocketmq.common.message.MessageExt;
-import com.alibaba.rocketmq.common.protocol.body.ProcessQueueInfo;
 
 
 /**
@@ -54,7 +53,7 @@ public class ProcessQueue {
     private final AtomicLong msgCount = new AtomicLong();
 
     // 当前Q是否被rebalance丢弃
-    private volatile boolean droped = false;
+    private volatile boolean dropped = false;
     private volatile long lastPullTimestamp = System.currentTimeMillis();
     private final static long PullMaxIdleTime = Long.parseLong(System.getProperty(
         "rocketmq.client.pull.pullMaxIdleTime", "120000"));
@@ -81,7 +80,7 @@ public class ProcessQueue {
     /**
      * 当前队列的消息堆积数量
      */
-    private volatile long msgDuijiCnt = 0;
+    private volatile long accumulatingMsgCnt = 0;
 
 
     public boolean isLockExpired() {
@@ -126,7 +125,7 @@ public class ProcessQueue {
                     if (property != null) {
                         long duiji = Long.parseLong(property) - messageExt.getQueueOffset();
                         if (duiji > 0) {
-                            this.msgDuijiCnt = duiji;
+                            this.accumulatingMsgCnt = duiji;
                         }
                     }
                 }
@@ -217,13 +216,13 @@ public class ProcessQueue {
     }
 
 
-    public boolean isDroped() {
-        return droped;
+    public boolean isDropped() {
+        return dropped;
     }
 
 
-    public void setDroped(boolean droped) {
-        this.droped = droped;
+    public void setDropped(boolean dropped) {
+        this.dropped = dropped;
     }
 
 
@@ -389,13 +388,13 @@ public class ProcessQueue {
     }
 
 
-    public long getMsgDuijiCnt() {
-        return msgDuijiCnt;
+    public long getAccumulatingMsgCnt() {
+        return accumulatingMsgCnt;
     }
 
 
-    public void setMsgDuijiCnt(long msgDuijiCnt) {
-        this.msgDuijiCnt = msgDuijiCnt;
+    public void setAccumulatingMsgCnt(long accumulatingMsgCnt) {
+        this.accumulatingMsgCnt = accumulatingMsgCnt;
     }
 
 
@@ -429,7 +428,7 @@ public class ProcessQueue {
             info.setTryUnlockTimes(this.tryUnlockTimes.get());
             info.setLastLockTimestamp(this.lastLockTimestamp);
 
-            info.setDroped(this.droped);
+            info.setDroped(this.dropped);
             info.setLastPullTimestamp(this.lastPullTimestamp);
             info.setLastConsumeTimestamp(this.lastConsumeTimestamp);
         }
