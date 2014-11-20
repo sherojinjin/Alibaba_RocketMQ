@@ -291,7 +291,7 @@ public class MQClientAPIImpl {
         request.setBody(msg.getBody());
 
         switch (communicationMode) {
-        case ONEWAY:
+        case ONE_WAY:
             this.remotingClient.invokeOneway(addr, request, timeoutMillis);
             return null;
         case ASYNC:
@@ -437,7 +437,7 @@ public class MQClientAPIImpl {
                 RemotingCommand.createRequestCommand(RequestCode.PULL_MESSAGE, requestHeader);
 
         switch (communicationMode) {
-        case ONEWAY:
+        case ONE_WAY:
             assert false;
             return null;
         case ASYNC:

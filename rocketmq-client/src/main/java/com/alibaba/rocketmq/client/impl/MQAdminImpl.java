@@ -15,17 +15,6 @@
  */
 package com.alibaba.rocketmq.client.impl;
 
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-
 import com.alibaba.rocketmq.client.QueryResult;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
 import com.alibaba.rocketmq.client.exception.MQClientException;
@@ -35,11 +24,7 @@ import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.TopicConfig;
 import com.alibaba.rocketmq.common.help.FAQUrl;
-import com.alibaba.rocketmq.common.message.MessageConst;
-import com.alibaba.rocketmq.common.message.MessageDecoder;
-import com.alibaba.rocketmq.common.message.MessageExt;
-import com.alibaba.rocketmq.common.message.MessageId;
-import com.alibaba.rocketmq.common.message.MessageQueue;
+import com.alibaba.rocketmq.common.message.*;
 import com.alibaba.rocketmq.common.protocol.ResponseCode;
 import com.alibaba.rocketmq.common.protocol.header.QueryMessageRequestHeader;
 import com.alibaba.rocketmq.common.protocol.header.QueryMessageResponseHeader;
@@ -51,6 +36,16 @@ import com.alibaba.rocketmq.remoting.exception.RemotingCommandException;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
 import com.alibaba.rocketmq.remoting.netty.ResponseFuture;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
+import org.slf4j.Logger;
+
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -142,22 +137,19 @@ public class MQAdminImpl {
             throw new MQClientException("Can not find Message Queue for this topic, " + topic, e);
         }
 
-        throw new MQClientException("Unknow why, Can not find Message Queue for this topic, " + topic, null);
+        throw new MQClientException("Unknown reason. Failed to find Message Queue for this topic, " + topic, null);
     }
 
 
     public Set<MessageQueue> fetchSubscribeMessageQueues(String topic) throws MQClientException {
         try {
-            TopicRouteData topicRouteData =
-                    this.mQClientFactory.getMQClientAPIImpl()
-                        .getTopicRouteInfoFromNameServer(topic, 1000 * 3);
+            TopicRouteData topicRouteData = this.mQClientFactory.getMQClientAPIImpl()
+                    .getTopicRouteInfoFromNameServer(topic, 1000 * 3);
             if (topicRouteData != null) {
-                Set<MessageQueue> mqList =
-                        MQClientInstance.topicRouteData2TopicSubscribeInfo(topic, topicRouteData);
+                Set<MessageQueue> mqList = MQClientInstance.topicRouteData2TopicSubscribeInfo(topic, topicRouteData);
                 if (!mqList.isEmpty()) {
                     return mqList;
-                }
-                else {
+                } else {
                     throw new MQClientException("Can not find Message Queue for this topic, " + topic
                             + " Namesrv return empty", null);
                 }
@@ -169,7 +161,7 @@ public class MQAdminImpl {
                 e);
         }
 
-        throw new MQClientException("Unknow why, Can not find Message Queue for this topic, " + topic, null);
+        throw new MQClientException("Unknown reason. Failed to find Message Queue for this topic, " + topic, null);
     }
 
 
@@ -311,9 +303,8 @@ public class MQAdminImpl {
                                             case ResponseCode.SUCCESS: {
                                                 QueryMessageResponseHeader responseHeader = null;
                                                 try {
-                                                    responseHeader =
-                                                            (QueryMessageResponseHeader) response
-                                                                .decodeCommandCustomHeader(QueryMessageResponseHeader.class);
+                                                    responseHeader = (QueryMessageResponseHeader) response
+                                                            .decodeCommandCustomHeader(QueryMessageResponseHeader.class);
                                                 }
                                                 catch (RemotingCommandException e) {
                                                     log.error("decodeCommandCustomHeader exception", e);
@@ -369,12 +360,10 @@ public class MQAdminImpl {
                         if (keys != null) {
                             boolean matched = false;
                             String[] keyArray = keys.split(MessageConst.KEY_SEPARATOR);
-                            if (keyArray != null) {
-                                for (String k : keyArray) {
-                                    if (key.equals(k)) {
-                                        matched = true;
-                                        break;
-                                    }
+                            for (String k : keyArray) {
+                                if (key.equals(k)) {
+                                    matched = true;
+                                    break;
                                 }
                             }
 

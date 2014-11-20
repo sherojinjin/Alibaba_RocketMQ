@@ -515,7 +515,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                         switch (communicationMode) {
                         case ASYNC:
                             return null;
-                        case ONEWAY:
+                        case ONE_WAY:
                             return null;
                         case SYNC:
                             if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
@@ -773,11 +773,11 @@ public class DefaultMQProducerImpl implements MQProducerInner {
 
 
     /**
-     * DEFAULT ONEWAY -------------------------------------------------------
+     * DEFAULT ONE_WAY -------------------------------------------------------
      */
     public void sendOneway(Message msg) throws MQClientException, RemotingException, InterruptedException {
         try {
-            this.sendDefaultImpl(msg, CommunicationMode.ONEWAY, null);
+            this.sendDefaultImpl(msg, CommunicationMode.ONE_WAY, null);
         }
         catch (MQBrokerException e) {
             throw new MQClientException("unknow exception", e);
@@ -825,7 +825,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
 
 
     /**
-     * KERNEL ONEWAY -------------------------------------------------------
+     * KERNEL ONE_WAY -------------------------------------------------------
      */
     public void sendOneway(Message msg, MessageQueue mq) throws MQClientException, RemotingException,
             InterruptedException {
@@ -834,7 +834,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         Validators.checkMessage(msg, this.defaultMQProducer);
 
         try {
-            this.sendKernelImpl(msg, mq, CommunicationMode.ONEWAY, null);
+            this.sendKernelImpl(msg, mq, CommunicationMode.ONE_WAY, null);
         }
         catch (MQBrokerException e) {
             throw new MQClientException("unknow exception", e);
@@ -899,12 +899,12 @@ public class DefaultMQProducerImpl implements MQProducerInner {
 
 
     /**
-     * SELECT ONEWAY -------------------------------------------------------
+     * SELECT ONE_WAY -------------------------------------------------------
      */
     public void sendOneway(Message msg, MessageQueueSelector selector, Object arg) throws MQClientException,
             RemotingException, InterruptedException {
         try {
-            this.sendSelectImpl(msg, selector, arg, CommunicationMode.ONEWAY, null);
+            this.sendSelectImpl(msg, selector, arg, CommunicationMode.ONE_WAY, null);
         }
         catch (MQBrokerException e) {
             throw new MQClientException("unknow exception", e);
