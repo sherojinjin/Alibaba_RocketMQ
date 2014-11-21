@@ -22,7 +22,7 @@ public class BrokerStatsManager {
     public static final String GROUP_GET_SIZE = "GROUP_GET_SIZE";
     public static final String GROUP_GET_FROM_DISK_NUMS = "GROUP_GET_FROM_DISK_NUMS";
     public static final String GROUP_GET_FROM_DISK_SIZE = "GROUP_GET_FROM_DISK_SIZE";
-    public static final String SNDBCK_PUT_NUMS = "SNDBCK_PUT_NUMS";
+    public static final String SEND_BACK_PUT_NUMS = "SEND_BACK_PUT_NUMS";
     public static final String BROKER_PUT_NUMS = "BROKER_PUT_NUMS";
     public static final String BROKER_GET_NUMS = "BROKER_GET_NUMS";
     public static final String BROKER_GET_FROM_DISK_NUMS = "BROKER_GET_FROM_DISK_NUMS";
@@ -61,8 +61,7 @@ public class BrokerStatsManager {
     private final StatsItem brokerGetFromDiskNums;
 
     // Topic@ConsumerGroup sendback Nums
-    private final StatsItemSet sndbckPutNums = new StatsItemSet(SNDBCK_PUT_NUMS,
-        this.scheduledExecutorService, log);
+    private final StatsItemSet sndbckPutNums = new StatsItemSet(SEND_BACK_PUT_NUMS, this.scheduledExecutorService, log);
 
 
     public BrokerStatsManager(String clusterName) {

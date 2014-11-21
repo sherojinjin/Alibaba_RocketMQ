@@ -747,7 +747,7 @@ public class DefaultMessageStore implements MessageStore {
                 try {
                     final long phyOffset = result.getByteBuffer().getLong();
                     final int size = result.getByteBuffer().getInt();
-                    long storeTime = this.getCommitLog().pickupStoretimestamp(phyOffset, size);
+                    long storeTime = this.getCommitLog().pickupStoreTimestamp(phyOffset, size);
                     return storeTime;
                 }
                 catch (Exception e) {
@@ -771,7 +771,7 @@ public class DefaultMessageStore implements MessageStore {
                 try {
                     final long phyOffset = result.getByteBuffer().getLong();
                     final int size = result.getByteBuffer().getInt();
-                    long storeTime = this.getCommitLog().pickupStoretimestamp(phyOffset, size);
+                    long storeTime = this.getCommitLog().pickupStoreTimestamp(phyOffset, size);
                     return storeTime;
                 }
                 catch (Exception e) {
@@ -849,7 +849,7 @@ public class DefaultMessageStore implements MessageStore {
             // 从小到达排序
             Collections.sort(queryOffsetResult.getPhyOffsets());
 
-            queryMessageResult.setIndexLastUpdatePhyOffset(queryOffsetResult.getIndexLastUpdatePhyoffset());
+            queryMessageResult.setIndexLastUpdatePhyOffset(queryOffsetResult.getIndexLastUpdatePhyOffset());
             queryMessageResult.setIndexLastUpdateTimestamp(queryOffsetResult.getIndexLastUpdateTimestamp());
 
             for (int m = 0; m < queryOffsetResult.getPhyOffsets().size(); m++) {

@@ -61,8 +61,7 @@ public class CommitLog {
     // 存储消息时的回调接口
     private final AppendMessageCallback appendMessageCallback;
     // 用来保存每个ConsumeQueue的当前最大Offset信息
-    private HashMap<String/* topic-queueid */, Long/* offset */> topicQueueTable = new HashMap<String, Long>(
-        1024);
+    private HashMap<String/* topic-queueid */, Long/* offset */> topicQueueTable = new HashMap<String, Long>(1024);
 
 
     /**
@@ -82,9 +81,8 @@ public class CommitLog {
             this.flushCommitLogService = new FlushRealTimeService();
         }
 
-        this.appendMessageCallback =
-                new DefaultAppendMessageCallback(defaultMessageStore.getMessageStoreConfig()
-                    .getMaxMessageSize());
+        this.appendMessageCallback = new DefaultAppendMessageCallback(defaultMessageStore.getMessageStoreConfig()
+                .getMaxMessageSize());
     }
 
 
@@ -340,14 +338,12 @@ public class CommitLog {
 
                         if (delayLevel > this.defaultMessageStore.getScheduleMessageService()
                             .getMaxDelayLevel()) {
-                            delayLevel =
-                                    this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel();
+                            delayLevel = this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel();
                         }
 
                         if (delayLevel > 0) {
-                            tagsCode =
-                                    this.defaultMessageStore.getScheduleMessageService()
-                                        .computeDeliverTimestamp(delayLevel, storeTimestamp);
+                            tagsCode = this.defaultMessageStore.getScheduleMessageService()
+                                    .computeDeliverTimestamp(delayLevel, storeTimestamp);
                         }
                     }
                 }
@@ -402,8 +398,7 @@ public class CommitLog {
             long processOffset = mappedFile.getFileFromOffset();
             long mappedFileOffset = 0;
             while (true) {
-                DispatchRequest dispatchRequest =
-                        this.checkMessageAndReturnSize(byteBuffer, checkCRCOnRecover);
+                DispatchRequest dispatchRequest = this.checkMessageAndReturnSize(byteBuffer, checkCRCOnRecover);
                 int size = dispatchRequest.getMsgSize();
                 // 正常数据
                 if (size > 0) {
@@ -503,17 +498,14 @@ public class CommitLog {
                 || tranType == MessageSysFlag.TransactionCommitType) {
             // 延时投递
             if (msg.getDelayTimeLevel() > 0) {
-                if (msg.getDelayTimeLevel() > this.defaultMessageStore.getScheduleMessageService()
-                    .getMaxDelayLevel()) {
-                    msg.setDelayTimeLevel(this.defaultMessageStore.getScheduleMessageService()
-                        .getMaxDelayLevel());
+                if (msg.getDelayTimeLevel() > this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel()) {
+                    msg.setDelayTimeLevel(this.defaultMessageStore.getScheduleMessageService().getMaxDelayLevel());
                 }
 
                 topic = ScheduleMessageService.SCHEDULE_TOPIC;
                 queueId = ScheduleMessageService.delayLevel2QueueId(msg.getDelayTimeLevel());
-                tagsCode =
-                        this.defaultMessageStore.getScheduleMessageService().computeDeliverTimestamp(
-                            msg.getDelayTimeLevel(), msg.getStoreTimestamp());
+                tagsCode = this.defaultMessageStore.getScheduleMessageService().computeDeliverTimestamp(
+                        msg.getDelayTimeLevel(), msg.getStoreTimestamp());
 
                 /**
                  * 备份真实的topic，queueId
@@ -613,7 +605,7 @@ public class CommitLog {
                         request.waitForFlush(this.defaultMessageStore.getMessageStoreConfig()
                             .getSyncFlushTimeout());
                 if (!flushOK) {
-                    log.error("do groupcommit, wait for flush failed, topic: " + msg.getTopic() + " tags: "
+                    log.error("do group commit, wait for flush failed, topic: " + msg.getTopic() + " tags: "
                             + msg.getTags() + " client address: " + msg.getBornHostString());
                     putMessageResult.setPutMessageStatus(PutMessageStatus.FLUSH_DISK_TIMEOUT);
                 }
@@ -667,7 +659,7 @@ public class CommitLog {
     /**
      * 根据offset获取特定消息的存储时间 如果出错，则返回-1
      */
-    public long pickupStoretimestamp(final long offset, final int size) {
+    public long pickupStoreTimestamp(final long offset, final int size) {
         if (offset > this.getMinOffset()) {
             SelectMappedBufferResult result = this.getMessage(offset, size);
             if (null != result) {
@@ -689,7 +681,7 @@ public class CommitLog {
      */
     public SelectMappedBufferResult getMessage(final long offset, final int size) {
         int mappedFileSize = this.defaultMessageStore.getMessageStoreConfig().getMappedFileSizeCommitLog();
-        MappedFile mappedFile = this.mappedFileQueue.findMappedFileByOffset(offset, (0 == offset ? true : false));
+        MappedFile mappedFile = this.mappedFileQueue.findMappedFileByOffset(offset, (0 == offset));
         if (mappedFile != null) {
             int pos = (int) (offset % mappedFileSize);
             SelectMappedBufferResult result = mappedFile.selectMappedBuffer(pos, size);

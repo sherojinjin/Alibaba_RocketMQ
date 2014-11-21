@@ -15,16 +15,6 @@
  */
 package com.alibaba.rocketmq.store.schedule;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.common.ConfigManager;
 import com.alibaba.rocketmq.common.TopicFilterType;
 import com.alibaba.rocketmq.common.constant.LoggerName;
@@ -33,13 +23,16 @@ import com.alibaba.rocketmq.common.message.MessageConst;
 import com.alibaba.rocketmq.common.message.MessageDecoder;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.running.RunningStats;
-import com.alibaba.rocketmq.store.ConsumeQueue;
-import com.alibaba.rocketmq.store.DefaultMessageStore;
-import com.alibaba.rocketmq.store.MessageExtBrokerInner;
-import com.alibaba.rocketmq.store.PutMessageResult;
-import com.alibaba.rocketmq.store.PutMessageStatus;
-import com.alibaba.rocketmq.store.SelectMappedBufferResult;
+import com.alibaba.rocketmq.store.*;
 import com.alibaba.rocketmq.store.config.StorePathConfigHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -74,9 +67,7 @@ public class ScheduleMessageService extends ConfigManager {
 
 
     public void buildRunningStats(HashMap<String, String> stats) {
-        Iterator<Entry<Integer, Long>> it = this.offsetTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<Integer, Long> next = it.next();
+        for (Entry<Integer, Long> next : this.offsetTable.entrySet()) {
             int queueId = delayLevel2QueueId(next.getKey());
             long delayOffset = next.getValue();
             long maxOffset = this.defaultMessageStore.getMaxOffsetInQueue(SCHEDULE_TOPIC, queueId);
@@ -237,11 +228,11 @@ public class ScheduleMessageService extends ConfigManager {
         @Override
         public void run() {
             try {
-                this.executeOnTimeup();
+                this.executeOnTimeUp();
             }
             catch (Exception e) {
                 // XXX: warn and notify me
-                log.error("ScheduleMessageService, executeOnTimeup exception", e);
+                log.error("ScheduleMessageService, executeOnTimeUp exception", e);
                 ScheduleMessageService.this.timer.schedule(new DeliverDelayedMessageTimerTask(
                     this.delayLevel, this.offset), DELAY_FOR_A_PERIOD);
             }
@@ -266,7 +257,7 @@ public class ScheduleMessageService extends ConfigManager {
         }
 
 
-        public void executeOnTimeup() {
+        public void executeOnTimeUp() {
             ConsumeQueue cq =
                     ScheduleMessageService.this.defaultMessageStore.findConsumeQueue(SCHEDULE_TOPIC,
                         delayLevel2QueueId(delayLevel));

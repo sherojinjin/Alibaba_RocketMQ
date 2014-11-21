@@ -71,8 +71,8 @@ public class MappedFileQueue {
         if (null == mfs)
             return null;
 
-        for (int i = 0; i < mfs.length; i++) {
-            MappedFile mappedFile = (MappedFile) mfs[i];
+        for (Object mf : mfs) {
+            MappedFile mappedFile = (MappedFile) mf;
             if (mappedFile.getLastModifiedTimestamp() >= timestamp) {
                 return mappedFile;
             }

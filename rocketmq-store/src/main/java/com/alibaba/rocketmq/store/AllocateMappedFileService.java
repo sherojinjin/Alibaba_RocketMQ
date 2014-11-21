@@ -37,10 +37,8 @@ import java.util.concurrent.TimeUnit;
 public class AllocateMappedFileService extends ServiceThread {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
     private static int WaitTimeOut = 1000 * 5;
-    private ConcurrentHashMap<String, AllocateRequest> requestTable =
-            new ConcurrentHashMap<String, AllocateRequest>();
-    private PriorityBlockingQueue<AllocateRequest> requestQueue =
-            new PriorityBlockingQueue<AllocateRequest>();
+    private ConcurrentHashMap<String, AllocateRequest> requestTable = new ConcurrentHashMap<String, AllocateRequest>();
+    private PriorityBlockingQueue<AllocateRequest> requestQueue = new PriorityBlockingQueue<AllocateRequest>();
     private volatile boolean hasException = false;
 
 
