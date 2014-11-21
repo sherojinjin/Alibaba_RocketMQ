@@ -28,7 +28,6 @@
 				<include>com.alibaba.rocketmq:rocketmq-namesrv</include>
 				<include>com.alibaba.rocketmq:rocketmq-filtersrv</include>
 				<include>com.alibaba.rocketmq:rocketmq-example</include>
-				<include>com.alibaba.rocketmq:rocketmq-security</include>
 			</includes>
 			<binaries>
 				<outputDirectory>lib/</outputDirectory>
