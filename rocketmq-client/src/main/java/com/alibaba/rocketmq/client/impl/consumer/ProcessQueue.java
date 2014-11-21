@@ -40,11 +40,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class ProcessQueue {
     // 客户端本地Lock存活最大时间，超过则自动过期，单位ms
-    public final static long RebalanceLockMaxLiveTime = Long.parseLong(System.getProperty(
-        "rocketmq.client.rebalance.lockMaxLiveTime", "30000"));
+    public final static long RebalanceLockMaxLiveTime = Long.parseLong(System.getProperty("rocketmq.client.rebalance.lockMaxLiveTime", "30000"));
     // 定时Lock间隔时间，单位ms
-    public final static long RebalanceLockInterval = Long.parseLong(System.getProperty(
-        "rocketmq.client.rebalance.lockInterval", "20000"));
+    public final static long RebalanceLockInterval = Long.parseLong(System.getProperty("rocketmq.client.rebalance.lockInterval", "20000"));
 
     private final Logger log = ClientLogger.getLog();
     private final ReadWriteLock lockTreeMap = new ReentrantReadWriteLock();
@@ -55,8 +53,7 @@ public class ProcessQueue {
     // 当前Q是否被rebalance丢弃
     private volatile boolean dropped = false;
     private volatile long lastPullTimestamp = System.currentTimeMillis();
-    private final static long PullMaxIdleTime = Long.parseLong(System.getProperty(
-        "rocketmq.client.pull.pullMaxIdleTime", "120000"));
+    private final static long PullMaxIdleTime = Long.parseLong(System.getProperty("rocketmq.client.pull.pullMaxIdleTime", "120000"));
 
     // 最后一次消费的时间戳
     private volatile long lastConsumeTimestamp = System.currentTimeMillis();
@@ -123,9 +120,9 @@ public class ProcessQueue {
                     MessageExt messageExt = msgs.get(msgs.size() - 1);
                     String property = messageExt.getProperty(MessageConst.PROPERTY_MAX_OFFSET);
                     if (property != null) {
-                        long duiji = Long.parseLong(property) - messageExt.getQueueOffset();
-                        if (duiji > 0) {
-                            this.accumulatingMsgCnt = duiji;
+                        long accumulation = Long.parseLong(property) - messageExt.getQueueOffset();
+                        if (accumulation > 0) {
+                            this.accumulatingMsgCnt = accumulation;
                         }
                     }
                 }

@@ -69,8 +69,8 @@ public class SlaveSynchronize {
         String masterAddrBak = this.masterAddr;
         if (masterAddrBak != null) {
             try {
-                TopicConfigSerializeWrapper topicWrapper =
-                        this.brokerController.getBrokerOuterAPI().getAllTopicConfig(masterAddrBak);
+                TopicConfigSerializeWrapper topicWrapper = this.brokerController.getBrokerOuterAPI()
+                        .getAllTopicConfig(masterAddrBak);
                 if (!this.brokerController.getTopicConfigManager().getDataVersion()
                     .equals(topicWrapper.getDataVersion())) {
 
@@ -95,8 +95,8 @@ public class SlaveSynchronize {
         String masterAddrBak = this.masterAddr;
         if (masterAddrBak != null) {
             try {
-                ConsumerOffsetSerializeWrapper offsetWrapper =
-                        this.brokerController.getBrokerOuterAPI().getAllConsumerOffset(masterAddrBak);
+                ConsumerOffsetSerializeWrapper offsetWrapper = this.brokerController.getBrokerOuterAPI()
+                        .getAllConsumerOffset(masterAddrBak);
                 this.brokerController.getConsumerOffsetManager().getOffsetTable()
                     .putAll(offsetWrapper.getOffsetTable());
                 this.brokerController.getConsumerOffsetManager().persist();
@@ -113,12 +113,10 @@ public class SlaveSynchronize {
         String masterAddrBak = this.masterAddr;
         if (masterAddrBak != null) {
             try {
-                String delayOffset =
-                        this.brokerController.getBrokerOuterAPI().getAllDelayOffset(masterAddrBak);
+                String delayOffset = this.brokerController.getBrokerOuterAPI().getAllDelayOffset(masterAddrBak);
                 if (delayOffset != null) {
 
-                    String fileName =
-                            StorePathConfigHelper.getDelayOffsetStorePath(this.brokerController
+                    String fileName = StorePathConfigHelper.getDelayOffsetStorePath(this.brokerController
                                 .getMessageStoreConfig().getStorePathRootDir());
                     try {
                         MixAll.string2File(delayOffset, fileName);
