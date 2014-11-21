@@ -84,7 +84,7 @@ public class ConsumerOffsetManager extends ConfigManager {
         while (it.hasNext() && result) {
             Entry<Integer, Long> next = it.next();
             long minOffsetInStore =
-                    this.brokerController.getMessageStore().getMinOffsetInQuque(topic, next.getKey());
+                    this.brokerController.getMessageStore().getMinOffsetInQueue(topic, next.getKey());
             long offsetInPersist = next.getValue();
             if (offsetInPersist > minOffsetInStore) {
                 result = false;
@@ -222,7 +222,7 @@ public class ConsumerOffsetManager extends ConfigManager {
                 for (Entry<Integer, Long> entry : this.offsetTable.get(topicGroup).entrySet()) {
                     long minOffset =
                             this.brokerController.getMessageStore()
-                                .getMinOffsetInQuque(topic, entry.getKey());
+                                .getMinOffsetInQueue(topic, entry.getKey());
                     if (entry.getValue() >= minOffset) {
                         Long offset = queueMinOffset.get(entry.getKey());
                         if (offset == null) {

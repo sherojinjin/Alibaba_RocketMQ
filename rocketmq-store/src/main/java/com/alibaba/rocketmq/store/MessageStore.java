@@ -72,13 +72,13 @@ public interface MessageStore {
     /**
      * 获取指定队列最大Offset 如果队列不存在，返回-1
      */
-    public long getMaxOffsetInQuque(final String topic, final int queueId);
+    public long getMaxOffsetInQueue(final String topic, final int queueId);
 
 
     /**
      * 获取指定队列最小Offset 如果队列不存在，返回-1
      */
-    public long getMinOffsetInQuque(final String topic, final int queueId);
+    public long getMinOffsetInQueue(final String topic, final int queueId);
 
 
     /**
@@ -160,7 +160,7 @@ public interface MessageStore {
     /**
      * 手动触发删除文件
      */
-    public void excuteDeleteFilesManualy();
+    public void executeDeleteFilesManually();
 
 
     /**

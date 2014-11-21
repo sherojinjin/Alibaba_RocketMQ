@@ -612,7 +612,7 @@ public class DefaultMessageStore implements MessageStore {
     /**
      * 返回的是当前队列的最大Offset，这个Offset没有对应的消息
      */
-    public long getMaxOffsetInQuque(String topic, int queueId) {
+    public long getMaxOffsetInQueue(String topic, int queueId) {
         ConsumeQueue logic = this.findConsumeQueue(topic, queueId);
         if (logic != null) {
             long offset = logic.getMaxOffsetInQuque();
@@ -626,7 +626,7 @@ public class DefaultMessageStore implements MessageStore {
     /**
      * 返回的是当前队列的最小Offset
      */
-    public long getMinOffsetInQuque(String topic, int queueId) {
+    public long getMinOffsetInQueue(String topic, int queueId) {
         ConsumeQueue logic = this.findConsumeQueue(topic, queueId);
         if (logic != null) {
             return logic.getMinOffsetInQuque();
@@ -828,7 +828,7 @@ public class DefaultMessageStore implements MessageStore {
 
 
     @Override
-    public void excuteDeleteFilesManualy() {
+    public void executeDeleteFilesManually() {
         this.cleanCommitLogService.excuteDeleteFilesManualy();
     }
 
@@ -1224,7 +1224,7 @@ public class DefaultMessageStore implements MessageStore {
 
         public void excuteDeleteFilesManualy() {
             this.manualDeleteFileSeveralTimes = MaxManualDeleteFileTimes;
-            DefaultMessageStore.log.info("excuteDeleteFilesManualy was invoked");
+            DefaultMessageStore.log.info("executeDeleteFilesManually was invoked");
         }
 
 

@@ -171,7 +171,7 @@ public class ClientManageProcessor implements NettyRequestProcessor {
         }
         // 订阅组不存在
         else {
-            long minOffset = this.brokerController.getMessageStore().getMinOffsetInQuque(requestHeader.getTopic(),
+            long minOffset = this.brokerController.getMessageStore().getMinOffsetInQueue(requestHeader.getTopic(),
                     requestHeader.getQueueId());
             // 订阅组不存在情况下，如果这个队列的消息最小Offset是0，则表示这个Topic上线时间不长，服务器堆积的数据也不多，那么这个订阅组就从0开始消费。
             // 尤其对于Topic队列数动态扩容时，必须要从0开始消费。
