@@ -569,7 +569,7 @@ public class CommitLog {
                 result.getWroteBytes(),// 4
                 tagsCode,// 5
                 msg.getStoreTimestamp(),// 6
-                result.getLogicsOffset(),// 7
+                result.getLogicOffset(),// 7
                 msg.getKeys(),// 8
                 /**
                  * 事务部分

@@ -30,8 +30,7 @@ public class QueryOffsetResult {
     private final long indexLastUpdatePhyOffset;
 
 
-    public QueryOffsetResult(List<Long> phyOffsets, long indexLastUpdateTimestamp,
-            long indexLastUpdatePhyOffset) {
+    public QueryOffsetResult(List<Long> phyOffsets, long indexLastUpdateTimestamp, long indexLastUpdatePhyOffset) {
         this.phyOffsets = phyOffsets;
         this.indexLastUpdateTimestamp = indexLastUpdateTimestamp;
         this.indexLastUpdatePhyOffset = indexLastUpdatePhyOffset;

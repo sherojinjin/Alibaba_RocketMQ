@@ -33,7 +33,7 @@ public class AppendMessageResult {
     // 消息存储时间
     private long storeTimestamp;
     // 写入逻辑队列的offset（递进1）
-    private long logicsOffset;
+    private long logicOffset;
 
 
     public AppendMessageResult(AppendMessageStatus status) {
@@ -42,13 +42,13 @@ public class AppendMessageResult {
 
 
     public AppendMessageResult(AppendMessageStatus status, long wroteOffset, int wroteBytes, String msgId,
-            long storeTimestamp, long logicsOffset) {
+            long storeTimestamp, long logicOffset) {
         this.status = status;
         this.wroteOffset = wroteOffset;
         this.wroteBytes = wroteBytes;
         this.msgId = msgId;
         this.storeTimestamp = storeTimestamp;
-        this.logicsOffset = logicsOffset;
+        this.logicOffset = logicOffset;
     }
 
 
@@ -107,21 +107,21 @@ public class AppendMessageResult {
     }
 
 
-    public long getLogicsOffset() {
-        return logicsOffset;
+    public long getLogicOffset() {
+        return logicOffset;
     }
 
 
-    public void setLogicsOffset(long logicsOffset) {
-        this.logicsOffset = logicsOffset;
+    public void setLogicOffset(long logicOffset) {
+        this.logicOffset = logicOffset;
     }
 
 
     @Override
     public String toString() {
         return "AppendMessageResult [status=" + status + ", wroteOffset=" + wroteOffset + ", wroteBytes="
-                + wroteBytes + ", msgId=" + msgId + ", storeTimestamp=" + storeTimestamp + ", logicsOffset="
-                + logicsOffset + "]";
+                + wroteBytes + ", msgId=" + msgId + ", storeTimestamp=" + storeTimestamp + ", logicOffset="
+                + logicOffset + "]";
     }
 
 }

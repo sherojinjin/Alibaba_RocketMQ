@@ -530,7 +530,7 @@ public class SendMessageProcessor implements NettyRequestProcessor {
 
                 responseHeader.setMsgId(putMessageResult.getAppendMessageResult().getMsgId());
                 responseHeader.setQueueId(queueIdInt);
-                responseHeader.setQueueOffset(putMessageResult.getAppendMessageResult().getLogicsOffset());
+                responseHeader.setQueueOffset(putMessageResult.getAppendMessageResult().getLogicOffset());
 
                 // 直接返回
                 if (!request.isOnewayRPC()) {
@@ -546,7 +546,7 @@ public class SendMessageProcessor implements NettyRequestProcessor {
                 if (this.brokerController.getBrokerConfig().isLongPollingEnable()) {
                     this.brokerController.getPullRequestHoldService().notifyMessageArriving(
                             requestHeader.getTopic(), queueIdInt,
-                            putMessageResult.getAppendMessageResult().getLogicsOffset() + 1);
+                            putMessageResult.getAppendMessageResult().getLogicOffset() + 1);
                 }
 
                 // 消息轨迹：记录发送成功的消息

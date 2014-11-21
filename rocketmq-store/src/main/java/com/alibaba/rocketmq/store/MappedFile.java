@@ -42,14 +42,23 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 2013-7-21
  */
 public class MappedFile extends ReferenceResource {
+
+    /**
+     * Default page cache size: 4k.
+     */
     public static final int OS_PAGE_SIZE = 1024 * 4;
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
+
     // 当前JVM中映射的虚拟内存总大小
-    private static final AtomicLong TotalMappedVirtualMemory = new AtomicLong(0);
+    private static final AtomicLong TOTAL_MAPPED_VIRTUAL_MEMORY = new AtomicLong(0);
+
     // 当前JVM中mmap句柄数量
-    private static final AtomicInteger TotalMappedFiles = new AtomicInteger(0);
+    private static final AtomicInteger TOTAL_MAPPED_FILES = new AtomicInteger(0);
+
     // 映射的文件名
     private final String fileName;
+
     // 映射的起始偏移量
     private final long fileFromOffset;
     // 映射的文件大小，定长
@@ -81,16 +90,16 @@ public class MappedFile extends ReferenceResource {
         try {
             this.fileChannel = new RandomAccessFile(this.file, "rw").getChannel();
             this.mappedByteBuffer = this.fileChannel.map(MapMode.READ_WRITE, 0, fileSize);
-            TotalMappedVirtualMemory.addAndGet(fileSize);
-            TotalMappedFiles.incrementAndGet();
+            TOTAL_MAPPED_VIRTUAL_MEMORY.addAndGet(fileSize);
+            TOTAL_MAPPED_FILES.incrementAndGet();
             ok = true;
         }
         catch (FileNotFoundException e) {
-            log.error("create file channel " + this.fileName + " Failed. ", e);
+            LOGGER.error("create file channel " + this.fileName + " Failed. ", e);
             throw e;
         }
         catch (IOException e) {
-            log.error("map file " + this.fileName + " Failed. ", e);
+            LOGGER.error("map file " + this.fileName + " Failed. ", e);
             throw e;
         }
         finally {
@@ -106,7 +115,7 @@ public class MappedFile extends ReferenceResource {
             File f = new File(dirName);
             if (!f.exists()) {
                 boolean result = f.mkdirs();
-                log.info(dirName + " mkdir " + (result ? "OK" : "Failed"));
+                LOGGER.info(dirName + " mkdir " + (result ? "OK" : "Failed"));
             }
         }
     }
@@ -167,12 +176,12 @@ public class MappedFile extends ReferenceResource {
 
 
     public static int getTotalMappedFiles() {
-        return TotalMappedFiles.get();
+        return TOTAL_MAPPED_FILES.get();
     }
 
 
     public static long getTotalMappedVirtualMemory() {
-        return TotalMappedVirtualMemory.get();
+        return TOTAL_MAPPED_VIRTUAL_MEMORY.get();
     }
 
 
@@ -226,7 +235,7 @@ public class MappedFile extends ReferenceResource {
         }
 
         // 上层应用应该保证不会走到这里
-        log.error("MappedFile.appendMessage return null, wrotePosition: " + currentPos + " fileSize: "
+        LOGGER.error("MappedFile.appendMessage return null, wrotePosition: " + currentPos + " fileSize: "
                 + this.fileSize);
         return new AppendMessageResult(AppendMessageStatus.UNKNOWN_ERROR);
     }
@@ -277,7 +286,7 @@ public class MappedFile extends ReferenceResource {
                 this.release();
             }
             else {
-                log.warn("in commit, hold failed, commit offset = " + this.committedPosition.get());
+                LOGGER.warn("in commit, hold failed, commit offset = " + this.committedPosition.get());
                 this.committedPosition.set(this.wrotePosition.get());
             }
         }
@@ -331,13 +340,13 @@ public class MappedFile extends ReferenceResource {
                 return new SelectMappedBufferResult(this.fileFromOffset + pos, byteBufferNew, size, this);
             }
             else {
-                log.warn("matched, but hold failed, request pos: " + pos + ", fileFromOffset: "
+                LOGGER.warn("matched, but hold failed, request pos: " + pos + ", fileFromOffset: "
                         + this.fileFromOffset);
             }
         }
         // 请求参数非法
         else {
-            log.warn("selectMappedBuffer request pos invalid, request pos: " + pos + ", size: " + size
+            LOGGER.warn("selectMappedBuffer request pos invalid, request pos: " + pos + ", size: " + size
                     + ", fileFromOffset: " + this.fileFromOffset);
         }
 
@@ -370,23 +379,23 @@ public class MappedFile extends ReferenceResource {
     public boolean cleanup(final long currentRef) {
         // 如果没有被shutdown，则不可以unmap文件，否则会crash
         if (this.isAvailable()) {
-            log.error("this file[REF:" + currentRef + "] " + this.fileName
+            LOGGER.error("this file[REF:" + currentRef + "] " + this.fileName
                     + " have not shutdown, stop unmaping.");
             return false;
         }
 
         // 如果已经cleanup，再次操作会引起crash
         if (this.isCleanupOver()) {
-            log.error("this file[REF:" + currentRef + "] " + this.fileName
+            LOGGER.error("this file[REF:" + currentRef + "] " + this.fileName
                     + " have cleanup, do not do it again.");
             // 必须返回true
             return true;
         }
 
         clean(this.mappedByteBuffer);
-        TotalMappedVirtualMemory.addAndGet(this.fileSize * (-1));
-        TotalMappedFiles.decrementAndGet();
-        log.info("unmap file[REF:" + currentRef + "] " + this.fileName + " OK");
+        TOTAL_MAPPED_VIRTUAL_MEMORY.addAndGet(this.fileSize * (-1));
+        TOTAL_MAPPED_FILES.decrementAndGet();
+        LOGGER.info("unmap file[REF:" + currentRef + "] " + this.fileName + " OK");
         return true;
     }
 
@@ -402,23 +411,23 @@ public class MappedFile extends ReferenceResource {
         if (this.isCleanupOver()) {
             try {
                 this.fileChannel.close();
-                log.info("close file channel " + this.fileName + " OK");
+                LOGGER.info("close file channel " + this.fileName + " OK");
 
                 long beginTime = System.currentTimeMillis();
                 boolean result = this.file.delete();
-                log.info("delete file[REF:" + this.getRefCount() + "] " + this.fileName
+                LOGGER.info("delete file[REF:" + this.getRefCount() + "] " + this.fileName
                         + (result ? " OK, " : " Failed, ") + "W:" + this.getWrotePosition() + " M:"
                         + this.getCommittedPosition() + ", "
                         + UtilAll.computeEclipseTimeMilliseconds(beginTime));
             }
             catch (Exception e) {
-                log.warn("close file channel " + this.fileName + " Failed. ", e);
+                LOGGER.warn("close file channel " + this.fileName + " Failed. ", e);
             }
 
             return true;
         }
         else {
-            log.warn("destroy mapped file[REF:" + this.getRefCount() + "] " + this.fileName
+            LOGGER.warn("destroy mapped file[REF:" + this.getRefCount() + "] " + this.fileName
                     + " Failed. cleanupOver: " + this.cleanupOver);
         }
 

@@ -176,7 +176,7 @@ public class IndexService extends ServiceThread {
         List<Long> phyOffsets = new ArrayList<Long>(maxNum);
         // TODO 可能需要返回给最终用户
         long indexLastUpdateTimestamp = 0;
-        long indexLastUpdatePhyoffset = 0;
+        long indexLastUpdatePhyOffset = 0;
         maxNum = Math.min(maxNum, this.defaultMessageStore.getMessageStoreConfig().getMaxMsgsNumBatch());
         try {
             this.readWriteLock.readLock().lock();
@@ -186,7 +186,7 @@ public class IndexService extends ServiceThread {
                     boolean lastFile = (i == this.indexFileList.size());
                     if (lastFile) {
                         indexLastUpdateTimestamp = f.getEndTimestamp();
-                        indexLastUpdatePhyoffset = f.getEndPhyOffset();
+                        indexLastUpdatePhyOffset = f.getEndPhyOffset();
                     }
 
                     if (f.isTimeMatched(begin, end)) {
@@ -210,7 +210,7 @@ public class IndexService extends ServiceThread {
             this.readWriteLock.readLock().unlock();
         }
 
-        return new QueryOffsetResult(phyOffsets, indexLastUpdateTimestamp, indexLastUpdatePhyoffset);
+        return new QueryOffsetResult(phyOffsets, indexLastUpdateTimestamp, indexLastUpdatePhyOffset);
     }
 
 
@@ -222,11 +222,11 @@ public class IndexService extends ServiceThread {
     /**
      * 向队列中添加请求，队列满情况下，丢弃请求
      */
-    public void putRequest(final Object[] reqs) {
-        boolean offer = this.requestQueue.offer(reqs);
+    public void putRequest(final Object[] requests) {
+        boolean offer = this.requestQueue.offer(requests);
         if (!offer) {
             if (log.isDebugEnabled()) {
-                log.debug("putRequest index failed, {}", reqs);
+                log.debug("putRequest index failed, {}", requests);
             }
         }
     }
@@ -277,8 +277,8 @@ public class IndexService extends ServiceThread {
                 }
 
                 if (keys != null && keys.length() > 0) {
-                    String[] keyset = keys.split(MessageConst.KEY_SEPARATOR);
-                    for (String key : keyset) {
+                    String[] keySet = keys.split(MessageConst.KEY_SEPARATOR);
+                    for (String key : keySet) {
                         // TODO 是否需要TRIM
                         if (key.length() > 0) {
                             for (boolean ok =
@@ -315,7 +315,7 @@ public class IndexService extends ServiceThread {
         IndexFile indexFile = null;
 
         // 如果创建失败，尝试重建3次
-        for (int times = 0; null == indexFile && times < 3; times++) {
+        for (int times = 0; times < 3; times++) {
             indexFile = this.getAndCreateLastIndexFile();
             if (null != indexFile)
                 break;
@@ -367,12 +367,10 @@ public class IndexService extends ServiceThread {
         // 如果没找到，使用写锁创建文件
         if (indexFile == null) {
             try {
-                String fileName =
-                        this.storePath + File.separator
-                                + UtilAll.timeMillisToHumanString(System.currentTimeMillis());
-                indexFile =
-                        new IndexFile(fileName, this.hashSlotNum, this.indexNum, lastUpdateEndPhyOffset,
-                                lastUpdateIndexTimestamp);
+                String fileName = this.storePath + File.separator
+                        + UtilAll.timeMillisToHumanString(System.currentTimeMillis());
+                indexFile = new IndexFile(fileName, this.hashSlotNum, this.indexNum, lastUpdateEndPhyOffset,
+                        lastUpdateIndexTimestamp);
                 this.readWriteLock.writeLock().lock();
                 this.indexFileList.add(indexFile);
             } catch (Exception e) {
