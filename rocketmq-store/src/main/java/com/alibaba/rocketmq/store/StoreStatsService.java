@@ -38,11 +38,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class StoreStatsService extends ServiceThread {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.StoreLoggerName);
     // 采样频率，1秒钟采样一次
-    private static final int FrequencyOfSampling = 1000;
+    private static final int FREQUENCY_OF_SAMPLING = 1000;
     // 采样最大记录数，超过则将之前的删除掉
-    private static final int MaxRecordsOfSampling = 60 * 10;
+    private static final int MAX_RECORDS_OF_SAMPLING = 60 * 10;
     // 打印TPS数据间隔时间，单位秒，1分钟
-    private static int PrintTPSInterval = 60 * 1;
+    private static final int PRINT_TPS_INTERVAL = 60;
     // putMessage，失败次数
     private final AtomicLong putMessageFailedTimes = new AtomicLong(0);
     // putMessage，调用总数
@@ -122,8 +122,7 @@ public class StoreStatsService extends ServiceThread {
 
         if (value > this.putMessageEntireTimeMax) {
             this.lockPut.lock();
-            this.putMessageEntireTimeMax =
-                    value > this.putMessageEntireTimeMax ? value : this.putMessageEntireTimeMax;
+            this.putMessageEntireTimeMax = value > this.putMessageEntireTimeMax ? value : this.putMessageEntireTimeMax;
             this.lockPut.unlock();
         }
     }
@@ -270,8 +269,7 @@ public class StoreStatsService extends ServiceThread {
             CallSnapshot last = this.getTimesFoundList.getLast();
 
             if (this.getTimesFoundList.size() > time) {
-                CallSnapshot lastBefore =
-                        this.getTimesFoundList.get(this.getTimesFoundList.size() - (time + 1));
+                CallSnapshot lastBefore = this.getTimesFoundList.get(this.getTimesFoundList.size() - (time + 1));
                 result += CallSnapshot.getTPS(lastBefore, last);
             }
         }
@@ -384,8 +382,7 @@ public class StoreStatsService extends ServiceThread {
                 CallSnapshot last = this.getTimesFoundList.getLast();
 
                 if (this.getTimesFoundList.size() > time) {
-                    CallSnapshot lastBefore =
-                            this.getTimesFoundList.get(this.getTimesFoundList.size() - (time + 1));
+                    CallSnapshot lastBefore = this.getTimesFoundList.get(this.getTimesFoundList.size() - (time + 1));
                     found = CallSnapshot.getTPS(lastBefore, last);
                 }
             }
@@ -393,8 +390,7 @@ public class StoreStatsService extends ServiceThread {
                 CallSnapshot last = this.getTimesMissList.getLast();
 
                 if (this.getTimesMissList.size() > time) {
-                    CallSnapshot lastBefore =
-                            this.getTimesMissList.get(this.getTimesMissList.size() - (time + 1));
+                    CallSnapshot lastBefore = this.getTimesMissList.get(this.getTimesMissList.size() - (time + 1));
                     miss = CallSnapshot.getTPS(lastBefore, last);
                 }
             }
@@ -439,10 +435,8 @@ public class StoreStatsService extends ServiceThread {
         result.put("putMessageEntireTimeMax", String.valueOf(this.putMessageEntireTimeMax));
         result.put("putMessageTimesTotal", String.valueOf(totalTimes));
         result.put("putMessageSizeTotal", String.valueOf(this.getPutMessageSizeTotal()));
-        result.put("putMessageDistributeTime",
-            String.valueOf(this.getPutMessageDistributeTimeStringInfo(totalTimes)));
-        result.put("putMessageAverageSize",
-            String.valueOf((this.getPutMessageSizeTotal() / totalTimes.doubleValue())));
+        result.put("putMessageDistributeTime", String.valueOf(this.getPutMessageDistributeTimeStringInfo(totalTimes)));
+        result.put("putMessageAverageSize", String.valueOf((this.getPutMessageSizeTotal() / totalTimes.doubleValue())));
         result.put("dispatchMaxBuffer", String.valueOf(this.dispatchMaxBuffer));
         result.put("getMessageEntireTimeMax", String.valueOf(this.getMessageEntireTimeMax));
         result.put("putTps", String.valueOf(this.getPutTps()));
@@ -460,7 +454,7 @@ public class StoreStatsService extends ServiceThread {
 
         while (!this.isStoped()) {
             try {
-                this.waitForRunning(FrequencyOfSampling);
+                this.waitForRunning(FREQUENCY_OF_SAMPLING);
 
                 this.sampling();
 
@@ -479,25 +473,25 @@ public class StoreStatsService extends ServiceThread {
         this.lockSampling.lock();
         try {
             this.putTimesList.add(new CallSnapshot(System.currentTimeMillis(), getPutMessageTimesTotal()));
-            if (this.putTimesList.size() > (MaxRecordsOfSampling + 1)) {
+            if (this.putTimesList.size() > (MAX_RECORDS_OF_SAMPLING + 1)) {
                 this.putTimesList.removeFirst();
             }
 
             this.getTimesFoundList.add(new CallSnapshot(System.currentTimeMillis(),
                 this.getMessageTimesTotalFound.get()));
-            if (this.getTimesFoundList.size() > (MaxRecordsOfSampling + 1)) {
+            if (this.getTimesFoundList.size() > (MAX_RECORDS_OF_SAMPLING + 1)) {
                 this.getTimesFoundList.removeFirst();
             }
 
             this.getTimesMissList.add(new CallSnapshot(System.currentTimeMillis(),
                 this.getMessageTimesTotalMiss.get()));
-            if (this.getTimesMissList.size() > (MaxRecordsOfSampling + 1)) {
+            if (this.getTimesMissList.size() > (MAX_RECORDS_OF_SAMPLING + 1)) {
                 this.getTimesMissList.removeFirst();
             }
 
             this.transferredMsgCountList.add(new CallSnapshot(System.currentTimeMillis(),
                 this.getMessageTransferredMsgCount.get()));
-            if (this.transferredMsgCountList.size() > (MaxRecordsOfSampling + 1)) {
+            if (this.transferredMsgCountList.size() > (MAX_RECORDS_OF_SAMPLING + 1)) {
                 this.transferredMsgCountList.removeFirst();
             }
 
@@ -512,16 +506,16 @@ public class StoreStatsService extends ServiceThread {
      * 1分钟打印一次TPS
      */
     private void printTps() {
-        if (System.currentTimeMillis() > (this.lastPrintTimestamp + PrintTPSInterval * 1000)) {
+        if (System.currentTimeMillis() > (this.lastPrintTimestamp + PRINT_TPS_INTERVAL * 1000)) {
             this.lastPrintTimestamp = System.currentTimeMillis();
 
-            log.info("put_tps {}", this.getPutTps(PrintTPSInterval));
+            log.info("put_tps {}", this.getPutTps(PRINT_TPS_INTERVAL));
 
-            log.info("get_found_tps {}", this.getGetFoundTps(PrintTPSInterval));
+            log.info("get_found_tps {}", this.getGetFoundTps(PRINT_TPS_INTERVAL));
 
-            log.info("get_miss_tps {}", this.getGetMissTps(PrintTPSInterval));
+            log.info("get_miss_tps {}", this.getGetMissTps(PRINT_TPS_INTERVAL));
 
-            log.info("get_transferred_tps {}", this.getGetTransferredTps(PrintTPSInterval));
+            log.info("get_transferred_tps {}", this.getGetTransferredTps(PRINT_TPS_INTERVAL));
         }
     }
 
