@@ -26,7 +26,7 @@ public class NettyServerConfig {
     private int serverWorkerThreads = 8;
     private int serverCallbackExecutorThreads = 0;
     private int serverSelectorThreads = 3;
-    private int serverOnewaySemaphoreValue = 256;
+    private int serverOneWaySemaphoreValue = 256;
     private int serverAsyncSemaphoreValue = 64;
     private int serverChannelMaxIdleTimeSeconds = 120;
 
@@ -72,13 +72,13 @@ public class NettyServerConfig {
     }
 
 
-    public int getServerOnewaySemaphoreValue() {
-        return serverOnewaySemaphoreValue;
+    public int getServerOneWaySemaphoreValue() {
+        return serverOneWaySemaphoreValue;
     }
 
 
-    public void setServerOnewaySemaphoreValue(int serverOnewaySemaphoreValue) {
-        this.serverOnewaySemaphoreValue = serverOnewaySemaphoreValue;
+    public void setServerOneWaySemaphoreValue(int serverOneWaySemaphoreValue) {
+        this.serverOneWaySemaphoreValue = serverOneWaySemaphoreValue;
     }
 
 

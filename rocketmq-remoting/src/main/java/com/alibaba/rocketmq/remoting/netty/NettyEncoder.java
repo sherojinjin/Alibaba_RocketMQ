@@ -15,18 +15,16 @@
  */
 package com.alibaba.rocketmq.remoting.netty;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToByteEncoder;
-
-import java.nio.ByteBuffer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToByteEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
 
 
 /**
@@ -36,8 +34,8 @@ import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
  * @since 2013-7-13
  */
 public class NettyEncoder extends MessageToByteEncoder<RemotingCommand> {
-    private static final Logger log = LoggerFactory.getLogger(RemotingHelper.RemotingLogName);
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RemotingHelper.RemotingLogName);
 
     @Override
     public void encode(ChannelHandlerContext ctx, RemotingCommand remotingCommand, ByteBuf out)
@@ -51,9 +49,9 @@ public class NettyEncoder extends MessageToByteEncoder<RemotingCommand> {
             }
         }
         catch (Exception e) {
-            log.error("encode exception, " + RemotingHelper.parseChannelRemoteAddr(ctx.channel()), e);
+            LOGGER.error("encode exception, " + RemotingHelper.parseChannelRemoteAddr(ctx.channel()), e);
             if (remotingCommand != null) {
-                log.error(remotingCommand.toString());
+                LOGGER.error(remotingCommand.toString());
             }
             // 这里关闭后， 会在pipeline中产生事件，通过具体的close事件来清理数据结构
             RemotingUtil.closeChannel(ctx.channel());

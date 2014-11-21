@@ -83,7 +83,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
     public NettyRemotingServer(final NettyServerConfig nettyServerConfig,
             final ChannelEventListener channelEventListener) {
-        super(nettyServerConfig.getServerOnewaySemaphoreValue(), nettyServerConfig
+        super(nettyServerConfig.getServerOneWaySemaphoreValue(), nettyServerConfig
             .getServerAsyncSemaphoreValue());
         this.serverBootstrap = new ServerBootstrap();
         this.nettyServerConfig = nettyServerConfig;

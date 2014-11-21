@@ -4,8 +4,7 @@ public class NettySystemConfig {
     public static final String SystemPropertyNettyPooledByteBufAllocatorEnable =
             "com.rocketmq.remoting.nettyPooledByteBufAllocatorEnable";
     public static boolean NettyPooledByteBufAllocatorEnable = //
-            Boolean
-                .parseBoolean(System.getProperty(SystemPropertyNettyPooledByteBufAllocatorEnable, "false"));
+            Boolean.parseBoolean(System.getProperty(SystemPropertyNettyPooledByteBufAllocatorEnable, "false"));
 
     public static final String SystemPropertySocketSndbufSize = //
             "com.rocketmq.remoting.socket.sndbuf.size";
