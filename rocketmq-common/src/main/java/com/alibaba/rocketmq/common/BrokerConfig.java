@@ -45,16 +45,20 @@ public class BrokerConfig {
     private long brokerId = MixAll.MASTER_ID;
     private int brokerPermission = PermName.PERM_READ | PermName.PERM_WRITE;
     private int defaultTopicQueueNums = 8;
+
     // 自动创建Topic功能是否开启（线上建议关闭）
     @ImportantField
-    private boolean autoCreateTopicEnable = true;
+    private boolean autoCreateTopicEnable = false;
+
     // 自动创建以集群名字命名的Topic功能是否开启
     private boolean clusterTopicEnable = true;
+
     // 自动创建以服务器名字命名的Topic功能是否开启
     private boolean brokerTopicEnable = true;
+
     // 自动创建订阅组功能是否开启（线上建议关闭）
     @ImportantField
-    private boolean autoCreateSubscriptionGroup = true;
+    private boolean autoCreateSubscriptionGroup = false;
 
     private int sendMessageThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 4;
     private int pullMessageThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
