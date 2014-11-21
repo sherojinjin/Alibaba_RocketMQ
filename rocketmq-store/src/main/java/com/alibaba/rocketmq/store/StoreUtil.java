@@ -24,17 +24,17 @@ import java.lang.management.OperatingSystemMXBean;
  * @since 13-8-3
  */
 public class StoreUtil {
-    public static final long TotalPhysicalMemorySize = getTotalPhysicalMemorySize();
 
+    public static final long TotalPhysicalMemorySize = getTotalPhysicalMemorySize();
 
     @SuppressWarnings("restriction")
     public static long getTotalPhysicalMemorySize() {
-        long physicalTotal = 1024 * 1024 * 1024 * 24;
+        //This place overflows.
+        long physicalTotal = 1024L * 1024 * 1024 * 24;
         OperatingSystemMXBean osmxb = ManagementFactory.getOperatingSystemMXBean();
         if (osmxb instanceof com.sun.management.OperatingSystemMXBean) {
             physicalTotal = ((com.sun.management.OperatingSystemMXBean) osmxb).getTotalPhysicalMemorySize();
         }
-
         return physicalTotal;
     }
 }

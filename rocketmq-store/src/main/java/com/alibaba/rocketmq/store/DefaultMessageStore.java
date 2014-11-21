@@ -391,7 +391,7 @@ public class DefaultMessageStore implements MessageStore {
             return new PutMessageResult(PutMessageStatus.SERVICE_NOT_AVAILABLE, null);
         }
 
-        if (!this.runningFlags.isWriteable()) {
+        if (!this.runningFlags.isWritable()) {
             long value = this.printTimes.getAndIncrement();
             if ((value % 50000) == 0) {
                 log.warn("message store is not writeable, so putMessage is forbidden "

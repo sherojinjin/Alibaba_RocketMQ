@@ -25,7 +25,7 @@ public class RunningFlags {
     // 禁止读权限
     private static final int NotReadableBit = 1;
     // 禁止写权限
-    private static final int NotWriteableBit = 1 << 1;
+    private static final int NotWritableBit = 1 << 1;
     // 逻辑队列是否发生错误
     private static final int WriteLogicsQueueErrorBit = 1 << 2;
     // 索引文件是否发生错误
@@ -71,17 +71,17 @@ public class RunningFlags {
     }
 
 
-    public boolean getAndMakeWriteable() {
-        boolean result = this.isWriteable();
+    public boolean getAndMakeWritable() {
+        boolean result = this.isWritable();
         if (!result) {
-            this.flagBits &= ~NotWriteableBit;
+            this.flagBits &= ~NotWritableBit;
         }
         return result;
     }
 
 
-    public boolean isWriteable() {
-        if ((this.flagBits & (NotWriteableBit | WriteLogicsQueueErrorBit | DiskFullBit | WriteIndexFileErrorBit)) == 0) {
+    public boolean isWritable() {
+        if ((this.flagBits & (NotWritableBit | WriteLogicsQueueErrorBit | DiskFullBit | WriteIndexFileErrorBit)) == 0) {
             return true;
         }
 
@@ -89,10 +89,10 @@ public class RunningFlags {
     }
 
 
-    public boolean getAndMakeNotWriteable() {
-        boolean result = this.isWriteable();
+    public boolean getAndMakeNotWritable() {
+        boolean result = this.isWritable();
         if (result) {
-            this.flagBits |= NotWriteableBit;
+            this.flagBits |= NotWritableBit;
         }
         return result;
     }

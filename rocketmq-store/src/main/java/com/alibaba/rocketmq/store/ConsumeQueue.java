@@ -396,7 +396,7 @@ public class ConsumeQueue {
     public void putMessagePostionInfoWrapper(long offset, int size, long tagsCode, long storeTimestamp,
             long logicOffset) {
         final int MaxRetries = 5;
-        boolean canWrite = this.defaultMessageStore.getRunningFlags().isWriteable();
+        boolean canWrite = this.defaultMessageStore.getRunningFlags().isWritable();
         for (int i = 0; i < MaxRetries && canWrite; i++) {
             boolean result = this.putMessagePositionInfo(offset, size, tagsCode, logicOffset);
             if (result) {

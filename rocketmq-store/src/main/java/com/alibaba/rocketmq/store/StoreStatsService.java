@@ -46,11 +46,9 @@ public class StoreStatsService extends ServiceThread {
     // putMessage，失败次数
     private final AtomicLong putMessageFailedTimes = new AtomicLong(0);
     // putMessage，调用总数
-    private final Map<String, AtomicLong> putMessageTopicTimesTotal =
-            new ConcurrentHashMap<String, AtomicLong>(128);
+    private final Map<String, AtomicLong> putMessageTopicTimesTotal = new ConcurrentHashMap<String, AtomicLong>(128);
     // putMessage，Message Size Total
-    private final Map<String, AtomicLong> putMessageTopicSizeTotal =
-            new ConcurrentHashMap<String, AtomicLong>(128);
+    private final Map<String, AtomicLong> putMessageTopicSizeTotal = new ConcurrentHashMap<String, AtomicLong>(128);
     // getMessage，调用总数
     private final AtomicLong getMessageTimesTotalFound = new AtomicLong(0);
     private final AtomicLong getMessageTransferredMsgCount = new AtomicLong(0);
@@ -188,7 +186,7 @@ public class StoreStatsService extends ServiceThread {
             long value = i.get();
             double ratio = value / total.doubleValue();
             sb.append("\r\n\t\t");
-            sb.append(value + "(" + (ratio * 100) + "%)");
+            sb.append(value).append("(").append(ratio * 100).append("%)");
         }
 
         return sb.toString();
@@ -309,8 +307,7 @@ public class StoreStatsService extends ServiceThread {
             CallSnapshot last = this.getTimesMissList.getLast();
 
             if (this.getTimesMissList.size() > time) {
-                CallSnapshot lastBefore =
-                        this.getTimesMissList.get(this.getTimesMissList.size() - (time + 1));
+                CallSnapshot lastBefore = this.getTimesMissList.get(this.getTimesMissList.size() - (time + 1));
                 result += CallSnapshot.getTPS(lastBefore, last);
             }
 
