@@ -39,6 +39,8 @@
 		<module>rocketmq-example</module>
 		<module>rocketmq-filtersrv</module>
 		<module>rocketmq-srvutil</module>
+		<module>rocketmq-spring-adaptor</module>
+		<module>rocketmq-web-example</module>
 	</modules>
 
 	<developers>

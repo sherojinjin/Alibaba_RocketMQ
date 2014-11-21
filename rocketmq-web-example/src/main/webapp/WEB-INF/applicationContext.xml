@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+       <bean name="messageListener" class="com.ndpmedia.rocketmq.web.message.listener.DefaultMessageListener" />
+
+
+       <bean name="consumerAdaptor" class="com.ndpmedia.rocketmq.consumer.pojo.ConsumerAdaptor" init-method="init">
+              <property name="topic" value="TopicA" />
+              <property name="consumerGroup" value="DefaultGroup" />
+              <property name="nameServer" value="172.30.50.112:9876" />
+              <property name="messageListener" ref="messageListener" />
+       </bean>
+
+
+</beans>
