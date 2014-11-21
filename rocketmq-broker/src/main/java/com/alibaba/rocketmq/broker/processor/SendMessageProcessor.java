@@ -366,8 +366,8 @@ public class SendMessageProcessor implements NettyRequestProcessor {
         }
 
         // 检查topic是否存在
-        TopicConfig topicConfig =
-                this.brokerController.getTopicConfigManager().selectTopicConfig(requestHeader.getTopic());
+        TopicConfig topicConfig = this.brokerController.getTopicConfigManager()
+                .selectTopicConfig(requestHeader.getTopic());
         if (null == topicConfig) {
             // 如果是单元化模式，则对 topic 进行设置
             int topicSysFlag = 0;

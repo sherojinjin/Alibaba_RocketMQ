@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,10 +81,8 @@ public class TopicConfigManager extends ConfigManager {
                 String topic = MixAll.DEFAULT_TOPIC;
                 TopicConfig topicConfig = new TopicConfig(topic);
                 this.systemTopicList.add(topic);
-                topicConfig.setReadQueueNums(this.brokerController.getBrokerConfig()
-                    .getDefaultTopicQueueNums());
-                topicConfig.setWriteQueueNums(this.brokerController.getBrokerConfig()
-                    .getDefaultTopicQueueNums());
+                topicConfig.setReadQueueNums(this.brokerController.getBrokerConfig().getDefaultTopicQueueNums());
+                topicConfig.setWriteQueueNums(this.brokerController.getBrokerConfig().getDefaultTopicQueueNums());
                 int perm = PermName.PERM_INHERIT | PermName.PERM_READ | PermName.PERM_WRITE;
                 topicConfig.setPerm(perm);
                 this.topicConfigTable.put(topicConfig.getTopicName(), topicConfig);
@@ -147,9 +146,8 @@ public class TopicConfigManager extends ConfigManager {
 
 
     public boolean isTopicCanSendMessage(final String topic) {
-        boolean reservedWords =
-                topic.equals(MixAll.DEFAULT_TOPIC)
-                        || topic.equals(this.brokerController.getBrokerConfig().getBrokerClusterName());
+        boolean reservedWords = topic.equals(MixAll.DEFAULT_TOPIC) ||
+                topic.equals(this.brokerController.getBrokerConfig().getBrokerClusterName());
 
         return !reservedWords;
     }
@@ -180,9 +178,8 @@ public class TopicConfigManager extends ConfigManager {
                         if (PermName.isInherited(defaultTopicConfig.getPerm())) {
                             topicConfig = new TopicConfig(topic);
 
-                            int queueNums =
-                                    clientDefaultTopicQueueNums > defaultTopicConfig.getWriteQueueNums() ? defaultTopicConfig
-                                        .getWriteQueueNums() : clientDefaultTopicQueueNums;
+                            int queueNums = clientDefaultTopicQueueNums > defaultTopicConfig.getWriteQueueNums() ?
+                                    defaultTopicConfig.getWriteQueueNums() : clientDefaultTopicQueueNums;
 
                             if (queueNums < 0) {
                                 queueNums = 0;
@@ -436,7 +433,12 @@ public class TopicConfigManager extends ConfigManager {
             TopicConfigSerializeWrapper topicConfigSerializeWrapper =
                     TopicConfigSerializeWrapper.fromJson(jsonString, TopicConfigSerializeWrapper.class);
             if (topicConfigSerializeWrapper != null) {
-                this.topicConfigTable.putAll(topicConfigSerializeWrapper.getTopicConfigTable());
+
+                //This would skip overriding default topicConfig
+                for (Map.Entry<String, TopicConfig> entry : topicConfigSerializeWrapper.getTopicConfigTable().entrySet()) {
+                    topicConfigTable.putIfAbsent(entry.getKey(), entry.getValue());
+                }
+
                 this.dataVersion.assignNewOne(topicConfigSerializeWrapper.getDataVersion());
                 this.printLoadDataWhenFirstBoot(topicConfigSerializeWrapper);
             }

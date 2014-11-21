@@ -118,8 +118,7 @@ public class SubscriptionGroupManager extends ConfigManager {
     @Override
     public void decode(String jsonString) {
         if (jsonString != null) {
-            SubscriptionGroupManager obj =
-                    RemotingSerializable.fromJson(jsonString, SubscriptionGroupManager.class);
+            SubscriptionGroupManager obj = RemotingSerializable.fromJson(jsonString, SubscriptionGroupManager.class);
             if (obj != null) {
                 this.subscriptionGroupTable.putAll(obj.subscriptionGroupTable);
                 this.dataVersion.assignNewOne(obj.dataVersion);
