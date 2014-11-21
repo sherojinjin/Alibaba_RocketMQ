@@ -1,20 +1,20 @@
 package com.alibaba.rocketmq.tools.command.message;
 
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.rocketmq.store.ConsumeQueue;
 import com.alibaba.rocketmq.store.MappedFile;
 import com.alibaba.rocketmq.store.MappedFileQueue;
 import com.alibaba.rocketmq.store.SelectMappedBufferResult;
 import com.alibaba.rocketmq.store.config.StorePathConfigHelper;
 
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
- * @auther lansheng.zj
+ * @author lansheng.zj
  */
 public class Store {
 
@@ -258,6 +258,6 @@ public class Store {
                     + ", error count=" + errorCount + ", cost:" + (System.currentTimeMillis() - startTime));
         }
 
-        System.out.println("travel " + (success ? "ok" : "fail"));
+        System.out.println("travel " + (success ? "isOK" : "fail"));
     }
 }

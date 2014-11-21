@@ -115,11 +115,11 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
             return this.unlockBatchMQ(ctx, request);
 
             // 订阅组配置
-        case RequestCode.UPDATE_AND_CREATE_SUBSCRIPTIONGROUP:
+        case RequestCode.UPDATE_AND_CREATE_SUBSCRIPTION_GROUP:
             return this.updateAndCreateSubscriptionGroup(ctx, request);
-        case RequestCode.GET_ALL_SUBSCRIPTIONGROUP_CONFIG:
+        case RequestCode.GET_ALL_SUBSCRIPTION_GROUP_CONFIG:
             return this.getAllSubscriptionGroup(ctx, request);
-        case RequestCode.DELETE_SUBSCRIPTIONGROUP:
+        case RequestCode.DELETE_SUBSCRIPTION_GROUP:
             return this.deleteSubscriptionGroup(ctx, request);
 
             // 统计信息，获取Topic统计信息
@@ -164,7 +164,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
             return this.getSystemTopicListFromBroker(ctx, request);
 
             // 删除失效队列
-        case RequestCode.CLEAN_EXPIRED_CONSUMEQUEUE:
+        case RequestCode.CLEAN_EXPIRED_CONSUME_QUEUE:
             return this.cleanExpiredConsumeQueue();
 
         case RequestCode.GET_CONSUMER_RUNNING_INFO:

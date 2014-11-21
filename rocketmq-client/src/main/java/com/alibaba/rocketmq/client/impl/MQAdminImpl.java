@@ -128,7 +128,7 @@ public class MQAdminImpl {
             if (topicRouteData != null) {
                 TopicPublishInfo topicPublishInfo =
                         MQClientInstance.topicRouteData2TopicPublishInfo(topic, topicRouteData);
-                if (topicPublishInfo != null && topicPublishInfo.ok()) {
+                if (topicPublishInfo != null && topicPublishInfo.isOK()) {
                     return topicPublishInfo.getMessageQueueList();
                 }
             }

@@ -194,7 +194,7 @@ public class MQClientAPIImpl {
         }
 
         RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.UPDATE_AND_CREATE_SUBSCRIPTIONGROUP, null);
+                RemotingCommand.createRequestCommand(RequestCode.UPDATE_AND_CREATE_SUBSCRIPTION_GROUP, null);
 
         byte[] body = RemotingSerializable.encode(config);
         request.setBody(body);
@@ -1379,7 +1379,7 @@ public class MQClientAPIImpl {
         requestHeader.setTopic(topic);
 
         RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.GET_ROUTEINTO_BY_TOPIC, requestHeader);
+                RemotingCommand.createRequestCommand(RequestCode.GET_ROUTE_INFO_BY_TOPIC, requestHeader);
 
         RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);
         assert response != null;
@@ -1417,7 +1417,7 @@ public class MQClientAPIImpl {
         requestHeader.setTopic(topicWithProjectGroup);
 
         RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.GET_ROUTEINTO_BY_TOPIC, requestHeader);
+                RemotingCommand.createRequestCommand(RequestCode.GET_ROUTE_INFO_BY_TOPIC, requestHeader);
 
         RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);
         assert response != null;
@@ -1568,7 +1568,7 @@ public class MQClientAPIImpl {
         DeleteSubscriptionGroupRequestHeader requestHeader = new DeleteSubscriptionGroupRequestHeader();
         requestHeader.setGroupName(groupWithProjectGroup);
         RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.DELETE_SUBSCRIPTIONGROUP, requestHeader);
+                RemotingCommand.createRequestCommand(RequestCode.DELETE_SUBSCRIPTION_GROUP, requestHeader);
 
         RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
         assert response != null;
@@ -2055,7 +2055,7 @@ public class MQClientAPIImpl {
             RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException,
             InterruptedException {
         RemotingCommand request =
-                RemotingCommand.createRequestCommand(RequestCode.CLEAN_EXPIRED_CONSUMEQUEUE, null);
+                RemotingCommand.createRequestCommand(RequestCode.CLEAN_EXPIRED_CONSUME_QUEUE, null);
         RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
         switch (response.getCode()) {
         case ResponseCode.SUCCESS: {

@@ -40,7 +40,7 @@ public class TopicPublishInfo {
     }
 
 
-    public boolean ok() {
+    public boolean isOK() {
         return null != this.messageQueueList && !this.messageQueueList.isEmpty();
     }
 

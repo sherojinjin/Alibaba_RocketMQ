@@ -157,12 +157,10 @@ public class ClientManageProcessor implements NettyRequestProcessor {
                 RemotingCommand.createResponseCommand(QueryConsumerOffsetResponseHeader.class);
         final QueryConsumerOffsetResponseHeader responseHeader =
                 (QueryConsumerOffsetResponseHeader) response.readCustomHeader();
-        final QueryConsumerOffsetRequestHeader requestHeader =
-                (QueryConsumerOffsetRequestHeader) request
-                    .decodeCommandCustomHeader(QueryConsumerOffsetRequestHeader.class);
+        final QueryConsumerOffsetRequestHeader requestHeader = (QueryConsumerOffsetRequestHeader) request
+                .decodeCommandCustomHeader(QueryConsumerOffsetRequestHeader.class);
 
-        long offset =
-                this.brokerController.getConsumerOffsetManager().queryOffset(
+        long offset = this.brokerController.getConsumerOffsetManager().queryOffset(
                     requestHeader.getConsumerGroup(), requestHeader.getTopic(), requestHeader.getQueueId());
 
         // 订阅组存在
@@ -173,9 +171,8 @@ public class ClientManageProcessor implements NettyRequestProcessor {
         }
         // 订阅组不存在
         else {
-            long minOffset =
-                    this.brokerController.getMessageStore().getMinOffsetInQuque(requestHeader.getTopic(),
-                        requestHeader.getQueueId());
+            long minOffset = this.brokerController.getMessageStore().getMinOffsetInQuque(requestHeader.getTopic(),
+                    requestHeader.getQueueId());
             // 订阅组不存在情况下，如果这个队列的消息最小Offset是0，则表示这个Topic上线时间不长，服务器堆积的数据也不多，那么这个订阅组就从0开始消费。
             // 尤其对于Topic队列数动态扩容时，必须要从0开始消费。
             if (minOffset <= 0 && !this.brokerController.getMessageStore()

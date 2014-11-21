@@ -72,11 +72,11 @@ public class RequestCode {
     // Namesrv 卸载一个Broker，数据都是持久化的
     public static final int UNREGISTER_BROKER = 104;
     // Namesrv 根据Topic获取Broker Name、队列数(包含读队列与写队列)
-    public static final int GET_ROUTEINTO_BY_TOPIC = 105;
+    public static final int GET_ROUTE_INFO_BY_TOPIC = 105;
     // Namesrv 获取注册到Name Server的所有Broker集群信息
     public static final int GET_BROKER_CLUSTER_INFO = 106;
-    public static final int UPDATE_AND_CREATE_SUBSCRIPTIONGROUP = 200;
-    public static final int GET_ALL_SUBSCRIPTIONGROUP_CONFIG = 201;
+    public static final int UPDATE_AND_CREATE_SUBSCRIPTION_GROUP = 200;
+    public static final int GET_ALL_SUBSCRIPTION_GROUP_CONFIG = 201;
     public static final int GET_TOPIC_STATS_INFO = 202;
     public static final int GET_CONSUMER_CONNECTION_LIST = 203;
     public static final int GET_PRODUCER_CONNECTION_LIST = 204;
@@ -85,7 +85,7 @@ public class RequestCode {
     // 从Name Server获取完整Topic列表
     public static final int GET_ALL_TOPIC_LIST_FROM_NAMESERVER = 206;
     // 从Broker删除订阅组
-    public static final int DELETE_SUBSCRIPTIONGROUP = 207;
+    public static final int DELETE_SUBSCRIPTION_GROUP = 207;
     // 从Broker获取消费状态（进度）
     public static final int GET_CONSUME_STATS = 208;
     // Suspend Consumer消费过程
@@ -142,7 +142,7 @@ public class RequestCode {
     public static final int GET_SYSTEM_TOPIC_LIST_FROM_BROKER = 305;
 
     // 清理失效队列
-    public static final int CLEAN_EXPIRED_CONSUMEQUEUE = 306;
+    public static final int CLEAN_EXPIRED_CONSUME_QUEUE = 306;
 
     // 通过Broker查询Consumer内存数据
     // 2014-07-19 Add By shijia
