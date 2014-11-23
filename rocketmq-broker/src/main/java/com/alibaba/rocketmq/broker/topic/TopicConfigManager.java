@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -385,8 +384,7 @@ public class TopicConfigManager extends ConfigManager {
         TopicConfig topicConfig = this.topicConfigTable.get(topic);
         if (topicConfig == null) {
             return false;
-        }
-        else {
+        } else {
             return topicConfig.isOrder();
         }
     }
@@ -433,12 +431,7 @@ public class TopicConfigManager extends ConfigManager {
             TopicConfigSerializeWrapper topicConfigSerializeWrapper =
                     TopicConfigSerializeWrapper.fromJson(jsonString, TopicConfigSerializeWrapper.class);
             if (topicConfigSerializeWrapper != null) {
-
-                //This would skip overriding default topicConfig
-                for (Map.Entry<String, TopicConfig> entry : topicConfigSerializeWrapper.getTopicConfigTable().entrySet()) {
-                    topicConfigTable.putIfAbsent(entry.getKey(), entry.getValue());
-                }
-
+                this.topicConfigTable.putAll(topicConfigSerializeWrapper.getTopicConfigTable());
                 this.dataVersion.assignNewOne(topicConfigSerializeWrapper.getDataVersion());
                 this.printLoadDataWhenFirstBoot(topicConfigSerializeWrapper);
             }
