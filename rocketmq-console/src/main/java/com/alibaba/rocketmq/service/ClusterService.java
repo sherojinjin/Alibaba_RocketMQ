@@ -68,8 +68,7 @@ public class ClusterService extends AbstractService {
         // "#Version", "#InTPS",
         // "#OutTPS", "#InTotalYest", "#OutTotalYest", "#InTotalToday",
         // "#OutTotalToday" };
-        String[] instanceThead =
-                new String[] { "#BID", "#Addr", "#Version", "#InTPS", "#OutTPS", "#InTotalYest",
+        String[] instanceThead = new String[] { "#BID", "#Addr", "#Version", "#InTPS", "#OutTPS", "#InTotalYest",
                               "#OutTotalYest", "#InTotalToday", "#OutTotalToday" };
 
         Set<Map.Entry<String, Set<String>>> clusterSet =
@@ -85,8 +84,7 @@ public class ClusterService extends AbstractService {
 
             Object[] clusterTR = clusterTable.createTR();
             clusterTR[0] = clusterName;
-            Table brokerTable =
-                    new Table(new String[]{"#Broker Name", "#Broker Instance"}, brokerNameSet.size());
+            Table brokerTable = new Table(new String[]{"#Broker Name", "#Broker Instance"}, brokerNameSet.size());
             clusterTR[1] = brokerTable;
             clusterTable.insertTR(clusterTR);// A
 
