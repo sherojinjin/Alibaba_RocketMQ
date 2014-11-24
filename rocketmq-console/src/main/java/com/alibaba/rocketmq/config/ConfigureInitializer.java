@@ -3,7 +3,6 @@ package com.alibaba.rocketmq.config;
 
 import com.alibaba.rocketmq.common.MixAll;
 
-
 /**
  * 把需要补充的初始化环境变量正式的放入系统属性中
  * 
@@ -24,6 +23,8 @@ public class ConfigureInitializer {
     }
 
     public void init() {
-        System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, namesrvAddr);
+        if (null != namesrvAddr) {
+            System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, namesrvAddr);
+        }
     }
 }
