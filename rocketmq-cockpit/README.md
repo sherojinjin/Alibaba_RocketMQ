@@ -33,9 +33,9 @@ Assuming at home folder.
 
 5. Copy war and configuration files to jetty `webapps` folder.
 
-    `cp ~/RocketMQ-Cockpit/target/rocketmq-cockpit-1.0-SNAPSHOT.war ~/jetty/webapps`
+    `cp ~/RocketMQ-Cockpit/target/rocketmq-cockpit-3.2.2.war ~/jetty/webapps`
 
-    `cp ~/RocketMQ-Cockpit/doc/rocketmq-cockpit-1.0-SNAPSHOT.xml ~/jetty/webapps`
+    `cp ~/RocketMQ-Cockpit/doc/rocketmq-cockpit-3.2.2.xml ~/jetty/webapps`
 
     `cp ~/RocketMQ-Cockpit/doc/start.sh ~/jetty`
 

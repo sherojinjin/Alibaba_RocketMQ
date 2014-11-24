@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BrokerScheduler {
 
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 5000)
     public void queryAccumulation() {
         System.out.println("Broker Accumulation");
     }
