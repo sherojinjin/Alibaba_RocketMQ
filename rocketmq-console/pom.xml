@@ -26,7 +26,6 @@
 		<commons-io.version>2.4</commons-io.version>
 		<commons-cli.version>1.2</commons-cli.version>
 		<commons-httpclient.version>3.1</commons-httpclient.version>
-		<netty-all.version>4.0.13.Final</netty-all.version>
 		<fastjson.version>1.1.37</fastjson.version>
 		<servlet-api.version>2.5</servlet-api.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -107,7 +106,6 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
-			<version>${netty-all.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>

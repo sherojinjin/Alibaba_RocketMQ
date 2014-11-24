@@ -4,6 +4,8 @@ import com.alibaba.rocketmq.common.Table;
 import com.alibaba.rocketmq.common.UtilAll;
 import com.alibaba.rocketmq.common.admin.RollbackStats;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
+import com.alibaba.rocketmq.tools.command.offset.CloneGroupOffsetCommand;
+import com.alibaba.rocketmq.tools.command.offset.ResetOffsetByTimeCommand;
 import com.alibaba.rocketmq.tools.command.offset.ResetOffsetByTimeOldCommand;
 import com.alibaba.rocketmq.validate.CmdTrace;
 import org.apache.commons.cli.Option;
@@ -108,5 +110,15 @@ public class OffsetService extends AbstractService {
             shutdownDefaultMQAdminExt(defaultMQAdminExt);
         }
         throw t;
+    }
+
+    @CmdTrace(cmdClazz = CloneGroupOffsetCommand.class)
+    public Table cloneGroupOffSet() {
+        throw new UnsupportedOperationException("Not Supported Now");
+    }
+
+    @CmdTrace(cmdClazz = ResetOffsetByTimeCommand.class)
+    public Table resetOffSetByTime() {
+        throw new UnsupportedOperationException("Not Implemented");
     }
 }

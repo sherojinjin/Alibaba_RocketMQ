@@ -165,9 +165,7 @@ public class Table {
     public static Table Map2VTable(Map<String, String> map) {
         int row = map.entrySet().size();
         Table table = new Table(row, 2);
-        Iterator<Map.Entry<String, String>> ite = map.entrySet().iterator();
-        while (ite.hasNext()) {
-            Map.Entry<String, String> entry = ite.next();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
             Object[] tr = table.createTR();
             tr[0] = entry.getKey();
             tr[1] = entry.getValue();

@@ -1,19 +1,5 @@
 package com.alibaba.rocketmq.service;
 
-import static com.alibaba.rocketmq.common.Tool.str;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.cli.Option;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.rocketmq.common.MQVersion;
 import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.Table;
@@ -29,9 +15,19 @@ import com.alibaba.rocketmq.common.subscription.SubscriptionGroupConfig;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
 import com.alibaba.rocketmq.tools.command.consumer.ConsumerProgressSubCommand;
+import com.alibaba.rocketmq.tools.command.consumer.ConsumerStatusSubCommand;
 import com.alibaba.rocketmq.tools.command.consumer.DeleteSubscriptionGroupCommand;
 import com.alibaba.rocketmq.tools.command.consumer.UpdateSubGroupSubCommand;
 import com.alibaba.rocketmq.validate.CmdTrace;
+import org.apache.commons.cli.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+import static com.alibaba.rocketmq.common.Tool.str;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 
 /**
@@ -361,6 +357,12 @@ public class ConsumerService extends AbstractService {
         }
 
         throw t;
+    }
+
+
+    @CmdTrace(cmdClazz = ConsumerStatusSubCommand.class)
+    public Table consumerStatus() {
+        throw new UnsupportedOperationException("Not Implemented");
     }
 }
 

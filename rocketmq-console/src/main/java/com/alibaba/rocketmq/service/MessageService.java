@@ -1,19 +1,5 @@
 package com.alibaba.rocketmq.service;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.apache.commons.cli.Option;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.rocketmq.client.QueryResult;
 import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
 import com.alibaba.rocketmq.client.consumer.PullResult;
@@ -24,10 +10,16 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
-import com.alibaba.rocketmq.tools.command.message.QueryMsgByIdSubCommand;
-import com.alibaba.rocketmq.tools.command.message.QueryMsgByKeySubCommand;
-import com.alibaba.rocketmq.tools.command.message.QueryMsgByOffsetSubCommand;
+import com.alibaba.rocketmq.tools.command.message.*;
 import com.alibaba.rocketmq.validate.CmdTrace;
+import org.apache.commons.cli.Option;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.io.*;
+import java.util.*;
 
 
 /**
@@ -269,4 +261,96 @@ public class MessageService extends AbstractService {
         }
         throw t;
     }
+
+    @CmdTrace(cmdClazz = PrintMessageSubCommand.class)
+    public Table printMsg(String topicName, String charsetName, String startTime, String endTime, String subExpression)
+            throws Throwable {
+        Throwable t = null;
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP);
+
+        consumer.setInstanceName(Long.toString(System.currentTimeMillis()));
+
+        try {
+
+            if (null == topicName) {
+                t = new Exception("topicName required");
+            }
+
+            if (null == charsetName) {
+                charsetName = "UTF-8";
+            }
+
+            if (null == subExpression) {
+                subExpression = "*";
+            }
+
+            consumer.start();
+
+            Table table = null;
+
+            Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(topicName);
+            for (MessageQueue mq : mqs) {
+                long minOffset = consumer.minOffset(mq);
+                long maxOffset = consumer.maxOffset(mq);
+
+                if (null != startTime) {
+                    long timeValue = PrintMessageSubCommand.timestampFormat(startTime);
+                    minOffset = consumer.searchOffset(mq, timeValue);
+                }
+
+                if (null != endTime) {
+                    long timeValue = PrintMessageSubCommand.timestampFormat(endTime);
+                    maxOffset = consumer.searchOffset(mq, timeValue);
+                }
+
+                READQ: for (long offset = minOffset; offset < maxOffset;) {
+                    try {
+                        PullResult pullResult = consumer.pull(mq, subExpression, offset, 32);
+                        offset = pullResult.getNextBeginOffset();
+                        switch (pullResult.getPullStatus()) {
+                            case FOUND:
+                                wrapMsgList2Table(table, pullResult.getMsgFoundList(), charsetName);
+                                break;
+                            case NO_MATCHED_MSG:
+                            case NO_NEW_MSG:
+                            case OFFSET_ILLEGAL:
+                                break READQ;
+                        }
+                    }
+                    catch (Exception e) {
+                        break;
+                    }
+                }
+            }
+
+            return table;
+        } catch (Throwable e) {
+            logger.error(e.getMessage(), e);
+            t = e;
+        } finally {
+            consumer.shutdown();
+        }
+        throw t;
+    }
+
+    @CmdTrace(cmdClazz = CheckMsgSubCommand.class)
+    public Table checkMsg() {
+        throw new UnsupportedOperationException("Not Implemented");
+    }
+
+    private Table wrapMsgList2Table(Table table, List<MessageExt> msgFoundList, String charset)
+            throws UnsupportedEncodingException {
+
+        if (null == table) {
+            table = new Table(new String[] {"MsgId", "Content"},
+                    null == msgFoundList || msgFoundList.isEmpty() ? 1 : 1 + msgFoundList.size());
+        }
+
+        for (MessageExt msg : msgFoundList) {
+            table.insertTR(new String[]{msg.getMsgId(), new String(msg.getBody(), charset)});
+        }
+        return table;
+    }
+
+
 }

@@ -10,6 +10,7 @@ import com.alibaba.rocketmq.common.protocol.body.TopicList;
 import com.alibaba.rocketmq.common.protocol.route.TopicRouteData;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
+import com.alibaba.rocketmq.tools.command.broker.CleanExpiredCQSubCommand;
 import com.alibaba.rocketmq.tools.command.topic.*;
 import com.alibaba.rocketmq.validate.CmdTrace;
 import org.apache.commons.cli.Option;
@@ -243,5 +244,16 @@ public class TopicService extends AbstractService {
         }
         throw t;
     }
+
+    @CmdTrace(cmdClazz = UpdateOrderConfCommand.class)
+    public Table updateOrderConf() {
+        throw new UnsupportedOperationException("Not Implemented");
+    }
+
+    @CmdTrace(cmdClazz = CleanExpiredCQSubCommand.class)
+    public Table cleanExpiredCQ() {
+        throw new UnsupportedOperationException("Not Implemented");
+    }
+
 
 }

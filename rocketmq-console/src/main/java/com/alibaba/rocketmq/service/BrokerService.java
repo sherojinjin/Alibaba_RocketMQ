@@ -6,6 +6,7 @@ import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
 import com.alibaba.rocketmq.tools.command.broker.BrokerStatusSubCommand;
 import com.alibaba.rocketmq.tools.command.broker.UpdateBrokerConfigSubCommand;
+import com.alibaba.rocketmq.tools.command.consumer.StartMonitoringSubCommand;
 import com.alibaba.rocketmq.validate.CmdTrace;
 import org.apache.commons.cli.Option;
 import org.apache.commons.lang.StringUtils;
@@ -101,5 +102,11 @@ public class BrokerService extends AbstractService {
             shutdownDefaultMQAdminExt(defaultMQAdminExt);
         }
         throw t;
+    }
+
+
+    @CmdTrace(cmdClazz = StartMonitoringSubCommand.class)
+    public Table startMonitoring() {
+        throw new UnsupportedOperationException("Not Implemented");
     }
 }

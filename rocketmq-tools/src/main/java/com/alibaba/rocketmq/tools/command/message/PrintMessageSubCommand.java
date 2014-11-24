@@ -15,14 +15,6 @@
  */
 package com.alibaba.rocketmq.tools.command.message;
 
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-
 import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
 import com.alibaba.rocketmq.client.consumer.PullResult;
 import com.alibaba.rocketmq.common.MixAll;
@@ -31,6 +23,13 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.remoting.RPCHook;
 import com.alibaba.rocketmq.tools.command.SubCommand;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -67,15 +66,11 @@ public class PrintMessageSubCommand implements SubCommand {
         opt.setRequired(false);
         options.addOption(opt);
 
-        opt =
-                new Option("b", "beginTimestamp ", true,
-                    "Begin timestamp[currentTimeMillis|yyyy-MM-dd#HH:mm:ss:SSS]");
+        opt = new Option("b", "beginTimestamp ", true, "Begin timestamp[currentTimeMillis|yyyy-MM-dd#HH:mm:ss:SSS]");
         opt.setRequired(false);
         options.addOption(opt);
 
-        opt =
-                new Option("e", "endTimestamp ", true,
-                    "End timestamp[currentTimeMillis|yyyy-MM-dd#HH:mm:ss:SSS]");
+        opt = new Option("e", "endTimestamp ", true, "End timestamp[currentTimeMillis|yyyy-MM-dd#HH:mm:ss:SSS]");
         opt.setRequired(false);
         options.addOption(opt);
 
@@ -86,10 +81,9 @@ public class PrintMessageSubCommand implements SubCommand {
     public static void printMessage(final List<MessageExt> msgs, final String charsetName) {
         for (MessageExt msg : msgs) {
             try {
-                System.out.printf("MSGID: %s %s BODY: %s\n", msg.getMsgId(), msg.toString(),
-                    new String(msg.getBody(), charsetName));
-            }
-            catch (UnsupportedEncodingException e) {
+                System.out.printf("MSGID: %s %s BODY: %s\n", msg.getMsgId(), msg.toString(), new String(msg.getBody(),
+                        charsetName));
+            } catch (UnsupportedEncodingException e) {
             }
         }
     }

@@ -1,9 +1,8 @@
 package com.alibaba.rocketmq.validate;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.alibaba.rocketmq.tools.command.MQAdminStartup;
+import com.alibaba.rocketmq.tools.command.SubCommand;
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -12,9 +11,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.rocketmq.tools.command.MQAdminStartup;
-import com.alibaba.rocketmq.tools.command.SubCommand;
-import com.google.common.collect.Maps;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -61,15 +60,14 @@ public class CmdValidator extends MQAdminStartup implements BeanPostProcessor,
                     String methodName = clazz.getSimpleName() + "." + method.getName();
                     if (method2cmd.get(methodName) == null) {
                         method2cmd.put(methodName, cmdClazz);
-                    }
-                    else {
+                    } else {
                         throw new IllegalStateException(methodName + " = {"
                                 + method2cmd.get(methodName).getName() + "," + cmdClazz.getName() + "}");
                     }
+
                     if (cmd2method.get(cmdClazz) == null) {
                         cmd2method.put(cmdClazz, methodName);
-                    }
-                    else {
+                    } else {
                         throw new IllegalStateException(cmdClazz + " = {" + cmd2method.get(cmdClazz) + ","
                                 + methodName + "}");
                     }
@@ -87,8 +85,7 @@ public class CmdValidator extends MQAdminStartup implements BeanPostProcessor,
                 if (cmd2method.containsKey(cmd.getClass())) {
                     logger.info("cmdClazz:{}, method:{}", cmd.getClass().getName(),
                         cmd2method.get(cmd.getClass()));
-                }
-                else {
+                } else {
                     if (isThrowDone()) {
                         throw new IllegalStateException("cmdClazz:" + cmd.getClass().getName()
                                 + ", method not found");
