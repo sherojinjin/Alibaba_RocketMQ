@@ -117,18 +117,18 @@ public class ClusterService extends AbstractService {
                         try {
                             KVTable kvTable = defaultMQAdminExt.fetchBrokerRuntimeStats(next1.getValue());
                             String putTps = kvTable.getTable().get("putTps");
-                            String getTransferedTps = kvTable.getTable().get("getTransferedTps");
+                            String getTransferredTps = kvTable.getTable().get("getTransferredTps");
                             version = kvTable.getTable().get("brokerVersionDesc");
                             {
                                 String[] tpss = putTps.split(" ");
-                                if (tpss != null && tpss.length > 0) {
+                                if (tpss.length > 0) {
                                     in = Double.parseDouble(tpss[0]);
                                 }
                             }
 
                             {
-                                String[] tpss = getTransferedTps.split(" ");
-                                if (tpss != null && tpss.length > 0) {
+                                String[] tpss = getTransferredTps.split(" ");
+                                if (tpss.length > 0) {
                                     out = Double.parseDouble(tpss[0]);
                                 }
                             }
@@ -146,19 +146,15 @@ public class ClusterService extends AbstractService {
                             String msgGetTotalTodayMorning = kvTable.getTable().get("msgGetTotalTodayMorning");
                             String msgGetTotalTodayNow = kvTable.getTable().get("msgGetTotalTodayNow");
 
-                            InTotalYest =
-                                    Long.parseLong(msgPutTotalTodayMorning)
-                                            - Long.parseLong(msgPutTotalYesterdayMorning);
-                            OutTotalYest =
-                                    Long.parseLong(msgGetTotalTodayMorning)
-                                            - Long.parseLong(msgGetTotalYesterdayMorning);
+                            InTotalYest = Long.parseLong(msgPutTotalTodayMorning)
+                                    - Long.parseLong(msgPutTotalYesterdayMorning);
+                            OutTotalYest = Long.parseLong(msgGetTotalTodayMorning)
+                                    - Long.parseLong(msgGetTotalYesterdayMorning);
 
-                            InTotalToday =
-                                    Long.parseLong(msgPutTotalTodayNow)
-                                            - Long.parseLong(msgPutTotalTodayMorning);
-                            OutTotalToday =
-                                    Long.parseLong(msgGetTotalTodayNow)
-                                            - Long.parseLong(msgGetTotalTodayMorning);
+                            InTotalToday = Long.parseLong(msgPutTotalTodayNow)
+                                    - Long.parseLong(msgPutTotalTodayMorning);
+                            OutTotalToday = Long.parseLong(msgGetTotalTodayNow)
+                                    - Long.parseLong(msgGetTotalTodayMorning);
 
                             instanceTR[5] = str(InTotalYest);
                             instanceTR[6] = str(OutTotalYest);
