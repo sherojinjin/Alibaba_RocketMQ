@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.springframework.org/schema/beans"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="
-           http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
-           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
-       "
-	default-autowire="byName">
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:security="http://www.springframework.org/schema/security"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	                       http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/security
+                           http://www.springframework.org/schema/security/spring-security.xsd"
+	   default-autowire="byName">
 
 	<context:property-placeholder location="classpath:config.properties" />
 	<context:annotation-config />
@@ -14,6 +18,34 @@
 	<context:component-scan base-package="com.alibaba.rocketmq">
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
+
+
+	<security:http pattern="/js/**" security="none" />
+	<security:http pattern="/css/**" security="none" />
+	<security:http pattern="/img/**" security="none" />
+	<security:http pattern="/rocketmq/**" security="none" />
+
+	<security:http auto-config="true">
+
+		<!-- Use the comment out line in production -->
+
+		<!--
+          <security:intercept-url pattern="/**" access="ROLE_ADMIN" requires-channel="https" />
+          -->
+		<security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
+		<security:session-management>
+			<security:concurrency-control max-sessions="1" />
+		</security:session-management>
+	</security:http>
+
+
+	<security:authentication-manager>
+		<security:authentication-provider>
+			<security:user-service>
+				<security:user name="root" authorities="ROLE_ADMIN" password="password" />
+			</security:user-service>
+		</security:authentication-provider>
+	</security:authentication-manager>
 
 	<bean id="configureInitializer" class="com.alibaba.rocketmq.config.ConfigureInitializer" init-method="init">
 		<property name="namesrvAddr" value="${rocketmq.namesrv.addr}" />
