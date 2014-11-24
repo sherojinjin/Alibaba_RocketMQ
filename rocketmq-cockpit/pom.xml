@@ -19,6 +19,7 @@
         <spring.version>3.2.5.RELEASE</spring.version>
         <cxf.version>3.0.2</cxf.version>
         <guava.version>18.0</guava.version>
+        <name.server.data.dir>${project.basedir}/name_server/NameServers.dat</name.server.data.dir>
     </properties>
 
     <dependencies>
@@ -105,6 +106,14 @@
 
 
     <build>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
