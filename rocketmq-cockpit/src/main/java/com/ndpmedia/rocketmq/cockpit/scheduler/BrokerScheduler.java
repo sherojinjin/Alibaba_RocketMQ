@@ -8,7 +8,7 @@ public class BrokerScheduler {
 
     @Scheduled(fixedRate = 5000)
     public void queryAccumulation() {
-        System.out.println("Broker Accumulation");
+        //System.out.println("Broker Accumulation");
     }
 
 }
