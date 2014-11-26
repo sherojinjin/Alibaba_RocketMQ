@@ -46,7 +46,16 @@ public class FileManager {
             File nameServerFile = new File(CONFIG.getProperty(fileKey));
 
             if (! nameServerFile.exists()) {
-                throw new IOException("File [" + nameServerFile.getCanonicalPath() + "] does not exist");
+                File parentFile = nameServerFile.getParentFile();
+                if (!parentFile.exists()) {
+                    if (!parentFile.mkdirs()) {
+                        throw new IOException("Unable to create parent folder for [" + nameServerFile.getCanonicalPath() + "]");
+                    }
+                }
+
+                if (!nameServerFile.createNewFile()) {
+                    throw new IOException("Unable to create file: [" + nameServerFile.getCanonicalPath() + "]");
+                }
             }
 
             BufferedReader bufferedReader = null;
