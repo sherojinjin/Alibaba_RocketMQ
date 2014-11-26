@@ -46,8 +46,6 @@ public class MixAll {
     // http://jmenv.tbsite.net:8080/rocketmq/nsaddr
     public static final String WS_ADDR = "http://" + WS_DOMAIN_NAME + ":8080/rocketmq/" + WS_DOMAIN_SUBGROUP;
 
-    public static final String WS_IP_MAPPING_ADDR = "http://" + WS_DOMAIN_NAME + ":8080/rocketmq/ip?innerIP=";
-
     public static final String DEFAULT_TOPIC = "TBW102";
     public static final String BENCHMARK_TOPIC = "BenchmarkTest";
     public static final String DEFAULT_PRODUCER_GROUP = "DEFAULT_PRODUCER";

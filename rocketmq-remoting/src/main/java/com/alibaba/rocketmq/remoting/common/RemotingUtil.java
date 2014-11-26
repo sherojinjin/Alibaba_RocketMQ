@@ -15,7 +15,6 @@
  */
 package com.alibaba.rocketmq.remoting.common;
 
-import com.alibaba.rocketmq.common.MixAll;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -49,6 +48,9 @@ import java.util.Enumeration;
 public class RemotingUtil {
     private static final Logger log = LoggerFactory.getLogger(RemotingHelper.RemotingLogName);
     public static final String OS_NAME = System.getProperty("os.name");
+
+    public static final String WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain", "rocketmq.api");
+    public static final String WS_IP_MAPPING_ADDR = "http://" + WS_DOMAIN_NAME + ":8080/rocketmq/ip?innerIP=";
 
     private static boolean isLinuxPlatform = false;
     private static boolean isWindowsPlatform = false;
@@ -122,7 +124,7 @@ public class RemotingUtil {
             return innerIP;
         } else {
             CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpGet getMethod = new HttpGet(MixAll.WS_IP_MAPPING_ADDR + innerIP);
+            HttpGet getMethod = new HttpGet(WS_IP_MAPPING_ADDR + innerIP);
             CloseableHttpResponse response = null;
 
             try {

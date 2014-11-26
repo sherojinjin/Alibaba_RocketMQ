@@ -51,10 +51,5 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.3.6</version>
 		</dependency>
-
-		<dependency>
-			<groupId>com.alibaba.rocketmq</groupId>
-			<artifactId>rocketmq-common</artifactId>
-		</dependency>
 	</dependencies>
 </project>
