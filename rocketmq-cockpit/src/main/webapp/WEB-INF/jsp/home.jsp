@@ -11,6 +11,7 @@
 
     <ul>
       <li><a href="cockpit/name-server/">Manage Name Server</a></li>
+        <li><a href="cockpit/ip/">Manage IP Mapping</a></li>
       <li><a href="cockpit/broker/">Broker Status</a></li>
     </ul>
 

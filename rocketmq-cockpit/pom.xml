@@ -20,6 +20,7 @@
         <cxf.version>3.0.2</cxf.version>
         <guava.version>18.0</guava.version>
         <name.server.data.dir>${project.basedir}/name_server/NameServers.dat</name.server.data.dir>
+        <ip.mapping.data.dir>${project.basedir}/ip_mapping/IP.dat</ip.mapping.data.dir>
     </properties>
 
     <dependencies>

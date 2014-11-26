@@ -1,14 +1,17 @@
-package com.ndpmedia.rocketmq.nameserver;
+package com.ndpmedia.rocketmq.io;
+
+import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
+@Service
 public class FileManager {
 
     private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
 
     private static final Properties CONFIG = new Properties();
 
@@ -34,16 +37,16 @@ public class FileManager {
     }
 
 
-    public List<String> read() throws IOException {
+    public List<String> read(String fileKey) throws IOException {
         try {
             if (!lock.readLock().tryLock()) {
                 lock.readLock().lockInterruptibly();
             }
 
-            File nameServerFile = new File(CONFIG.getProperty("name_server_file"));
+            File nameServerFile = new File(CONFIG.getProperty(fileKey));
 
             if (! nameServerFile.exists()) {
-                throw new IOException("Name server file[" + nameServerFile.getCanonicalPath() + "] does not exist");
+                throw new IOException("File [" + nameServerFile.getCanonicalPath() + "] does not exist");
             }
 
             BufferedReader bufferedReader = null;
@@ -72,20 +75,20 @@ public class FileManager {
     }
 
 
-    public void write(ConcurrentHashMap<String, Long> map, boolean append) throws IOException {
+    public <T> void write(String fileKey, final Map<String, T> map, boolean append) throws IOException {
         try {
             if (!lock.writeLock().tryLock()) {
                 lock.writeLock().lockInterruptibly();
             }
 
-            File nameServerFile = new File(CONFIG.getProperty("name_server_file"));
+            File nameServerFile = new File(CONFIG.getProperty(fileKey));
             if (!nameServerFile.exists()) {
                 if (!nameServerFile.getParentFile().exists()) {
                     nameServerFile.getParentFile().mkdirs();
                 }
 
                 if (!nameServerFile.createNewFile()) {
-                    throw new IOException("Failed to create name server file for storing name server list");
+                    throw new IOException("Failed to create file");
                 }
             }
 
@@ -95,7 +98,7 @@ public class FileManager {
                 bufferedWriter = new BufferedWriter(new FileWriter(nameServerFile, append));
 
                 boolean first = true;
-                for (Map.Entry<String, Long> row : map.entrySet()) {
+                for (Map.Entry<String, T> row : map.entrySet()) {
                     if (first) {
                         first = false;
                     } else {

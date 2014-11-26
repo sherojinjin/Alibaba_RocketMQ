@@ -9,7 +9,7 @@
     <script src="http://libs.baidu.com/jquery/1.7.0/jquery.js"></script>
     <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
     <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
-    <script src="js/script.js" type="application/javascript"></script>
+    <script src="js/name-server.js" type="application/javascript"></script>
 </head>
 <body>
     <div class="container-fluid">

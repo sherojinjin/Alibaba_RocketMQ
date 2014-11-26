@@ -48,7 +48,7 @@ public class BrokerConfig {
 
     // 自动创建Topic功能是否开启（线上建议关闭）
     @ImportantField
-    private boolean autoCreateTopicEnable = false;
+    private boolean autoCreateTopicEnable = true;
 
     // 自动创建以集群名字命名的Topic功能是否开启
     private boolean clusterTopicEnable = true;
@@ -58,7 +58,7 @@ public class BrokerConfig {
 
     // 自动创建订阅组功能是否开启（线上建议关闭）
     @ImportantField
-    private boolean autoCreateSubscriptionGroup = false;
+    private boolean autoCreateSubscriptionGroup = true;
 
     private int sendMessageThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 4;
     private int pullMessageThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
@@ -94,6 +94,11 @@ public class BrokerConfig {
 
     // notify consumerId changed 开关
     private boolean notifyConsumerIdsChangedEnable = true;
+
+    /**
+     * Indicate if the broker is running in cloud environment where elastic IP is not available on default.
+     */
+    private boolean useElasticIp = false;
 
 
     public static String localHostName() {

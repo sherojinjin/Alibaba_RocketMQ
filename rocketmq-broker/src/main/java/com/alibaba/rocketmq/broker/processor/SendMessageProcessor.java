@@ -77,8 +77,7 @@ public class SendMessageProcessor implements NettyRequestProcessor {
 
     public SendMessageProcessor(final BrokerController brokerController) {
         this.brokerController = brokerController;
-        this.storeHost =
-                new InetSocketAddress(brokerController.getBrokerConfig().getBrokerIP1(), brokerController
+        this.storeHost = new InetSocketAddress(brokerController.getBrokerConfig().getBrokerIP1(), brokerController
                         .getNettyServerConfig().getListenPort());
     }
 

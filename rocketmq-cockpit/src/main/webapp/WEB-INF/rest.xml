@@ -24,6 +24,7 @@
     <jaxrs:server id="nameServerAddress" address="/">
         <jaxrs:serviceBeans>
             <ref bean="nameServerAddressBean" />
+            <ref bean="ipMappingBean" />
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider">
@@ -40,6 +41,22 @@
         </jaxrs:extensionMappings>
     </jaxrs:server>
 
-    <bean id="nameServerAddressBean" class="com.ndpmedia.rocketmq.nameserver.NameServerAddressServiceImpl" />
+    <bean id="fileManager" class="com.ndpmedia.rocketmq.io.FileManager" />
+
+    <bean id="nameServerManager" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerManagerImpl">
+        <property name="fileManager" ref="fileManager" />
+    </bean>
+
+    <bean id="ipMappingManager" class="com.ndpmedia.rocketmq.ip.impl.IPMappingManagerImpl">
+        <property name="fileManager" ref="fileManager" />
+    </bean>
+
+    <bean id="nameServerAddressBean" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerAddressServiceImpl">
+        <property name="nameServerManager" ref="nameServerManager" />
+    </bean>
+
+    <bean id="ipMappingBean" class="com.ndpmedia.rocketmq.ip.impl.IPMappingServiceImpl">
+        <property name="ipMappingManager" ref="ipMappingManager" />
+    </bean>
 
 </beans>
