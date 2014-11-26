@@ -15,9 +15,18 @@
  */
 package com.alibaba.rocketmq.remoting.common;
 
+import com.alibaba.rocketmq.common.MixAll;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +52,8 @@ public class RemotingUtil {
 
     private static boolean isLinuxPlatform = false;
     private static boolean isWindowsPlatform = false;
+
+    private static final int MINIMAL_IPV4_LENGTH = 7;
 
     static {
         if (OS_NAME != null && OS_NAME.toLowerCase().indexOf("linux") >= 0) {
@@ -98,6 +109,62 @@ public class RemotingUtil {
         return result;
     }
 
+    public static boolean isPrivateIPv4Address(String ip) {
+        if (null == ip || ip.isEmpty()) {
+            throw new RuntimeException("IP cannot be null or empty");
+        }
+
+        return ip.startsWith("10.") || ip.startsWith("172.16.") || ip.startsWith("192.168.");
+    }
+
+    public static String queryPublicIP(String innerIP) {
+        if (!isPrivateIPv4Address(innerIP)) {
+            return innerIP;
+        } else {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            HttpGet getMethod = new HttpGet(MixAll.WS_IP_MAPPING_ADDR + innerIP);
+            CloseableHttpResponse response = null;
+
+            try {
+                response = httpClient.execute(getMethod);
+                StatusLine statusLine = response.getStatusLine();
+                if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+                    HttpEntity entity = response.getEntity();
+                    if (entity.getContentLength() >= MINIMAL_IPV4_LENGTH) { //Minimal length of IP is 7: 8.8.8.8
+                        return EntityUtils.toString(entity);
+                    } else {
+                        return null;
+                    }
+
+                } else {
+                    log.error("Error while get public IP address for " + innerIP + ". Caused by status code error: "
+                            + statusLine.getStatusCode());
+                    return null;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (null != response) {
+                    try {
+                        response.close();
+                    } catch (IOException e) {
+                        //ignore
+                    }
+
+                    try {
+                        httpClient.close();
+                    } catch (IOException e) {
+                        //ignore
+                    }
+
+                }
+            }
+        }
+
+        return null;
+    }
+
 
     public static String getLocalAddress() {
         try {
@@ -121,8 +188,30 @@ public class RemotingUtil {
                 }
             }
 
+            //If deployed in cloud environment and elastic IP is used, we need a public IP Address here to handle
+            // scenarios which deployment of this app spans several data centers and VPC cannot communicate.
             if ("true".equals(System.getProperty("use_elastic_ip")) || "true".equals(System.getenv("ROCKETMQ_USE_ELASTIC_IP"))) {
+                String elasticIP = System.getProperty("elastic_ip");
+                if (null != elasticIP && elasticIP.trim().length() >= MINIMAL_IPV4_LENGTH) {
+                    return elasticIP;
+                }
 
+                if (!ipv4Result.isEmpty()) {
+                    for (String ip : ipv4Result) {
+                        if (ip.startsWith("127.0")) {
+                            continue;
+                        }
+
+                        if (isPrivateIPv4Address(ip)) {
+                            String publicIp = queryPublicIP(ip);
+
+                            if (null != publicIp) {
+                                return publicIp;
+                            }
+                        }
+
+                    }
+                }
             }
 
 

@@ -27,6 +27,8 @@ JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${HOME}/rmq_bk_gc.log -XX:+PrintGCDeta
 JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=${BASE_DIR}/lib"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.namesrv.domain=rocketmq.api"
+JAVA_OPT="${JAVA_OPT} -Denable_ssl=true"
+JAVA_OPT="${JAVA_OPT} -Duse_elastic_ip=true"
 JAVA_OPT="${JAVA_OPT} -Dssl_key.password="
 #JAVA_OPT="${JAVA_OPT} -Xdebug -Xrunjdwp:transport=dt_socket,address=9555,server=y,suspend=n"
 JAVA_OPT="${JAVA_OPT} -cp ${CLASSPATH}"
