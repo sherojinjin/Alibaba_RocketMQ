@@ -43,25 +43,25 @@ public class FileManager {
                 lock.readLock().lockInterruptibly();
             }
 
-            File nameServerFile = new File(CONFIG.getProperty(fileKey));
+            File dataFile = new File(CONFIG.getProperty(fileKey));
 
-            if (! nameServerFile.exists()) {
-                File parentFile = nameServerFile.getParentFile();
+            if (! dataFile.exists()) {
+                File parentFile = dataFile.getParentFile();
                 if (!parentFile.exists()) {
                     if (!parentFile.mkdirs()) {
-                        throw new IOException("Unable to create parent folder for [" + nameServerFile.getCanonicalPath() + "]");
+                        throw new IOException("Unable to create parent folder for [" + dataFile.getCanonicalPath() + "]");
                     }
                 }
 
-                if (!nameServerFile.createNewFile()) {
-                    throw new IOException("Unable to create file: [" + nameServerFile.getCanonicalPath() + "]");
+                if (!dataFile.createNewFile()) {
+                    throw new IOException("Unable to create file: [" + dataFile.getCanonicalPath() + "]");
                 }
             }
 
             BufferedReader bufferedReader = null;
 
             try {
-                bufferedReader = new BufferedReader(new FileReader(nameServerFile));
+                bufferedReader = new BufferedReader(new FileReader(dataFile));
                 List<String> result = new ArrayList<String>();
                 String line = null;
                 while (null != (line = bufferedReader.readLine())) {
@@ -90,13 +90,13 @@ public class FileManager {
                 lock.writeLock().lockInterruptibly();
             }
 
-            File nameServerFile = new File(CONFIG.getProperty(fileKey));
-            if (!nameServerFile.exists()) {
-                if (!nameServerFile.getParentFile().exists()) {
-                    nameServerFile.getParentFile().mkdirs();
+            File dataFile = new File(CONFIG.getProperty(fileKey));
+            if (!dataFile.exists()) {
+                if (!dataFile.getParentFile().exists()) {
+                    dataFile.getParentFile().mkdirs();
                 }
 
-                if (!nameServerFile.createNewFile()) {
+                if (!dataFile.createNewFile()) {
                     throw new IOException("Failed to create file");
                 }
             }
@@ -104,7 +104,7 @@ public class FileManager {
             BufferedWriter bufferedWriter = null;
 
             try {
-                bufferedWriter = new BufferedWriter(new FileWriter(nameServerFile, append));
+                bufferedWriter = new BufferedWriter(new FileWriter(dataFile, append));
 
                 boolean first = true;
                 for (Map.Entry<String, T> row : map.entrySet()) {
