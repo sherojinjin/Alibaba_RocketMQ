@@ -64,57 +64,84 @@ import java.util.concurrent.*;
  */
 public class BrokerController {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BrokerLoggerName);
+
     // 服务器配置
     private final BrokerConfig brokerConfig;
+
     // 通信层配置
     private final NettyServerConfig nettyServerConfig;
+
     private final NettyClientConfig nettyClientConfig;
+
     // 存储层配置
     private final MessageStoreConfig messageStoreConfig;
+
     // 配置文件版本号
     private final DataVersion configDataVersion = new DataVersion();
+
     // 消费进度存储
     private final ConsumerOffsetManager consumerOffsetManager;
+
     // Consumer连接、订阅关系管理
     private final ConsumerManager consumerManager;
+
     // Producer连接管理
     private final ProducerManager producerManager;
+
     // 检测所有客户端连接
     private final ClientHousekeepingService clientHousekeepingService;
+
     private final PullMessageProcessor pullMessageProcessor;
+
     private final PullRequestHoldService pullRequestHoldService;
+
     // Broker主动调用Client
     private final Broker2Client broker2Client;
+
     // 订阅组配置管理
     private final SubscriptionGroupManager subscriptionGroupManager;
+
     // 订阅组内成员发生变化，立刻通知所有成员
     private final ConsumerIdsChangeListener consumerIdsChangeListener;
+
     // 管理队列的锁分配
     private final RebalanceLockManager rebalanceLockManager = new RebalanceLockManager();
+
     // Broker的通信层客户端
     private final BrokerOuterAPI brokerOuterAPI;
+
     private final ScheduledExecutorService scheduledExecutorService = Executors
         .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("BrokerControllerScheduledThread"));
+
     // Slave定期从Master同步信息
     private final SlaveSynchronize slaveSynchronize;
+
     // 存储层对象
     private MessageStore messageStore;
+
     // 通信层对象
     private RemotingServer remotingServer;
+
     // Topic配置
     private TopicConfigManager topicConfigManager;
+
     // 处理发送消息线程池
     private ExecutorService sendMessageExecutor;
+
     // 处理拉取消息线程池
     private ExecutorService pullMessageExecutor;
+
     // 处理管理Broker线程池
     private ExecutorService adminBrokerExecutor;
+
     // 处理管理Client线程池
     private ExecutorService clientManageExecutor;
+
     // 是否需要定期更新HA Master地址
     private boolean updateMasterHAServerAddrPeriodically = false;
 
     private BrokerStats brokerStats;
+
     // 对消息写入进行流控
     private final BlockingQueue<Runnable> sendThreadPoolQueue;
 
@@ -592,8 +619,8 @@ public class BrokerController {
 
 
     public synchronized void registerBrokerAll(final boolean checkOrderConfig) {
-        TopicConfigSerializeWrapper topicConfigWrapper =
-                this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
+
+        TopicConfigSerializeWrapper topicConfigWrapper = this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
 
         // 同步 Broker 读写权限
         if (!PermName.isWriteable(this.getBrokerConfig().getBrokerPermission())

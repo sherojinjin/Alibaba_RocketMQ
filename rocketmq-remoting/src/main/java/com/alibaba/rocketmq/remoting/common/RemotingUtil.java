@@ -46,7 +46,11 @@ import java.util.Enumeration;
  * @since 2013-7-13
  */
 public class RemotingUtil {
+
+    private static final String CLASS_NAME = RemotingUtil.class.getName();
+
     private static final Logger log = LoggerFactory.getLogger(RemotingHelper.RemotingLogName);
+
     public static final String OS_NAME = System.getProperty("os.name");
 
     public static final String WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain", "rocketmq.api");
@@ -113,6 +117,7 @@ public class RemotingUtil {
 
     public static boolean isPrivateIPv4Address(String ip) {
         if (null == ip || ip.isEmpty()) {
+            log.error("Cannot determine IP is private or not when it's null or empty");
             throw new RuntimeException("IP cannot be null or empty");
         }
 
@@ -120,6 +125,9 @@ public class RemotingUtil {
     }
 
     public static String queryPublicIP(String innerIP) {
+        final String signature = CLASS_NAME + "#queryPublicIP(innerIP: {})";
+        log.debug("Enter " + signature, innerIP);
+
         if (!isPrivateIPv4Address(innerIP)) {
             return innerIP;
         } else {
@@ -132,8 +140,9 @@ public class RemotingUtil {
                 StatusLine statusLine = response.getStatusLine();
                 if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
                     HttpEntity entity = response.getEntity();
-                    if (entity.getContentLength() >= MINIMAL_IPV4_LENGTH) { //Minimal length of IP is 7: 8.8.8.8
-                        return EntityUtils.toString(entity);
+                    String publicIP = EntityUtils.toString(entity);
+                    if (null != publicIP && publicIP.length() >= MINIMAL_IPV4_LENGTH) { //Minimal length of IP is 7: 8.8.8.8
+                        return publicIP;
                     } else {
                         return null;
                     }
@@ -322,5 +331,4 @@ public class RemotingUtil {
             }
         });
     }
-
 }

@@ -169,9 +169,8 @@ public class BrokerOuterAPI {
         if (nameServerAddressList != null) {
             for (String namesrvAddr : nameServerAddressList) {
                 try {
-                    RegisterBrokerResult result =
-                            this.registerBroker(namesrvAddr, clusterName, brokerAddr, brokerName, brokerId,
-                                haServerAddr, topicConfigWrapper, filterServerList);
+                    RegisterBrokerResult result = this.registerBroker(namesrvAddr, clusterName, brokerAddr, brokerName,
+                            brokerId, haServerAddr, topicConfigWrapper, filterServerList);
                     if (result != null) {
                         registerBrokerResult = result;
                     }
