@@ -50,7 +50,7 @@ public class RemotingUtil {
     public static final String OS_NAME = System.getProperty("os.name");
 
     public static final String WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain", "rocketmq.api");
-    public static final String WS_IP_MAPPING_ADDR = "http://" + WS_DOMAIN_NAME + ":8080/rocketmq/ip?innerIP=";
+    public static final String WS_IP_MAPPING_ADDR = "http://" + WS_DOMAIN_NAME + ":80/rocketmq/ip?innerIP=";
 
     private static boolean isLinuxPlatform = false;
     private static boolean isWindowsPlatform = false;
@@ -58,11 +58,11 @@ public class RemotingUtil {
     private static final int MINIMAL_IPV4_LENGTH = 7;
 
     static {
-        if (OS_NAME != null && OS_NAME.toLowerCase().indexOf("linux") >= 0) {
+        if (OS_NAME != null && OS_NAME.toLowerCase().contains("linux")) {
             isLinuxPlatform = true;
         }
 
-        if (OS_NAME != null && OS_NAME.toLowerCase().indexOf("windows") >= 0) {
+        if (OS_NAME != null && OS_NAME.toLowerCase().contains("windows")) {
             isWindowsPlatform = true;
         }
     }
