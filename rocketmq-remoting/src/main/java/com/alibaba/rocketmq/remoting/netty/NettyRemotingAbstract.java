@@ -345,8 +345,7 @@ public abstract class NettyRemotingAbstract {
             final long timeoutMillis) throws InterruptedException, RemotingSendRequestException,
             RemotingTimeoutException {
         try {
-            final ResponseFuture responseFuture =
-                    new ResponseFuture(request.getOpaque(), timeoutMillis, null, null);
+            final ResponseFuture responseFuture = new ResponseFuture(request.getOpaque(), timeoutMillis, null, null);
             this.responseTable.put(request.getOpaque(), responseFuture);
             channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
                 @Override

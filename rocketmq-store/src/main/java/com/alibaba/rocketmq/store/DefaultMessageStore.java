@@ -111,14 +111,12 @@ public class DefaultMessageStore implements MessageStore {
         this.allocateMappedFileService = new AllocateMappedFileService();
         this.commitLog = new CommitLog(this);
         this.consumeQueueTable =
-                new ConcurrentHashMap<String/* topic */, ConcurrentHashMap<Integer/* queueId */, ConsumeQueue>>(
-                    32);
+                new ConcurrentHashMap<String/* topic */, ConcurrentHashMap<Integer/* queueId */, ConsumeQueue>>(32);
 
         this.flushConsumeQueueService = new FlushConsumeQueueService();
         this.cleanCommitLogService = new CleanCommitLogService();
         this.cleanConsumeQueueService = new CleanConsumeQueueService();
-        this.dispatchMessageService =
-                new DispatchMessageService(this.messageStoreConfig.getPutMsgIndexHighWater());
+        this.dispatchMessageService = new DispatchMessageService(this.messageStoreConfig.getPutMsgIndexHighWater());
         this.storeStatsService = new StoreStatsService();
         this.indexService = new IndexService(this);
         this.haService = new HAService(this);
@@ -502,8 +500,8 @@ public class DefaultMessageStore implements MessageStore {
 
                         int i = 0;
                         final int MaxFilterMessageCount = 16000;
-                        for (; i < bufferConsumeQueue.getSize() && i < MaxFilterMessageCount; i +=
-                                ConsumeQueue.CQStoreUnitSize) {
+                        for (; i < bufferConsumeQueue.getSize() && i < MaxFilterMessageCount;
+                             i += ConsumeQueue.CQStoreUnitSize) {
                             long offsetPy = bufferConsumeQueue.getByteBuffer().getLong();
                             int sizePy = bufferConsumeQueue.getByteBuffer().getInt();
                             long tagsCode = bufferConsumeQueue.getByteBuffer().getLong();
@@ -538,8 +536,7 @@ public class DefaultMessageStore implements MessageStore {
                                     // 统计消息数据
                                     if (isInDisk && brokerStatsManager != null) {
                                         brokerStatsManager.incGroupGetFromDiskNums(group, topic, 1);
-                                        brokerStatsManager.incGroupGetFromDiskSize(group, topic,
-                                            selectResult.getSize());
+                                        brokerStatsManager.incGroupGetFromDiskSize(group, topic, selectResult.getSize());
                                         brokerStatsManager.incBrokerGetFromDiskNums(1);
                                     }
                                 }

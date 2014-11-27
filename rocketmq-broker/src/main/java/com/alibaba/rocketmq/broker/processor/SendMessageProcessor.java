@@ -96,9 +96,7 @@ public class SendMessageProcessor implements NettyRequestProcessor {
                 SendMessageRequestHeader requestHeader = null;
 
                 if (null == requestHeaderV2) {
-                    requestHeader =
-                            (SendMessageRequestHeader) request
-                                    .decodeCommandCustomHeader(SendMessageRequestHeader.class);
+                    requestHeader = (SendMessageRequestHeader) request.decodeCommandCustomHeader(SendMessageRequestHeader.class);
                 } else {
                     requestHeader = SendMessageRequestHeaderV2.createSendMessageRequestHeaderV1(requestHeaderV2);
                 }
@@ -333,8 +331,7 @@ public class SendMessageProcessor implements NettyRequestProcessor {
 
         final RemotingCommand response =
                 RemotingCommand.createResponseCommand(SendMessageResponseHeader.class);
-        final SendMessageResponseHeader responseHeader =
-                (SendMessageResponseHeader) response.readCustomHeader();
+        final SendMessageResponseHeader responseHeader = (SendMessageResponseHeader) response.readCustomHeader();
 
         // 由于有直接返回的逻辑，所以必须要设置
         response.setOpaque(request.getOpaque());
@@ -446,11 +443,9 @@ public class SendMessageProcessor implements NettyRequestProcessor {
         msgInner.setTopic(requestHeader.getTopic());
         msgInner.setBody(body);
         msgInner.setFlag(requestHeader.getFlag());
-        MessageAccessor.setProperties(msgInner,
-                MessageDecoder.string2messageProperties(requestHeader.getProperties()));
+        MessageAccessor.setProperties(msgInner, MessageDecoder.string2messageProperties(requestHeader.getProperties()));
         msgInner.setPropertiesString(requestHeader.getProperties());
-        msgInner.setTagsCode(MessageExtBrokerInner.tagsString2tagsCode(topicConfig.getTopicFilterType(),
-                msgInner.getTags()));
+        msgInner.setTagsCode(MessageExtBrokerInner.tagsString2tagsCode(topicConfig.getTopicFilterType(), msgInner.getTags()));
 
         msgInner.setQueueId(queueIdInt);
         msgInner.setSysFlag(sysFlag);

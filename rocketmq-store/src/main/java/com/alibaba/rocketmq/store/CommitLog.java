@@ -601,8 +601,7 @@ public class CommitLog {
             if (msg.isWaitStoreMsgOK()) {
                 request = new GroupCommitRequest(result.getWroteOffset() + result.getWroteBytes());
                 service.putRequest(request);
-                boolean flushOK =
-                        request.waitForFlush(this.defaultMessageStore.getMessageStoreConfig()
+                boolean flushOK = request.waitForFlush(this.defaultMessageStore.getMessageStoreConfig()
                             .getSyncFlushTimeout());
                 if (!flushOK) {
                     log.error("do group commit, wait for flush failed, topic: " + msg.getTopic() + " tags: "
@@ -634,8 +633,7 @@ public class CommitLog {
 
                     boolean flushOK =
                     // TODO 此处参数与刷盘公用是否合适
-                            request.waitForFlush(this.defaultMessageStore.getMessageStoreConfig()
-                                .getSyncFlushTimeout());
+                            request.waitForFlush(this.defaultMessageStore.getMessageStoreConfig().getSyncFlushTimeout());
                     if (!flushOK) {
                         log.error("do sync transfer other node, wait return, but failed, topic: "
                                 + msg.getTopic() + " tags: " + msg.getTags() + " client address: "

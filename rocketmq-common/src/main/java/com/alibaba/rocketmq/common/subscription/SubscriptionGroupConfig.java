@@ -125,12 +125,14 @@ public class SubscriptionGroupConfig {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+
+        if (obj == null || ! (obj instanceof  SubscriptionGroupConfig)) {
             return false;
-        if (getClass() != obj.getClass())
-            return false;
+        }
+
         SubscriptionGroupConfig other = (SubscriptionGroupConfig) obj;
         if (brokerId != other.brokerId)
             return false;
@@ -143,8 +145,7 @@ public class SubscriptionGroupConfig {
         if (groupName == null) {
             if (other.groupName != null)
                 return false;
-        }
-        else if (!groupName.equals(other.groupName))
+        } else if (!groupName.equals(other.groupName))
             return false;
         if (retryMaxTimes != other.retryMaxTimes)
             return false;
