@@ -96,7 +96,7 @@ public class AllocateMappedFileService extends ServiceThread {
 
 
     public void shutdown() {
-        this.stoped = true;
+        this.stopped = true;
         this.thread.interrupt();
 
         try {
@@ -118,7 +118,7 @@ public class AllocateMappedFileService extends ServiceThread {
     public void run() {
         log.info(this.getServiceName() + " service started");
 
-        while (!this.isStoped() && this.mmapOperation())
+        while (!this.isStopped() && this.mmapOperation())
             ;
 
         log.info(this.getServiceName() + " service end");

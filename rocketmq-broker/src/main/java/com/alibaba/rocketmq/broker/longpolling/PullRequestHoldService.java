@@ -150,7 +150,7 @@ public class PullRequestHoldService extends ServiceThread {
     @Override
     public void run() {
         log.info(this.getServiceName() + " service started");
-        while (!this.isStoped()) {
+        while (!this.isStopped()) {
             try {
                 this.waitForRunning(1000);
                 this.checkHoldRequest();

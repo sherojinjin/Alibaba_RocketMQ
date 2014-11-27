@@ -205,7 +205,7 @@ public class HAService {
         public void run() {
             log.info(this.getServiceName() + " service started");
 
-            while (!this.isStoped()) {
+            while (!this.isStopped()) {
                 try {
                     this.selector.select(1000);
                     Set<SelectionKey> selected = this.selector.selectedKeys();
@@ -313,7 +313,7 @@ public class HAService {
         public void run() {
             log.info(this.getServiceName() + " service started");
 
-            while (!this.isStoped()) {
+            while (!this.isStopped()) {
                 try {
                     this.waitForRunning(0);
                     this.doWaitTransfer();
@@ -600,7 +600,7 @@ public class HAService {
         public void run() {
             log.info(this.getServiceName() + " service started");
 
-            while (!this.isStoped()) {
+            while (!this.isStopped()) {
                 try {
                     if (this.connectMaster()) {
                         // 先汇报最大物理Offset || 定时心跳方式汇报

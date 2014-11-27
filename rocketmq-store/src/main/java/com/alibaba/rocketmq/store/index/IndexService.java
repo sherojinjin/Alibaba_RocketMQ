@@ -236,7 +236,7 @@ public class IndexService extends ServiceThread {
     public void run() {
         log.info(this.getServiceName() + " service started");
 
-        while (!this.isStoped()) {
+        while (!this.isStopped()) {
             try {
                 Object[] req = this.requestQueue.poll(3000, TimeUnit.MILLISECONDS);
 

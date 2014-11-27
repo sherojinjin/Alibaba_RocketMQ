@@ -611,12 +611,12 @@ public class CommitLog {
                 }
             }
             else {
-                service.wakeup();
+                service.wakeUp();
             }
         }
         // 异步刷盘
         else {
-            this.flushCommitLogService.wakeup();
+            this.flushCommitLogService.wakeUp();
         }
 
         // 同步双写
@@ -741,7 +741,7 @@ public class CommitLog {
         public void run() {
             CommitLog.log.info(this.getServiceName() + " service started");
 
-            while (!this.isStoped()) {
+            while (!this.isStopped()) {
                 boolean flushCommitLogTimed =
                         CommitLog.this.defaultMessageStore.getMessageStoreConfig().isFlushCommitLogTimed();
 
@@ -923,7 +923,7 @@ public class CommitLog {
         public void run() {
             CommitLog.log.info(this.getServiceName() + " service started");
 
-            while (!this.isStoped()) {
+            while (!this.isStopped()) {
                 try {
                     this.waitForRunning(0);
                     this.doCommit();
