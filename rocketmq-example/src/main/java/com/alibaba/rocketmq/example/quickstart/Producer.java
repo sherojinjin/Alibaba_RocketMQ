@@ -38,9 +38,11 @@ public class Producer {
                     "TagA",// tag
                     ("Hello RocketMQ " + i).getBytes()// body
                         );
+                final long start  = System.nanoTime();
                  producer.send(msg, new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
+                        System.out.print("Nano Time: " +  (System.nanoTime() - start));
                         System.out.println(sendResult);
                     }
 
