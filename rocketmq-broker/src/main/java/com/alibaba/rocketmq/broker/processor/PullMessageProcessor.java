@@ -216,7 +216,7 @@ public class PullMessageProcessor implements NettyRequestProcessor {
         // 检查队列有效性
         if (requestHeader.getQueueId() < 0 || requestHeader.getQueueId() >= topicConfig.getReadQueueNums()) {
             String errorInfo =
-                    "queueId[" + requestHeader.getQueueId() + "] is illagal,Topic :"
+                    "queueId[" + requestHeader.getQueueId() + "] is illegal,Topic :"
                             + requestHeader.getTopic() + " topicConfig.readQueueNums: "
                             + topicConfig.getReadQueueNums() + " consumer: " + channel.remoteAddress();
             log.warn(errorInfo);
