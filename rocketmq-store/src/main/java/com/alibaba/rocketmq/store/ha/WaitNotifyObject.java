@@ -32,7 +32,7 @@ public class WaitNotifyObject {
     protected volatile boolean hasNotified = false;
 
 
-    public void wakeup() {
+    public void wakeUp() {
         synchronized (this) {
             if (!this.hasNotified) {
                 this.hasNotified = true;
