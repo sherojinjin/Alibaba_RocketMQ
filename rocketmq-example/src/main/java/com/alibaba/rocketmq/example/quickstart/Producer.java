@@ -17,6 +17,7 @@ package com.alibaba.rocketmq.example.quickstart;
 
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
+import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.common.message.Message;
 
@@ -28,6 +29,7 @@ import com.alibaba.rocketmq.common.message.Message;
 public class Producer {
     public static void main(String[] args) throws MQClientException, InterruptedException {
         DefaultMQProducer producer = new DefaultMQProducer("please_rename_unique_group_name");
+        producer.setSendMsgTimeout(10000);
         producer.start();
 
         for (int i = 0; i < 1000; i++) {
@@ -36,8 +38,17 @@ public class Producer {
                     "TagA",// tag
                     ("Hello RocketMQ " + i).getBytes()// body
                         );
-                SendResult sendResult = producer.send(msg);
-                System.out.println(sendResult);
+                 producer.send(msg, new SendCallback() {
+                    @Override
+                    public void onSuccess(SendResult sendResult) {
+                        System.out.println(sendResult);
+                    }
+
+                    @Override
+                    public void onException(Throwable e) {
+                        e.printStackTrace();
+                    }
+                });
             }
             catch (Exception e) {
                 e.printStackTrace();
