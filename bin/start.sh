@@ -11,10 +11,18 @@ function name_server() {
 function broker() {
   if [ $1 == "master" ]; then
 #     nohup sh mqbroker -n lizhanhui:9876\;holly:9876 -c ../conf/2m-2s-sync/broker-a.properties &
-     nohup sh mqbroker -c ../conf/2m-2s-sync/broker-a.properties &
+     if [ $# == 1 ] || [ $2 == "sync" ]; then
+        nohup sh mqbroker -c ../conf/2m-2s-sync/broker-a.properties &
+     elif [ $2 == "async" ]; then
+        nohup sh mqbroker -c ../conf/2m-2s-async/broker-a.properties &
+     fi
   elif [ $1 == "slave" ]; then
 #     nohup sh mqbroker -n lizhanhui:9876\;holly:9876 -c ../conf/2m-2s-sync/broker-a-s.properties &
-     nohup sh mqbroker -c ../conf/2m-2s-sync/broker-a-s.properties &
+     if [ $# == 1 ] || [ $2 == "sync" ]; then
+        nohup sh mqbroker -c ../conf/2m-2s-sync/broker-a-s.properties &
+     elif [ $2 == "async" ]; then
+        nohup sh mqbroker -c ../conf/2m-2s-async/broker-a-s.properties &
+     fi
   else
      echo "Please enter role, be it 'master' or 'slave'";
   fi
@@ -30,7 +38,7 @@ function main() {
          name_server;
       ;;
       broker)
-         broker $2;
+         broker $2 $3;
       ;;
       *)
       exit 1;

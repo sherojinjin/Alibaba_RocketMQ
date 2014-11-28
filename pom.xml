@@ -73,9 +73,9 @@
 	</licenses>
 
 	<scm>
-		<url>http://gitlab.alibaba-inc.com/middleware/rocketmq.git</url>
-		<connection>scm:git:http://gitlab.alibaba-inc.com/middleware/rocketmq.git</connection>
-		<developerConnection>scm:git:http://gitlab.alibaba-inc.com/middleware/rocketmq.git</developerConnection>
+		<url>https://github.com/lizhanhui/Alibaba_RocketMQ.git</url>
+		<connection>https://github.com/lizhanhui/Alibaba_RocketMQ.git</connection>
+		<developerConnection>https://github.com/lizhanhui/Alibaba_RocketMQ.git</developerConnection>
 	</scm>
 
 	<properties>
@@ -88,9 +88,23 @@
 		<java_source_version>1.6</java_source_version>
 		<java_target_version>1.6</java_target_version>
 		<file_encoding>UTF-8</file_encoding>
-		<private.key>/home/lizhanhui/dev/Alibaba_RocketMQ/devenv/conf/private.pem</private.key>
-		<certificate>/home/lizhanhui/dev/Alibaba_RocketMQ/devenv/conf/cer.pem</certificate>
+		<private.key>/home/dev/Alibaba_RocketMQ/devenv/conf/private.pem</private.key>
+		<certificate>/home/dev/Alibaba_RocketMQ/devenv/conf/cer.pem</certificate>
 	</properties>
+
+	<distributionManagement>
+		<repository>
+			<id>nexus-release</id>
+			<name>Local Nexus Repository</name>
+			<url>http://172.30.10.200:8081/nexus/content/repositories/releases/</url>
+		</repository>
+
+		<snapshotRepository>
+			<id>nexus-snapshot</id>
+			<name>Local Nexus Repository</name>
+			<url>http://172.30.10.200:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<build>
 		<plugins>
@@ -156,19 +170,6 @@
 					</descriptors>
 				</configuration>
 			</plugin>
-
-            <!--
-                        <plugin>
-                            <artifactId>maven-assembly-plugin</artifactId>
-                            <configuration>
-                                <finalName>alibaba-rocketmq-client-java-${project.version}</finalName>
-                                <descriptors>
-                                    <descriptor>release-client.xml</descriptor>
-                                </descriptors>
-                            </configuration>
-                        </plugin>
-            -->
-
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
