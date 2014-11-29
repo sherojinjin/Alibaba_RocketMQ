@@ -1,6 +1,5 @@
 package com.alibaba.rocketmq.example.concurrent;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.concurrent.MultiThreadMQProducer;
@@ -23,19 +22,18 @@ public class Producer {
 
                     @Override
                     public void onException(Throwable e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 })
                 .build();
 
-        int count = 4;
+        int count = 400;
 
         Message[] messages = new Message[count];
 
         long start = System.currentTimeMillis();
         for (int i = 0; i < count; i++) {
             messages[i] = new Message("MultiThreadTopic", "Test MultiThread message".getBytes());
-            System.out.println(JSON.toJSONString(messages[i]));
         }
         producer.send(messages);
 
