@@ -10,13 +10,17 @@ public class DefaultLocalMessageStoreTest {
 
     @Test
     public void testStash() {
-        defaultLocalMessageStore.stash(new Message("Topic", "Data".getBytes()));
+        for (int i = 0; i < 30; i++) {
+            defaultLocalMessageStore.stash(new Message("Topic", "Data".getBytes()));
+        }
     }
 
     @Test
     public void testPop() {
         Message[] messages = defaultLocalMessageStore.pop();
         Assert.assertNotNull(messages);
+
+        System.out.println(messages.length);
     }
 
 }

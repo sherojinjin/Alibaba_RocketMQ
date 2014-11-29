@@ -82,12 +82,14 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 File lastWrittenFileName = messageStoreNameFileMapping.get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                if (null == lastWrittenFileName) {
+                if (null == lastWrittenFileName && writeIndex.longValue() % MESSAGES_PER_FILE != 0) {
                     throw new RuntimeException("Data corrupted");
                 }
 
-                randomAccessFile = new RandomAccessFile(lastWrittenFileName, "rw");
-                randomAccessFile.seek(writeOffSet.longValue());
+                if (null != lastWrittenFileName) {
+                    randomAccessFile = new RandomAccessFile(lastWrittenFileName, "rw");
+                    randomAccessFile.seek(writeOffSet.longValue());
+                }
 
                 Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("DataProgressUpdateService"))
                         .scheduleAtFixedRate(new Runnable() {
@@ -210,7 +212,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     }
 
                     //Case we need turn to a new file.
-                    if ((readIndex.longValue()-1) / MESSAGES_PER_FILE > (readIndex.longValue() - 2) / MESSAGES_PER_FILE) {
+                    if (readIndex.longValue() / MESSAGES_PER_FILE > (readIndex.longValue() - 1) / MESSAGES_PER_FILE) {
 
                         //delete the old file.
                         if (currentReadFile.exists()) {
