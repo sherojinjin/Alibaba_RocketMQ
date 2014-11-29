@@ -6,7 +6,7 @@ public interface LocalMessageStore {
 
     void stash(Message message);
 
-    public long getNumberOfMessageStashed();
+    public int getNumberOfMessageStashed();
 
     Message[] pop();
 }

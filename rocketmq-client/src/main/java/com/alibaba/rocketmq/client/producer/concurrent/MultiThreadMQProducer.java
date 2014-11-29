@@ -62,7 +62,7 @@ public class MultiThreadMQProducer {
         sendCallback = configuration.getSendCallback();
 
         if (null == configuration.getLocalMessageStore()) {
-            localMessageStore = new DefaultLocalMessageStore();
+            localMessageStore = new DefaultLocalMessageStore(configuration.getProducerGroup());
         } else {
             localMessageStore = configuration.getLocalMessageStore();
         }
