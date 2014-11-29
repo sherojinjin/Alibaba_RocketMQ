@@ -6,12 +6,12 @@ import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.client.producer.SendCallback;
+import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 public class MultiThreadMQProducer {
 
@@ -21,8 +21,13 @@ public class MultiThreadMQProducer {
 
     private final ThreadPoolExecutor threadPoolExecutor;
 
+    private final ScheduledExecutorService resendFailureMessageService;
+
     private final DefaultMQProducer defaultMQProducer;
 
+    private final SendCallback sendCallback;
+
+    private final LocalMessageStore localMessageStore;
 
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
 
@@ -39,22 +44,41 @@ public class MultiThreadMQProducer {
         threadPoolExecutor = new ScheduledThreadPoolExecutor(configuration.getCorePoolSize(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
 
+        resendFailureMessageService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
+
         defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup());
 
         //Configure default producer.
         defaultMQProducer.setDefaultTopicQueueNums(configuration.getDefaultTopicQueueNumber());
         defaultMQProducer.setRetryTimesWhenSendFailed(configuration.getRetryTimesBeforeSendingFailureClaimed());
         defaultMQProducer.setSendMsgTimeout(configuration.getSendMessageTimeOutInMilliSeconds());
+
+        try {
+            defaultMQProducer.start();
+        } catch (MQClientException e) {
+            throw new RuntimeException("Unable to create producer instance", e);
+        }
+
+        sendCallback = configuration.getSendCallback();
+
+        if (null == configuration.getLocalMessageStore()) {
+            localMessageStore = new DefaultLocalMessageStore();
+        } else {
+            localMessageStore = configuration.getLocalMessageStore();
+        }
+
+        resendFailureMessageService.scheduleWithFixedDelay(new ResendMessageTask(localMessageStore, this), 0,
+                configuration.getResendFailureMessageDelay(), TimeUnit.MILLISECONDS);
     }
 
     public void handleSendMessageFailure(Message msg, Exception e) {
         LOGGER.error("Send message failed, enter resend later logic. Exception message: {}, caused by: {}",
                 e.getMessage(), e.getCause().getMessage());
-
+        localMessageStore.stash(msg);
     }
 
 
-    public void send(final Message msg, final SendCallback sendCallback) {
+    public void send(final Message msg) {
         threadPoolExecutor.submit(new Runnable() {
             @Override
             public void run() {
@@ -73,16 +97,15 @@ public class MultiThreadMQProducer {
     }
 
 
-    public void send(final Message[] msg, final SendCallback callback) {
+    public void send(final Message[] msg) {
         Helper.checkNotNull("msg", msg, IllegalArgumentException.class);
-        Helper.checkNotNull("callback", callback, IllegalArgumentException.class);
 
         if (msg.length == 0) {
             return;
         }
 
         if (msg.length <= concurrentSendBatchSize) {
-            threadPoolExecutor.submit(new SendMessageTask(msg, callback, this));
+            threadPoolExecutor.submit(new SendMessageTask(msg, sendCallback, this));
         } else {
 
             Message[] sendBatchArray = null;
@@ -91,7 +114,7 @@ public class MultiThreadMQProducer {
                 sendBatchArray = new Message[concurrentSendBatchSize];
                 remain = Math.min(concurrentSendBatchSize, msg.length - i);
                 System.arraycopy(msg, i, sendBatchArray, 0, remain);
-                threadPoolExecutor.submit(new SendMessageTask(sendBatchArray, callback, this));
+                threadPoolExecutor.submit(new SendMessageTask(sendBatchArray, sendCallback, this));
             }
         }
     }
@@ -104,9 +127,7 @@ public class MultiThreadMQProducer {
         return defaultMQProducer;
     }
 
-
     public static void main(String[] args) {
         System.out.println(JSON.toJSONString(new Message("topic", "message".getBytes())));
     }
-
 }

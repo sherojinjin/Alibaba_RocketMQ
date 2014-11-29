@@ -1,5 +1,7 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
+import com.alibaba.rocketmq.client.producer.SendCallback;
+
 public class MultiThreadMQProducerConfiguration {
 
     private String producerGroup;
@@ -16,6 +18,11 @@ public class MultiThreadMQProducerConfiguration {
 
     private int concurrentSendBatchSize = 10;
 
+    private SendCallback sendCallback;
+
+    private int resendFailureMessageDelay = 30000;
+
+    private LocalMessageStore localMessageStore;
 
     public MultiThreadMQProducerConfiguration configureProducerGroup(String producerGroup) {
         this.producerGroup = producerGroup;
@@ -52,14 +59,27 @@ public class MultiThreadMQProducerConfiguration {
         return this;
     }
 
+    public MultiThreadMQProducerConfiguration configureSendCallback(SendCallback sendCallback) {
+        this.sendCallback = sendCallback;
+        return this;
+    }
 
+    public MultiThreadMQProducerConfiguration configureResendFailureMessageDelay(int resendFailureMessageDelay) {
+        this.resendFailureMessageDelay = resendFailureMessageDelay;
+        return this;
+    }
+
+    public MultiThreadMQProducerConfiguration configureLocalMessageStore(LocalMessageStore localMessageStore) {
+        this.localMessageStore = localMessageStore;
+        return this;
+    }
 
     public MultiThreadMQProducer build() {
         return new MultiThreadMQProducer(this);
     }
 
     public boolean isReadyToBuild() {
-        return null != producerGroup;
+        return null != producerGroup && null != sendCallback;
     }
 
     public String reportMissingConfiguration() {
@@ -69,6 +89,13 @@ public class MultiThreadMQProducerConfiguration {
             stringBuilder = new StringBuilder();
 
             stringBuilder.append("Producer Group required");
+        }
+
+        if (null == sendCallback) {
+            if (null == stringBuilder) {
+                stringBuilder = new StringBuilder();
+            }
+            stringBuilder.append("SendCallback is required");
         }
 
         return stringBuilder.toString();
@@ -101,5 +128,17 @@ public class MultiThreadMQProducerConfiguration {
 
     public int getConcurrentSendBatchSize() {
         return concurrentSendBatchSize;
+    }
+
+    public SendCallback getSendCallback() {
+        return sendCallback;
+    }
+
+    public int getResendFailureMessageDelay() {
+        return resendFailureMessageDelay;
+    }
+
+    public LocalMessageStore getLocalMessageStore() {
+        return localMessageStore;
     }
 }
