@@ -22,12 +22,12 @@ public class Producer {
 
                     @Override
                     public void onException(Throwable e) {
-                        //e.printStackTrace();
+                        e.printStackTrace();
                     }
                 })
                 .build();
 
-        int count = 400;
+        int count = 10;
 
         Message[] messages = new Message[count];
 
@@ -39,5 +39,4 @@ public class Producer {
 
         System.out.println("Messages are sent in async manner" + (System.currentTimeMillis() - start));
     }
-
 }

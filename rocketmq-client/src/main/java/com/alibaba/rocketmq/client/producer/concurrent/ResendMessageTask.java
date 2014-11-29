@@ -13,20 +13,11 @@ public class ResendMessageTask implements Runnable {
         this.multiThreadMQProducer = multiThreadMQProducer;
     }
 
-    /**
-     * When an object implementing interface <code>Runnable</code> is used
-     * to create a thread, starting the thread causes the object's
-     * <code>run</code> method to be called in that separately executing
-     * thread.
-     * <p/>
-     * The general contract of the method <code>run</code> is that it may
-     * take any action whatsoever.
-     *
-     * @see Thread#run()
-     */
     @Override
     public void run() {
+        System.out.println("Begin to resend!");
         Message[] messages = localMessageStore.pop();
+        System.out.println("Found " + (null == messages ? 0 : messages.length));
         if (null != messages) {
             multiThreadMQProducer.send(messages);
         }

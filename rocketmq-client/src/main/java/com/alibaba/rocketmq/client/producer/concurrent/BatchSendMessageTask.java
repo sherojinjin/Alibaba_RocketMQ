@@ -5,7 +5,7 @@ import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
 
-class SendMessageTask implements Runnable {
+class BatchSendMessageTask implements Runnable {
 
     private Message[] messages;
 
@@ -13,7 +13,7 @@ class SendMessageTask implements Runnable {
 
     private MultiThreadMQProducer multiThreadMQProducer;
 
-    public SendMessageTask(Message[] messages, SendCallback sendCallback, MultiThreadMQProducer multiThreadMQProducer) {
+    public BatchSendMessageTask(Message[] messages, SendCallback sendCallback, MultiThreadMQProducer multiThreadMQProducer) {
         this.messages = messages;
         this.sendCallback = sendCallback;
         this.multiThreadMQProducer = multiThreadMQProducer;
@@ -40,7 +40,8 @@ class SendMessageTask implements Runnable {
             }
 
             try {
-                multiThreadMQProducer.getDefaultMQProducer().send(message, sendCallback);
+                multiThreadMQProducer.getDefaultMQProducer().send(message,
+                        new SendMessageCallback(multiThreadMQProducer, sendCallback, message));
             } catch (MQClientException e) {
                 multiThreadMQProducer.handleSendMessageFailure(message, e);
             } catch (RemotingException e) {
@@ -48,7 +49,6 @@ class SendMessageTask implements Runnable {
             } catch (InterruptedException e) {
                 multiThreadMQProducer.handleSendMessageFailure(message, e);
             }
-
         }
 
     }

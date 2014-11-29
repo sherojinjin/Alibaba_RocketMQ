@@ -20,7 +20,7 @@ public class MultiThreadMQProducerConfiguration {
 
     private SendCallback sendCallback;
 
-    private int resendFailureMessageDelay = 30000;
+    private int resendFailureMessageDelay = 5000;
 
     private LocalMessageStore localMessageStore;
 

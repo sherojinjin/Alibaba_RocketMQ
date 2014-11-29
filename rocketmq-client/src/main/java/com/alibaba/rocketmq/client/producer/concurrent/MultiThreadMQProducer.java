@@ -71,7 +71,8 @@ public class MultiThreadMQProducer {
                 configuration.getResendFailureMessageDelay(), TimeUnit.MILLISECONDS);
     }
 
-    public void handleSendMessageFailure(Message msg, Exception e) {
+    public void handleSendMessageFailure(Message msg, Throwable e) {
+        System.out.println("Sending message failed! Enter resend logic.");
         LOGGER.error("Send message failed, enter resend later logic. Exception message: {}, caused by: {}",
                 e.getMessage(), e.getCause().getMessage());
         localMessageStore.stash(msg);
@@ -83,7 +84,7 @@ public class MultiThreadMQProducer {
             @Override
             public void run() {
                 try {
-                    defaultMQProducer.send(msg, sendCallback);
+                    defaultMQProducer.send(msg, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
                 } catch (MQClientException e) {
                     handleSendMessageFailure(msg, e);
                 } catch (RemotingException e) {
@@ -105,7 +106,7 @@ public class MultiThreadMQProducer {
         }
 
         if (msg.length <= concurrentSendBatchSize) {
-            threadPoolExecutor.submit(new SendMessageTask(msg, sendCallback, this));
+            threadPoolExecutor.submit(new BatchSendMessageTask(msg, sendCallback, this));
         } else {
 
             Message[] sendBatchArray = null;
@@ -114,7 +115,7 @@ public class MultiThreadMQProducer {
                 sendBatchArray = new Message[concurrentSendBatchSize];
                 remain = Math.min(concurrentSendBatchSize, msg.length - i);
                 System.arraycopy(msg, i, sendBatchArray, 0, remain);
-                threadPoolExecutor.submit(new SendMessageTask(sendBatchArray, sendCallback, this));
+                threadPoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
             }
         }
     }
