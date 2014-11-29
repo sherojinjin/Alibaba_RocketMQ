@@ -234,7 +234,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     readIndex.incrementAndGet();
                     readOffSet.set(readRandomAccessFile.getFilePointer());
                 }
-
+                updateConfig();
                 return messages;
             } catch (InterruptedException e) {
                 e.printStackTrace();
