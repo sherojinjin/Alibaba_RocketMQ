@@ -81,8 +81,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                             new File(localMessageStoreDirectory, dataFile));
                 }
 
-                File lastWrittenFileName = messageStoreNameFileMapping.get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE);
-                if (null != lastWrittenFileName) {
+                File lastWrittenFileName = messageStoreNameFileMapping.get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                if (null == lastWrittenFileName) {
                     throw new RuntimeException("Data corrupted");
                 }
 
@@ -172,6 +172,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             randomAccessFile.writeLong(msgData.length);
             randomAccessFile.write(msgData);
             writeOffSet.set(randomAccessFile.getFilePointer());
+
+            updateConfig();
         } catch (InterruptedException e) {
             throw new RuntimeException("Lock exception", e);
         } catch (IOException e) {
