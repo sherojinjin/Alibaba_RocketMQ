@@ -88,7 +88,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
                 if (null != lastWrittenFileName) {
                     randomAccessFile = new RandomAccessFile(lastWrittenFileName, "rw");
-                    randomAccessFile.seek(writeOffSet.longValue());
+                    if (writeOffSet.longValue() > 0) {
+                        randomAccessFile.seek(writeOffSet.longValue());
+                    }
                 }
 
                 Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("DataProgressUpdateService"))
@@ -175,6 +177,10 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             randomAccessFile.write(msgData);
             writeOffSet.set(randomAccessFile.getFilePointer());
 
+            if (writeIndex.longValue() % MESSAGES_PER_FILE == 0) {
+                writeOffSet.set(0L);
+            }
+
             updateConfig();
         } catch (InterruptedException e) {
             throw new RuntimeException("Lock exception", e);
@@ -207,26 +213,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         if (null == currentReadFile || !currentReadFile.exists()) {
                             throw new RuntimeException("Data file corrupted");
                         }
+
                         readRandomAccessFile = new RandomAccessFile(currentReadFile, "rw");
-                        readRandomAccessFile.seek(readOffSet.longValue());
-                    }
 
-                    //Case we need turn to a new file.
-                    if (readIndex.longValue() / MESSAGES_PER_FILE > (readIndex.longValue() - 1) / MESSAGES_PER_FILE) {
-
-                        //delete the old file.
-                        if (currentReadFile.exists()) {
-                            if (!currentReadFile.delete()) {
-                                LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
-                            }
+                        if (readOffSet.longValue() > 0) {
+                            readRandomAccessFile.seek(readOffSet.longValue());
                         }
-
-                        currentReadFile = messageStoreNameFileMapping.get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                        if (null == currentReadFile || !currentReadFile.exists()) {
-                            throw new RuntimeException("Data file corrupted");
-                        }
-                        readOffSet.set(0L);
-                        readRandomAccessFile = new RandomAccessFile(currentReadFile, "rw");
                     }
 
                     long messageSize = readRandomAccessFile.readLong();
@@ -235,6 +227,16 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     messages[messageRead++] = JSON.parseObject(data, Message.class);
                     readIndex.incrementAndGet();
                     readOffSet.set(readRandomAccessFile.getFilePointer());
+
+                    if (readIndex.longValue() % MESSAGES_PER_FILE == 0 && currentReadFile.exists()) {
+                        readRandomAccessFile.close();
+                        readRandomAccessFile = null;
+                        readOffSet.set(0L);
+                        messageStoreNameFileMapping.remove((readIndex.longValue()-1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                        if (!currentReadFile.delete()) {
+                            LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
+                        }
+                    }
                 }
                 updateConfig();
                 return messages;

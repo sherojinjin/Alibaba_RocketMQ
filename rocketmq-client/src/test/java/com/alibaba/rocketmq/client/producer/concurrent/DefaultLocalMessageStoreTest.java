@@ -10,7 +10,7 @@ public class DefaultLocalMessageStoreTest {
 
     @Test
     public void testStash() {
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 1; i++) {
             defaultLocalMessageStore.stash(new Message("Topic", "Data".getBytes()));
         }
     }
