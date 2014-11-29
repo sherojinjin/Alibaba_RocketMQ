@@ -145,33 +145,33 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         try {
             if (!lock.writeLock().tryLock()) {
                 lock.writeLock().lockInterruptibly();
-
-                if (1 == currentWriteIndex || (currentWriteIndex -1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
-                    //we need to create a new file.
-                    File newMessageStoreFile = new File(localMessageStoreDirectory, String.valueOf(currentWriteIndex));
-                    if (!newMessageStoreFile.createNewFile()) {
-                        throw new RuntimeException("Unable to create new local message store file");
-                    }
-                    messageStoreNameFileMapping.putIfAbsent(currentWriteIndex, newMessageStoreFile);
-
-                    //close previous file.
-                    if (null != randomAccessFile) {
-                        randomAccessFile.close();
-                    }
-                    File dataFile = messageStoreNameFileMapping.get(currentWriteIndex);
-                    randomAccessFile = new RandomAccessFile(dataFile, "rw");
-                }
-
-                if (null == randomAccessFile) {
-                    File currentWritingDataFile = messageStoreNameFileMapping.get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                    randomAccessFile = new RandomAccessFile(currentWritingDataFile, "rw");
-                }
-
-                byte[] msgData = JSON.toJSONString(message).getBytes();
-                randomAccessFile.writeLong(msgData.length);
-                randomAccessFile.write(msgData);
-                writeOffSet.set(randomAccessFile.getFilePointer());
             }
+
+            if (1 == currentWriteIndex || (currentWriteIndex -1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
+                //we need to create a new file.
+                File newMessageStoreFile = new File(localMessageStoreDirectory, String.valueOf(currentWriteIndex));
+                if (!newMessageStoreFile.createNewFile()) {
+                    throw new RuntimeException("Unable to create new local message store file");
+                }
+                messageStoreNameFileMapping.putIfAbsent(currentWriteIndex, newMessageStoreFile);
+
+                //close previous file.
+                if (null != randomAccessFile) {
+                    randomAccessFile.close();
+                }
+                File dataFile = messageStoreNameFileMapping.get(currentWriteIndex);
+                randomAccessFile = new RandomAccessFile(dataFile, "rw");
+            }
+
+            if (null == randomAccessFile) {
+                File currentWritingDataFile = messageStoreNameFileMapping.get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                randomAccessFile = new RandomAccessFile(currentWritingDataFile, "rw");
+            }
+
+            byte[] msgData = JSON.toJSONString(message).getBytes();
+            randomAccessFile.writeLong(msgData.length);
+            randomAccessFile.write(msgData);
+            writeOffSet.set(randomAccessFile.getFilePointer());
         } catch (InterruptedException e) {
             throw new RuntimeException("Lock exception", e);
         } catch (IOException e) {
@@ -191,48 +191,49 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             try {
                 if(!lock.readLock().tryLock()) {
                     lock.readLock().lockInterruptibly();
-                    Message[] messages = new Message[messageCount];
-                    int messageRead = 0;
-                    RandomAccessFile readRandomAccessFile = null;
-                    File currentReadFile = null;
-                    while (messageRead < messageCount) {
-                        if (null == readRandomAccessFile) {
-                            currentReadFile = messageStoreNameFileMapping.get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                            if (null == currentReadFile || !currentReadFile.exists()) {
-                                throw new RuntimeException("Data file corrupted");
-                            }
-                            readRandomAccessFile = new RandomAccessFile(currentReadFile, "rw");
-                            readRandomAccessFile.seek(readOffSet.longValue());
+                }
+
+                Message[] messages = new Message[messageCount];
+                int messageRead = 0;
+                RandomAccessFile readRandomAccessFile = null;
+                File currentReadFile = null;
+                while (messageRead < messageCount) {
+                    if (null == readRandomAccessFile) {
+                        currentReadFile = messageStoreNameFileMapping.get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                        if (null == currentReadFile || !currentReadFile.exists()) {
+                            throw new RuntimeException("Data file corrupted");
                         }
-
-                        //Case we need turn to a new file.
-                        if ((readIndex.longValue()-1) / MESSAGES_PER_FILE > (readIndex.longValue() - 2) / MESSAGES_PER_FILE) {
-
-                            //delete the old file.
-                            if (currentReadFile.exists()) {
-                                if (!currentReadFile.delete()) {
-                                    LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
-                                }
-                            }
-
-                            currentReadFile = messageStoreNameFileMapping.get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                            if (null == currentReadFile || !currentReadFile.exists()) {
-                                throw new RuntimeException("Data file corrupted");
-                            }
-                            readOffSet.set(0L);
-                            readRandomAccessFile = new RandomAccessFile(currentReadFile, "rw");
-                        }
-
-                        long messageSize = readRandomAccessFile.readLong();
-                        byte[] data = new byte[(int)messageSize];
-                        readRandomAccessFile.read(data);
-                        messages[messageRead++] = JSON.parseObject(data, Message.class);
-                        readIndex.incrementAndGet();
-                        readOffSet.set(readRandomAccessFile.getFilePointer());
+                        readRandomAccessFile = new RandomAccessFile(currentReadFile, "rw");
+                        readRandomAccessFile.seek(readOffSet.longValue());
                     }
 
-                    return messages;
+                    //Case we need turn to a new file.
+                    if ((readIndex.longValue()-1) / MESSAGES_PER_FILE > (readIndex.longValue() - 2) / MESSAGES_PER_FILE) {
+
+                        //delete the old file.
+                        if (currentReadFile.exists()) {
+                            if (!currentReadFile.delete()) {
+                                LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
+                            }
+                        }
+
+                        currentReadFile = messageStoreNameFileMapping.get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                        if (null == currentReadFile || !currentReadFile.exists()) {
+                            throw new RuntimeException("Data file corrupted");
+                        }
+                        readOffSet.set(0L);
+                        readRandomAccessFile = new RandomAccessFile(currentReadFile, "rw");
+                    }
+
+                    long messageSize = readRandomAccessFile.readLong();
+                    byte[] data = new byte[(int)messageSize];
+                    readRandomAccessFile.read(data);
+                    messages[messageRead++] = JSON.parseObject(data, Message.class);
+                    readIndex.incrementAndGet();
+                    readOffSet.set(readRandomAccessFile.getFilePointer());
                 }
+
+                return messages;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (FileNotFoundException e) {
