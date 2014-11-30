@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -40,7 +40,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private volatile ScheduledFuture updateConfigScheduledFuture;
+    private ScheduledExecutorService updateConfigScheduledExecutorService;
 
     public DefaultLocalMessageStore(String producerGroup) {
         localMessageStoreDirectory = new File(STORE_LOCATION, producerGroup);
@@ -115,16 +115,14 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     }
 
     public void syncConfig() {
-        if (null == updateConfigScheduledFuture) {
-            updateConfigScheduledFuture = Executors
-                    .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("DataProgressUpdateService"))
-                    .scheduleAtFixedRate(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateConfig();
-                        }
-                    }, 10, 10, TimeUnit.SECONDS);
-        }
+        updateConfigScheduledExecutorService = Executors
+                .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("DataProgressUpdateService"));
+        updateConfigScheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                updateConfig();
+            }
+        }, 10, 10, TimeUnit.SECONDS);
     }
 
     private void updateConfig() {
@@ -155,11 +153,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     @Override
     public void stash(Message message) {
         LOGGER.debug("Stashing message: {}", JSON.toJSONString(message));
-
-        if (null == updateConfigScheduledFuture) {
-            syncConfig();
-        }
-
         writeIndex.incrementAndGet();
         long currentWriteIndex = writeIndex.longValue();
         try {
@@ -217,11 +210,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         if (messageCount == 0) {
             return new Message[0];
         } else {
-
-            if (null == updateConfigScheduledFuture) {
-                syncConfig();
-            }
-
             try {
                 if(!lock.readLock().tryLock()) {
                     lock.readLock().lockInterruptibly();
@@ -258,7 +246,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         readRandomAccessFile = null;
                         readOffSet.set(0L);
                         messageStoreNameFileMapping
-                                .remove((readIndex.longValue()-1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                                .remove((readIndex.longValue() - 1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
                         if (!currentReadFile.delete()) {
                             LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
                         }
@@ -287,9 +275,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     public void close() {
         updateConfig();
 
-        if (null != updateConfigScheduledFuture) {
-            updateConfigScheduledFuture.cancel(true);
-            updateConfigScheduledFuture = null;
+        if (null != updateConfigScheduledExecutorService) {
+            updateConfigScheduledExecutorService.shutdown();
         }
     }
 }

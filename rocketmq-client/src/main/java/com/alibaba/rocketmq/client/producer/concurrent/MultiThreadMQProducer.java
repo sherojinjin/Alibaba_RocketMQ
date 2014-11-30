@@ -18,17 +18,15 @@ public class MultiThreadMQProducer {
 
     private int concurrentSendBatchSize = 10;
 
-    private final ThreadPoolExecutor threadPoolExecutor;
+    private final ThreadPoolExecutor sendMessagePoolExecutor;
 
-    private final ScheduledExecutorService resendFailureMessageService;
+    private final ScheduledExecutorService resendFailureMessagePoolExecutor;
 
     private final DefaultMQProducer defaultMQProducer;
 
     private SendCallback sendCallback;
 
     private final LocalMessageStore localMessageStore;
-
-    private volatile ScheduledFuture resendFailureScheduledFuture;
 
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
@@ -41,10 +39,10 @@ public class MultiThreadMQProducer {
 
         this.concurrentSendBatchSize = configuration.getConcurrentSendBatchSize();
 
-        threadPoolExecutor = new ScheduledThreadPoolExecutor(configuration.getCorePoolSize(),
+        sendMessagePoolExecutor = new ScheduledThreadPoolExecutor(configuration.getCorePoolSize(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
 
-        resendFailureMessageService = Executors
+        resendFailureMessagePoolExecutor = Executors
                 .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
 
         defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup());
@@ -70,10 +68,8 @@ public class MultiThreadMQProducer {
     }
 
     public void startResendFailureMessageService(long interval) {
-        if (null == resendFailureScheduledFuture) {
-            resendFailureScheduledFuture = resendFailureMessageService.scheduleWithFixedDelay(
+            resendFailureMessagePoolExecutor.scheduleWithFixedDelay(
                     new ResendMessageTask(localMessageStore, this), 3100, interval, TimeUnit.MILLISECONDS);
-        }
     }
 
     public void registerCallback(SendCallback sendCallback) {
@@ -88,7 +84,7 @@ public class MultiThreadMQProducer {
     }
 
     public void send(final Message msg) {
-        threadPoolExecutor.submit(new Runnable() {
+        sendMessagePoolExecutor.submit(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -113,7 +109,7 @@ public class MultiThreadMQProducer {
         }
 
         if (messages.length <= concurrentSendBatchSize) {
-            threadPoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
+            sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
         } else {
 
             Message[] sendBatchArray = null;
@@ -122,7 +118,7 @@ public class MultiThreadMQProducer {
                 sendBatchArray = new Message[concurrentSendBatchSize];
                 remain = Math.min(concurrentSendBatchSize, messages.length - i);
                 System.arraycopy(messages, i, sendBatchArray, 0, remain);
-                threadPoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
+                sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
             }
         }
     }
@@ -136,13 +132,9 @@ public class MultiThreadMQProducer {
     }
 
     public void shutdown() {
-        if (null != resendFailureScheduledFuture) {
-            resendFailureScheduledFuture.cancel(true);
-            resendFailureScheduledFuture = null;
-        }
-
+        resendFailureMessagePoolExecutor.shutdown();
+        sendMessagePoolExecutor.shutdown();
         localMessageStore.close();
-
         getDefaultMQProducer().shutdown();
     }
 }

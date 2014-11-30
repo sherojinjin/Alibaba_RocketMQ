@@ -15,8 +15,7 @@ public class Producer {
         AtomicLong successCount = new AtomicLong(0L);
         MultiThreadMQProducer producer = MultiThreadMQProducer.configure()
                 .configureProducerGroup("PG_MultiThread_Test")
-                .configureCorePoolSize(20)
-                .configureMaximumPoolSize(200)
+                .configureCorePoolSize(200)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
                 .configureSendMessageTimeOutInMilliSeconds(3000)
                 .build();

@@ -4,9 +4,7 @@ public class MultiThreadMQProducerConfiguration {
 
     private String producerGroup;
 
-    private int corePoolSize = 20;
-
-    private int maximumPoolSize = 200;
+    private int corePoolSize = 200;
 
     private int defaultTopicQueueNumber = 4;
 
@@ -27,11 +25,6 @@ public class MultiThreadMQProducerConfiguration {
 
     public MultiThreadMQProducerConfiguration configureCorePoolSize(int corePoolSize) {
         this.corePoolSize = corePoolSize;
-        return this;
-    }
-
-    public MultiThreadMQProducerConfiguration configureMaximumPoolSize(int maximumPoolSize) {
-        this.maximumPoolSize = maximumPoolSize;
         return this;
     }
 
@@ -91,10 +84,6 @@ public class MultiThreadMQProducerConfiguration {
 
     public int getCorePoolSize() {
         return corePoolSize;
-    }
-
-    public int getMaximumPoolSize() {
-        return maximumPoolSize;
     }
 
     public int getDefaultTopicQueueNumber() {
