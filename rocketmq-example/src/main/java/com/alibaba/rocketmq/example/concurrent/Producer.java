@@ -51,7 +51,7 @@ public class Producer {
         public void onSuccess(SendResult sendResult) {
 
             System.out.println(successfulSentCounter.incrementAndGet() + " sent OK:" + sendResult);
-            if (successfulSentCounter.longValue() > total) {
+            if (successfulSentCounter.longValue() >= total) {
                 producer.shutdown();
             }
         }
