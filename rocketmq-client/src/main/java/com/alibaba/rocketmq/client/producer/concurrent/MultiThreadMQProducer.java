@@ -16,7 +16,7 @@ public class MultiThreadMQProducer {
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
-    private int concurrentSendBatchSize = 10;
+    private int concurrentSendBatchSize = 100;
 
     private final ThreadPoolExecutor sendMessagePoolExecutor;
 

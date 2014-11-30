@@ -16,6 +16,7 @@ public class Producer {
         MultiThreadMQProducer producer = MultiThreadMQProducer.configure()
                 .configureProducerGroup("PG_MultiThread_Test")
                 .configureCorePoolSize(200)
+                .configureConcurrentSendBatchSize(100)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
                 .configureSendMessageTimeOutInMilliSeconds(3000)
                 .build();
