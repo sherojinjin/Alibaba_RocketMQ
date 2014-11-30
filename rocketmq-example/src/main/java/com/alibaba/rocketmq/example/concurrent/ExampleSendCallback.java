@@ -22,7 +22,7 @@ public class ExampleSendCallback implements SendCallback {
 
     @Override
     public void onSuccess(SendResult sendResult) {
-        System.out.println("ExitOnSendCompletionCallback#onSuccess:" + successfulSentCounter.incrementAndGet() +
+        System.out.println("ExampleSendCallback#onSuccess:" + successfulSentCounter.incrementAndGet() +
                 " sent OK. " + sendResult);
         if (successfulSentCounter.longValue() >= total && null != producer) {
             System.out.println("All Messages Sent Successfully");
