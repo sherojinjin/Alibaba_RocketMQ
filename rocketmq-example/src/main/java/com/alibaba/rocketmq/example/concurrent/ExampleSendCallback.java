@@ -2,30 +2,28 @@ package com.alibaba.rocketmq.example.concurrent;
 
 import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.client.producer.SendResult;
-import com.alibaba.rocketmq.client.producer.concurrent.MultiThreadMQProducer;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ExampleSendCallback implements SendCallback {
 
-    private MultiThreadMQProducer producer;
-
     private AtomicLong successfulSentCounter;
 
     private long total;
 
-    public ExampleSendCallback(MultiThreadMQProducer producer, AtomicLong successfulSentCounter, long total) {
-        this.producer = producer;
+    private long start;
+
+    public ExampleSendCallback(AtomicLong successfulSentCounter, long total, long startTime) {
         this.successfulSentCounter = successfulSentCounter;
         this.total = total;
+        this.start = startTime;
     }
 
     @Override
     public void onSuccess(SendResult sendResult) {
-        System.out.println("ExampleSendCallback#onSuccess:" + successfulSentCounter.incrementAndGet() +
-                " sent OK. " + sendResult);
-        if (successfulSentCounter.longValue() >= total && null != producer) {
-            System.out.println("All Messages Sent Successfully");
+        //System.out.println("ExampleSendCallback#onSuccess:" + successfulSentCounter.incrementAndGet() + " sent OK. " + sendResult);
+        if (successfulSentCounter.incrementAndGet() >= total) {
+            System.out.println("All Messages Sent Successfully. TPS:" + (total * 1000L / (System.currentTimeMillis() - start)));
         }
     }
 

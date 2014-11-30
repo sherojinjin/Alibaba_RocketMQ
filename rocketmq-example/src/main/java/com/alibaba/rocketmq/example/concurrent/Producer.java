@@ -21,7 +21,7 @@ public class Producer {
                 .configureSendMessageTimeOutInMilliSeconds(3000)
                 .build();
 
-                producer.registerCallback(new ExampleSendCallback(producer, successCount, count));
+                producer.registerCallback(new ExampleSendCallback(successCount, count, System.currentTimeMillis()));
 
         Message[] messages = new Message[count];
 
