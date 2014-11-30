@@ -20,7 +20,10 @@ public class DefaultLocalMessageStoreTest {
         Message[] messages = defaultLocalMessageStore.pop();
         Assert.assertNotNull(messages);
 
-        System.out.println(messages.length);
+        Assert.assertEquals(1, messages.length);
+        Assert.assertEquals("Topic", messages[0].getTopic());
+        Assert.assertEquals("Data", new String(messages[0].getBody()));
+
     }
 
 }
