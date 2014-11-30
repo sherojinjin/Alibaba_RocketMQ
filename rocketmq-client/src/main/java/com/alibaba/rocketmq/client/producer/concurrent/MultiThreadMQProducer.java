@@ -1,5 +1,6 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
@@ -74,6 +75,7 @@ public class MultiThreadMQProducer {
     public void handleSendMessageFailure(Message msg, Throwable e) {
         LOGGER.error("Send message failed, enter resend later logic. Exception message: {}, caused by: {}",
                 e.getMessage(), e.getCause().getMessage());
+        System.out.println("Stashing: " + JSON.toJSONString(msg));
         localMessageStore.stash(msg);
     }
 

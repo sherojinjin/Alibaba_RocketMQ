@@ -78,7 +78,6 @@ public class MultiThreadMQProducerConfiguration {
 
         if (null == producerGroup) {
             stringBuilder = new StringBuilder();
-
             stringBuilder.append("Producer Group required");
         }
 

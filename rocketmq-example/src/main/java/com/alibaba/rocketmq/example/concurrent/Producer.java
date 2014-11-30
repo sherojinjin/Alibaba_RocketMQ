@@ -12,7 +12,7 @@ public class Producer {
         if (args.length > 0) {
             count = Integer.parseInt(args[0]);
         }
-        AtomicLong numberOfMessageSentSuccessfully = new AtomicLong(0L);
+        AtomicLong successCount = new AtomicLong(0L);
         MultiThreadMQProducer producer = MultiThreadMQProducer.configure()
                 .configureProducerGroup("PG_MultiThread_Test")
                 .configureCorePoolSize(20)
@@ -21,7 +21,7 @@ public class Producer {
                 .configureSendMessageTimeOutInMilliSeconds(3000)
                 .build();
 
-                producer.registerCallback(new ExitOnSendCompletionCallback(producer, numberOfMessageSentSuccessfully, count));
+                producer.registerCallback(new ExitOnSendCompletionCallback(producer, successCount, count));
 
         Message[] messages = new Message[count];
 
@@ -31,7 +31,7 @@ public class Producer {
         }
         producer.send(messages);
 
-        System.out.println("Messages are sent in async manner" + (System.currentTimeMillis() - start));
+        System.out.println("Messages are sent in async manner. Cost: " + (System.currentTimeMillis() - start) + "ms");
     }
 
 
