@@ -49,8 +49,9 @@ public class Producer {
 
         @Override
         public void onSuccess(SendResult sendResult) {
-            System.out.println(sendResult);
-            if (successfulSentCounter.incrementAndGet() > total) {
+
+            System.out.println(successfulSentCounter.incrementAndGet() + " sent OK:" + sendResult);
+            if (successfulSentCounter.longValue() > total) {
                 producer.shutdown();
             }
         }
