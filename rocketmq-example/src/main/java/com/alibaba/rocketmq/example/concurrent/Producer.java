@@ -21,7 +21,7 @@ public class Producer {
                 .configureSendMessageTimeOutInMilliSeconds(3000)
                 .build();
 
-                producer.registerCallback(new ExitOnSendCompletionCallback(producer, successCount, count));
+                producer.registerCallback(new ExampleSendCallback(producer, successCount, count));
 
         Message[] messages = new Message[count];
 
@@ -31,7 +31,7 @@ public class Producer {
         }
         producer.send(messages);
 
-        System.out.println("Messages are sent in async manner. Cost: " + (System.currentTimeMillis() - start) + "ms");
+        System.out.println("Messages are sent in async manner. Cost " + (System.currentTimeMillis() - start) + "ms");
     }
 
 
