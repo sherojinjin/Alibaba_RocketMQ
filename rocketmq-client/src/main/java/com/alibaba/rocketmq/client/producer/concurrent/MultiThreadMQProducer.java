@@ -70,7 +70,6 @@ public class MultiThreadMQProducer {
     }
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
-        System.out.println("Sending message failed! Enter resend logic.");
         LOGGER.error("Send message failed, enter resend later logic. Exception message: {}, caused by: {}",
                 e.getMessage(), e.getCause().getMessage());
         localMessageStore.stash(msg);
