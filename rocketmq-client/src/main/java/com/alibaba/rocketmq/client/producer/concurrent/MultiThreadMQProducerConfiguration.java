@@ -1,7 +1,5 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
-import com.alibaba.rocketmq.client.producer.SendCallback;
-
 public class MultiThreadMQProducerConfiguration {
 
     private String producerGroup;
@@ -17,8 +15,6 @@ public class MultiThreadMQProducerConfiguration {
     private int sendMessageTimeOutInMilliSeconds = 3000;
 
     private int concurrentSendBatchSize = 10;
-
-    private SendCallback sendCallback;
 
     private int resendFailureMessageDelay = 5000;
 
@@ -59,11 +55,6 @@ public class MultiThreadMQProducerConfiguration {
         return this;
     }
 
-    public MultiThreadMQProducerConfiguration configureSendCallback(SendCallback sendCallback) {
-        this.sendCallback = sendCallback;
-        return this;
-    }
-
     public MultiThreadMQProducerConfiguration configureResendFailureMessageDelay(int resendFailureMessageDelay) {
         this.resendFailureMessageDelay = resendFailureMessageDelay;
         return this;
@@ -79,7 +70,7 @@ public class MultiThreadMQProducerConfiguration {
     }
 
     public boolean isReadyToBuild() {
-        return null != producerGroup && null != sendCallback;
+        return null != producerGroup;
     }
 
     public String reportMissingConfiguration() {
@@ -91,14 +82,7 @@ public class MultiThreadMQProducerConfiguration {
             stringBuilder.append("Producer Group required");
         }
 
-        if (null == sendCallback) {
-            if (null == stringBuilder) {
-                stringBuilder = new StringBuilder();
-            }
-            stringBuilder.append("SendCallback is required");
-        }
-
-        return stringBuilder.toString();
+        return stringBuilder != null ? stringBuilder.toString() : null;
     }
 
 
@@ -128,10 +112,6 @@ public class MultiThreadMQProducerConfiguration {
 
     public int getConcurrentSendBatchSize() {
         return concurrentSendBatchSize;
-    }
-
-    public SendCallback getSendCallback() {
-        return sendCallback;
     }
 
     public int getResendFailureMessageDelay() {

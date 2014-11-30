@@ -13,15 +13,15 @@ public class Producer {
             count = Integer.parseInt(args[0]);
         }
         AtomicLong numberOfMessageSentSuccessfully = new AtomicLong(0L);
-        MultiThreadMQProducer producer = null;
-        producer = MultiThreadMQProducer.configure()
+        MultiThreadMQProducer producer = MultiThreadMQProducer.configure()
                 .configureProducerGroup("PG_MultiThread_Test")
                 .configureCorePoolSize(20)
                 .configureMaximumPoolSize(200)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
                 .configureSendMessageTimeOutInMilliSeconds(3000)
-                .configureSendCallback(new ExitOnSendCompletionCallback(producer, numberOfMessageSentSuccessfully, count))
                 .build();
+
+                producer.registerCallback(new ExitOnSendCompletionCallback(producer, numberOfMessageSentSuccessfully, count));
 
         Message[] messages = new Message[count];
 

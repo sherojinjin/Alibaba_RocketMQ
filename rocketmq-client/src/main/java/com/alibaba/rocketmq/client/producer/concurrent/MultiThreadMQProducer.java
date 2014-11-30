@@ -23,7 +23,7 @@ public class MultiThreadMQProducer {
 
     private final DefaultMQProducer defaultMQProducer;
 
-    private final SendCallback sendCallback;
+    private SendCallback sendCallback;
 
     private final LocalMessageStore localMessageStore;
 
@@ -57,8 +57,6 @@ public class MultiThreadMQProducer {
             throw new RuntimeException("Unable to create producer instance", e);
         }
 
-        sendCallback = configuration.getSendCallback();
-
         if (null == configuration.getLocalMessageStore()) {
             localMessageStore = new DefaultLocalMessageStore(configuration.getProducerGroup());
         } else {
@@ -69,12 +67,15 @@ public class MultiThreadMQProducer {
                 configuration.getResendFailureMessageDelay(), TimeUnit.MILLISECONDS);
     }
 
+    public void registerCallback(SendCallback sendCallback) {
+        this.sendCallback = sendCallback;
+    }
+
     public void handleSendMessageFailure(Message msg, Throwable e) {
         LOGGER.error("Send message failed, enter resend later logic. Exception message: {}, caused by: {}",
                 e.getMessage(), e.getCause().getMessage());
         localMessageStore.stash(msg);
     }
-
 
     public void send(final Message msg) {
         threadPoolExecutor.submit(new Runnable() {
@@ -126,7 +127,6 @@ public class MultiThreadMQProducer {
 
     public void shutdown() {
         localMessageStore.close();
-
         getDefaultMQProducer().shutdown();
     }
 }
