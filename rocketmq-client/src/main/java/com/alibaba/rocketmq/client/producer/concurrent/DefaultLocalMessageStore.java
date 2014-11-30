@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -38,6 +39,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private RandomAccessFile randomAccessFile;
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private ScheduledFuture scheduledFuture;
 
     public DefaultLocalMessageStore(String producerGroup) {
         localMessageStoreDirectory = new File(STORE_LOCATION, producerGroup);
@@ -93,7 +96,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     }
                 }
 
-                Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("DataProgressUpdateService"))
+                scheduledFuture = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("DataProgressUpdateService"))
                         .scheduleAtFixedRate(new Runnable() {
                             @Override
                             public void run() {
@@ -254,6 +257,15 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     public int getNumberOfMessageStashed() {
         synchronized (DefaultLocalMessageStore.class) {
             return writeIndex.intValue() - readIndex.intValue();
+        }
+    }
+
+
+    public void close() {
+        updateConfig();
+
+        if (null != scheduledFuture) {
+            scheduledFuture.cancel(true);
         }
     }
 }

@@ -5,29 +5,22 @@ import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.concurrent.MultiThreadMQProducer;
 import com.alibaba.rocketmq.common.message.Message;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class Producer {
 
     public static void main(String[] args) {
-        MultiThreadMQProducer producer = MultiThreadMQProducer.configure()
+        final AtomicLong numberOfMessageSentSuccessfully = new AtomicLong(0L);
+        final int count = 1000;
+        MultiThreadMQProducer producer = null;
+        producer = MultiThreadMQProducer.configure()
                 .configureProducerGroup("PG_MultiThread_Test")
                 .configureCorePoolSize(20)
                 .configureMaximumPoolSize(200)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
                 .configureSendMessageTimeOutInMilliSeconds(3000)
-                .configureSendCallback(new SendCallback() {
-                    @Override
-                    public void onSuccess(SendResult sendResult) {
-                        System.out.println(sendResult);
-                    }
-
-                    @Override
-                    public void onException(Throwable e) {
-                        e.printStackTrace();
-                    }
-                })
+                .configureSendCallback(new CustomSendCallback(producer, numberOfMessageSentSuccessfully, count))
                 .build();
-
-        int count = 10000000;
 
         Message[] messages = new Message[count];
 
@@ -38,5 +31,33 @@ public class Producer {
         producer.send(messages);
 
         System.out.println("Messages are sent in async manner" + (System.currentTimeMillis() - start));
+    }
+
+    static class CustomSendCallback implements SendCallback {
+
+        private MultiThreadMQProducer producer;
+
+        private AtomicLong successfulSentCounter;
+
+        private long total;
+
+        public CustomSendCallback(MultiThreadMQProducer producer, AtomicLong successfulSentCounter, long total) {
+            this.producer = producer;
+            this.successfulSentCounter = successfulSentCounter;
+            this.total = total;
+        }
+
+        @Override
+        public void onSuccess(SendResult sendResult) {
+            System.out.println(sendResult);
+            if (successfulSentCounter.incrementAndGet() > total) {
+                producer.shutdown();
+            }
+        }
+
+        @Override
+        public void onException(Throwable e) {
+            System.out.println("Failure occurred. Now " + successfulSentCounter.longValue() + " sent OK.");
+        }
     }
 }

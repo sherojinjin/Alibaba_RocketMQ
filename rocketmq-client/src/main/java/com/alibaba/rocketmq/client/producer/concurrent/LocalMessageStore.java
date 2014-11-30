@@ -9,4 +9,6 @@ public interface LocalMessageStore {
     public int getNumberOfMessageStashed();
 
     Message[] pop();
+
+    void close();
 }

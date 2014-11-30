@@ -1,7 +1,5 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.rocketmq.client.Helper;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
@@ -98,23 +96,22 @@ public class MultiThreadMQProducer {
     }
 
 
-    public void send(final Message[] msg) {
-        Helper.checkNotNull("msg", msg, IllegalArgumentException.class);
+    public void send(final Message[] messages) {
 
-        if (msg.length == 0) {
+        if (null == messages || messages.length == 0) {
             return;
         }
 
-        if (msg.length <= concurrentSendBatchSize) {
-            threadPoolExecutor.submit(new BatchSendMessageTask(msg, sendCallback, this));
+        if (messages.length <= concurrentSendBatchSize) {
+            threadPoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
         } else {
 
             Message[] sendBatchArray = null;
             int remain = 0;
-            for (int i = 0; i < msg.length; i += concurrentSendBatchSize) {
+            for (int i = 0; i < messages.length; i += concurrentSendBatchSize) {
                 sendBatchArray = new Message[concurrentSendBatchSize];
-                remain = Math.min(concurrentSendBatchSize, msg.length - i);
-                System.arraycopy(msg, i, sendBatchArray, 0, remain);
+                remain = Math.min(concurrentSendBatchSize, messages.length - i);
+                System.arraycopy(messages, i, sendBatchArray, 0, remain);
                 threadPoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
             }
         }
@@ -128,7 +125,9 @@ public class MultiThreadMQProducer {
         return defaultMQProducer;
     }
 
-    public static void main(String[] args) {
-        System.out.println(JSON.toJSONString(new Message("topic", "message".getBytes())));
+    public void shutdown() {
+        localMessageStore.close();
+
+        getDefaultMQProducer().shutdown();
     }
 }

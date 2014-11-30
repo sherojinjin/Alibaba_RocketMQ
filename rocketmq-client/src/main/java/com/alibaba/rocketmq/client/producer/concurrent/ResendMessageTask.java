@@ -1,8 +1,15 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
+import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.common.message.Message;
+import org.slf4j.Logger;
 
 public class ResendMessageTask implements Runnable {
+
+    /**
+     * Logger instance.
+     */
+    private static final Logger LOGGER = ClientLogger.getLog();
 
     private LocalMessageStore localMessageStore;
 
@@ -15,10 +22,9 @@ public class ResendMessageTask implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Begin to resend!");
+        LOGGER.debug("Start to resend");
         Message[] messages = localMessageStore.pop();
-        System.out.println("Found " + (null == messages ? 0 : messages.length));
-        if (null != messages) {
+        if (null != messages && messages.length > 0) {
             multiThreadMQProducer.send(messages);
         }
     }
