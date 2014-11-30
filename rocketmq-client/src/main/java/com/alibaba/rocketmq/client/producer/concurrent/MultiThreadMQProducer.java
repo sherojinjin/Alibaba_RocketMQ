@@ -65,7 +65,7 @@ public class MultiThreadMQProducer {
             localMessageStore = configuration.getLocalMessageStore();
         }
 
-        resendFailureMessageService.scheduleWithFixedDelay(new ResendMessageTask(localMessageStore, this), 0,
+        resendFailureMessageService.scheduleWithFixedDelay(new ResendMessageTask(localMessageStore, this), 3100,
                 configuration.getResendFailureMessageDelay(), TimeUnit.MILLISECONDS);
     }
 

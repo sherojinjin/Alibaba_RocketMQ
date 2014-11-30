@@ -1,7 +1,5 @@
 package com.alibaba.rocketmq.example.concurrent;
 
-import com.alibaba.rocketmq.client.producer.SendCallback;
-import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.concurrent.MultiThreadMQProducer;
 import com.alibaba.rocketmq.common.message.Message;
 
@@ -22,7 +20,7 @@ public class Producer {
                 .configureMaximumPoolSize(200)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
                 .configureSendMessageTimeOutInMilliSeconds(3000)
-                .configureSendCallback(new CustomSendCallback(producer, numberOfMessageSentSuccessfully, count))
+                .configureSendCallback(new ExitOnSendCompletionCallback(producer, numberOfMessageSentSuccessfully, count))
                 .build();
 
         Message[] messages = new Message[count];
@@ -36,32 +34,5 @@ public class Producer {
         System.out.println("Messages are sent in async manner" + (System.currentTimeMillis() - start));
     }
 
-    static class CustomSendCallback implements SendCallback {
 
-        private MultiThreadMQProducer producer;
-
-        private AtomicLong successfulSentCounter;
-
-        private long total;
-
-        public CustomSendCallback(MultiThreadMQProducer producer, AtomicLong successfulSentCounter, long total) {
-            this.producer = producer;
-            this.successfulSentCounter = successfulSentCounter;
-            this.total = total;
-        }
-
-        @Override
-        public void onSuccess(SendResult sendResult) {
-
-            System.out.println(successfulSentCounter.incrementAndGet() + " sent OK:" + sendResult);
-            if (successfulSentCounter.longValue() >= total) {
-                producer.shutdown();
-            }
-        }
-
-        @Override
-        public void onException(Throwable e) {
-            System.out.println("Failure occurred. Now " + successfulSentCounter.longValue() + " sent OK.");
-        }
-    }
 }

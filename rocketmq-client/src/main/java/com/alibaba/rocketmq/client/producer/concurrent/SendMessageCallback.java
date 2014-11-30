@@ -27,6 +27,9 @@ public class SendMessageCallback implements SendCallback {
 
     @Override
     public void onException(Throwable e) {
+        if (null != hook) {
+            hook.onException(e);
+        }
         multiThreadMQProducer.handleSendMessageFailure(message, e);
     }
 }
