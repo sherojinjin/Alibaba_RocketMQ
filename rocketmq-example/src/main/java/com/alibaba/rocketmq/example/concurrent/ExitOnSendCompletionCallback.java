@@ -31,5 +31,6 @@ public class ExitOnSendCompletionCallback implements SendCallback {
     @Override
     public void onException(Throwable e) {
         System.out.println("Failure occurred. Now " + successfulSentCounter.longValue() + " sent OK.");
+        e.printStackTrace();
     }
 }
