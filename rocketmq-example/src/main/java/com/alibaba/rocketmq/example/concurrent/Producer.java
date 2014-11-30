@@ -10,8 +10,11 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Producer {
 
     public static void main(String[] args) {
-        final AtomicLong numberOfMessageSentSuccessfully = new AtomicLong(0L);
-        final int count = 1000;
+        int count = 1000;
+        if (args.length > 0) {
+            count = Integer.parseInt(args[0]);
+        }
+        AtomicLong numberOfMessageSentSuccessfully = new AtomicLong(0L);
         MultiThreadMQProducer producer = null;
         producer = MultiThreadMQProducer.configure()
                 .configureProducerGroup("PG_MultiThread_Test")
