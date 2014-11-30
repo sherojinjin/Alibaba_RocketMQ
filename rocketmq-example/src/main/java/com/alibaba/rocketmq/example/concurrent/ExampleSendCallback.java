@@ -23,7 +23,8 @@ public class ExampleSendCallback implements SendCallback {
     public void onSuccess(SendResult sendResult) {
         //System.out.println("ExampleSendCallback#onSuccess:" + successfulSentCounter.incrementAndGet() + " sent OK. " + sendResult);
         if (successfulSentCounter.incrementAndGet() >= total) {
-            System.out.println("All Messages Sent Successfully. TPS:" + (total * 1000L / (System.currentTimeMillis() - start)));
+            long interval = System.currentTimeMillis() - start;
+            System.out.println("All Messages Sent Successfully in " + interval + "ms. TPS:" + (total * 1000L / interval));
         }
     }
 
