@@ -40,7 +40,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private ScheduledFuture scheduledFuture;
+    private ScheduledFuture updateConfigScheduledFuture;
 
     public DefaultLocalMessageStore(String producerGroup) {
         localMessageStoreDirectory = new File(STORE_LOCATION, producerGroup);
@@ -95,14 +95,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         randomAccessFile.seek(writeOffSet.longValue());
                     }
                 }
-
-                scheduledFuture = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("DataProgressUpdateService"))
-                        .scheduleAtFixedRate(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateConfig();
-                            }
-                        }, 10, 10, TimeUnit.SECONDS);
+                syncConfig();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -116,6 +109,19 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     }
                 }
             }
+        }
+    }
+
+    public void syncConfig() {
+        if (null == updateConfigScheduledFuture) {
+            updateConfigScheduledFuture = Executors
+                    .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("DataProgressUpdateService"))
+                    .scheduleAtFixedRate(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateConfig();
+                        }
+                    }, 10, 10, TimeUnit.SECONDS);
         }
     }
 
@@ -264,8 +270,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     public void close() {
         updateConfig();
 
-        if (null != scheduledFuture) {
-            scheduledFuture.cancel(true);
+        if (null != updateConfigScheduledFuture) {
+            updateConfigScheduledFuture.cancel(true);
+            updateConfigScheduledFuture = null;
         }
     }
 }

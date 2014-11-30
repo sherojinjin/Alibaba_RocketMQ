@@ -28,8 +28,9 @@ public class MultiThreadMQProducer {
 
     private final LocalMessageStore localMessageStore;
 
-    public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
+    private ScheduledFuture resendFailureScheduledFuture;
 
+    public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
             throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
         }
@@ -64,8 +65,14 @@ public class MultiThreadMQProducer {
             localMessageStore = configuration.getLocalMessageStore();
         }
 
-        resendFailureMessageService.scheduleWithFixedDelay(new ResendMessageTask(localMessageStore, this), 3100,
-                configuration.getResendFailureMessageDelay(), TimeUnit.MILLISECONDS);
+        startResendFailureMessageService(configuration.getResendFailureMessageDelay());
+    }
+
+    public void startResendFailureMessageService(long interval) {
+        if (null == resendFailureScheduledFuture) {
+            resendFailureScheduledFuture = resendFailureMessageService.scheduleWithFixedDelay(
+                    new ResendMessageTask(localMessageStore, this), 3100, interval, TimeUnit.MILLISECONDS);
+        }
     }
 
     public void registerCallback(SendCallback sendCallback) {
@@ -128,7 +135,13 @@ public class MultiThreadMQProducer {
     }
 
     public void shutdown() {
+        if (null != resendFailureScheduledFuture) {
+            resendFailureScheduledFuture.cancel(true);
+            resendFailureScheduledFuture = null;
+        }
+
         localMessageStore.close();
+
         getDefaultMQProducer().shutdown();
     }
 }

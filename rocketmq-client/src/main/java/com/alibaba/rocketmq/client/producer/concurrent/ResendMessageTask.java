@@ -23,6 +23,12 @@ public class ResendMessageTask implements Runnable {
     @Override
     public void run() {
         LOGGER.debug("Start to resend");
+
+        //In case the local message store were closed by mistake.
+        if (localMessageStore instanceof DefaultLocalMessageStore) {
+            ((DefaultLocalMessageStore) localMessageStore).syncConfig();
+        }
+
         Message[] messages = localMessageStore.pop();
         if (null != messages && messages.length > 0) {
             multiThreadMQProducer.send(messages);
