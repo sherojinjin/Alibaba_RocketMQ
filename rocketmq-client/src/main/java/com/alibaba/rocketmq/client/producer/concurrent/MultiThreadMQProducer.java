@@ -28,7 +28,7 @@ public class MultiThreadMQProducer {
 
     private final LocalMessageStore localMessageStore;
 
-    private ScheduledFuture resendFailureScheduledFuture;
+    private volatile ScheduledFuture resendFailureScheduledFuture;
 
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
@@ -44,7 +44,8 @@ public class MultiThreadMQProducer {
         threadPoolExecutor = new ScheduledThreadPoolExecutor(configuration.getCorePoolSize(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
 
-        resendFailureMessageService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
+        resendFailureMessageService = Executors
+                .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
 
         defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup());
 

@@ -40,7 +40,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private ScheduledFuture updateConfigScheduledFuture;
+    private volatile ScheduledFuture updateConfigScheduledFuture;
 
     public DefaultLocalMessageStore(String producerGroup) {
         localMessageStoreDirectory = new File(STORE_LOCATION, producerGroup);
@@ -56,26 +56,26 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private void loadConfig() {
         configFile = new File(localMessageStoreDirectory, ".config");
-        if (!configFile.exists()) {
-            return;
-        } else {
+        if (configFile.exists() && configFile.canRead()) {
             InputStream inputStream = null;
-
             try {
                 inputStream = new FileInputStream(configFile);
                 Properties properties = new Properties();
                 properties.load(inputStream);
 
-                writeIndex.set(null == properties.getProperty("writeIndex") ? 0L : Long.parseLong(properties.getProperty("writeIndex")));
-                writeOffSet.set(null == properties.getProperty("writeOffSet") ? 0L : Long.parseLong(properties.getProperty("writeOffSet")));
-                readIndex.set(null == properties.getProperty("readIndex") ? 0L : Long.parseLong(properties.getProperty("readIndex")));
-                readOffSet.set(null == properties.getProperty("readOffSet") ? 0L : Long.parseLong(properties.getProperty("readOffSet")));
+                writeIndex.set(null == properties.getProperty("writeIndex") ? 0L :
+                        Long.parseLong(properties.getProperty("writeIndex")));
+                writeOffSet.set(null == properties.getProperty("writeOffSet") ? 0L :
+                        Long.parseLong(properties.getProperty("writeOffSet")));
+                readIndex.set(null == properties.getProperty("readIndex") ? 0L :
+                        Long.parseLong(properties.getProperty("readIndex")));
+                readOffSet.set(null == properties.getProperty("readOffSet") ? 0L :
+                        Long.parseLong(properties.getProperty("readOffSet")));
 
                 String[] dataFiles = localMessageStoreDirectory.list(new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
-                        return !".config".equals(name)
-                                && name.matches("\\d{1,}");
+                        return (!".config".equals(name)) && name.matches("\\d+");
                     }
                 });
 
@@ -84,7 +84,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                             new File(localMessageStoreDirectory, dataFile));
                 }
 
-                File lastWrittenFileName = messageStoreNameFileMapping.get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                File lastWrittenFileName = messageStoreNameFileMapping
+                        .get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+
                 if (null == lastWrittenFileName && writeIndex.longValue() % MESSAGES_PER_FILE != 0) {
                     throw new RuntimeException("Data corrupted");
                 }
@@ -153,6 +155,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     @Override
     public void stash(Message message) {
         LOGGER.debug("Stashing message: {}", JSON.toJSONString(message));
+
+        if (null == updateConfigScheduledFuture) {
+            syncConfig();
+        }
+
         writeIndex.incrementAndGet();
         long currentWriteIndex = writeIndex.longValue();
         try {
@@ -160,7 +167,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 lock.writeLock().lockInterruptibly();
             }
 
-            if (1 == currentWriteIndex || (currentWriteIndex -1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
+            if (1 == currentWriteIndex ||
+                    (currentWriteIndex -1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
                 //we need to create a new file.
                 File newMessageStoreFile = new File(localMessageStoreDirectory, String.valueOf(currentWriteIndex));
                 if (!newMessageStoreFile.createNewFile()) {
@@ -177,7 +185,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
 
             if (null == randomAccessFile) {
-                File currentWritingDataFile = messageStoreNameFileMapping.get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                File currentWritingDataFile = messageStoreNameFileMapping
+                        .get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+
                 randomAccessFile = new RandomAccessFile(currentWritingDataFile, "rw");
             }
 
@@ -207,6 +217,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         if (messageCount == 0) {
             return new Message[0];
         } else {
+
+            if (null == updateConfigScheduledFuture) {
+                syncConfig();
+            }
+
             try {
                 if(!lock.readLock().tryLock()) {
                     lock.readLock().lockInterruptibly();
@@ -218,7 +233,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 File currentReadFile = null;
                 while (messageRead < messageCount) {
                     if (null == readRandomAccessFile) {
-                        currentReadFile = messageStoreNameFileMapping.get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                        currentReadFile = messageStoreNameFileMapping
+                                .get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
                         if (null == currentReadFile || !currentReadFile.exists()) {
                             throw new RuntimeException("Data file corrupted");
                         }
@@ -241,7 +257,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         readRandomAccessFile.close();
                         readRandomAccessFile = null;
                         readOffSet.set(0L);
-                        messageStoreNameFileMapping.remove((readIndex.longValue()-1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                        messageStoreNameFileMapping
+                                .remove((readIndex.longValue()-1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
                         if (!currentReadFile.delete()) {
                             LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
                         }
