@@ -27,7 +27,7 @@ public class Producer {
                 })
                 .build();
 
-        int count = 1000;
+        int count = 10000000;
 
         Message[] messages = new Message[count];
 
