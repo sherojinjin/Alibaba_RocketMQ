@@ -28,6 +28,8 @@ public class MultiThreadMQProducer {
 
     private final LocalMessageStore localMessageStore;
 
+    private volatile boolean started;
+
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
             throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
@@ -54,8 +56,15 @@ public class MultiThreadMQProducer {
 
         try {
             defaultMQProducer.start();
+            started = true;
         } catch (MQClientException e) {
             throw new RuntimeException("Unable to create producer instance", e);
+        } finally {
+            if (started) {
+                LOGGER.debug("Client starts successfully");
+            } else {
+                LOGGER.error("Client starts with error.");
+            }
         }
 
         if (null == configuration.getLocalMessageStore()) {
