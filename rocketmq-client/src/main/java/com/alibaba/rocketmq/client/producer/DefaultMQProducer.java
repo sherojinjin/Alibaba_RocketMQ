@@ -160,7 +160,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
 
     @Override
-    public void sendOneway(Message msg, MessageQueue mq) throws MQClientException, RemotingException,
+    public void sendOneWay(Message msg, MessageQueue mq) throws MQClientException, RemotingException,
             InterruptedException {
         this.defaultMQProducerImpl.sendOneway(msg, mq);
     }
@@ -181,7 +181,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
 
     @Override
-    public void sendOneway(Message msg, MessageQueueSelector selector, Object arg) throws MQClientException,
+    public void sendOneWay(Message msg, MessageQueueSelector selector, Object arg) throws MQClientException,
             RemotingException, InterruptedException {
         this.defaultMQProducerImpl.sendOneway(msg, selector, arg);
     }

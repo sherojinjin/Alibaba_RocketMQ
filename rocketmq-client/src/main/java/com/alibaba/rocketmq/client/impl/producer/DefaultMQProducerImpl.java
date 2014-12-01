@@ -185,12 +185,10 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                     this.defaultMQProducer.changeInstanceNameToPID();
                 }
 
-                this.mQClientFactory =
-                        MQClientManager.getInstance().getAndCreateMQClientInstance(this.defaultMQProducer,
-                                rpcHook);
+                this.mQClientFactory = MQClientManager.getInstance()
+                        .getAndCreateMQClientInstance(this.defaultMQProducer, rpcHook);
 
-                boolean registerOK =
-                        mQClientFactory.registerProducer(this.defaultMQProducer.getProducerGroup(), this);
+                boolean registerOK = mQClientFactory.registerProducer(this.defaultMQProducer.getProducerGroup(), this);
                 if (!registerOK) {
                     this.serviceState = ServiceState.CREATE_JUST;
                     throw new MQClientException("The producer group[" + this.defaultMQProducer.getProducerGroup()
