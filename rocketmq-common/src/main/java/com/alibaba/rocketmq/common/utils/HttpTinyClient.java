@@ -1,5 +1,7 @@
 package com.alibaba.rocketmq.common.utils;
 
+import com.alibaba.rocketmq.common.MQVersion;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -7,8 +9,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
-
-import com.alibaba.rocketmq.common.MQVersion;
 
 
 /**
@@ -127,10 +127,10 @@ public class HttpTinyClient {
             return null;
         }
 
-        for (Iterator<String> iter = paramValues.iterator(); iter.hasNext();) {
-            sb.append(iter.next()).append("=");
-            sb.append(URLEncoder.encode(iter.next(), encoding));
-            if (iter.hasNext()) {
+        for (Iterator<String> iterator = paramValues.iterator(); iterator.hasNext();) {
+            sb.append(iterator.next()).append("=");
+            sb.append(URLEncoder.encode(iterator.next(), encoding));
+            if (iterator.hasNext()) {
                 sb.append("&");
             }
         }
