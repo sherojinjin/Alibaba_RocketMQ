@@ -121,14 +121,13 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             ConsumeMessageContext consumeMessageContext = null;
             if (ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl.hasHook()) {
                 consumeMessageContext = new ConsumeMessageContext();
-                consumeMessageContext
-                    .setConsumerGroup(ConsumeMessageConcurrentlyService.this.defaultMQPushConsumer
+                consumeMessageContext.setConsumerGroup(ConsumeMessageConcurrentlyService.this.defaultMQPushConsumer
                         .getConsumerGroup());
                 consumeMessageContext.setMq(messageQueue);
                 consumeMessageContext.setMsgList(msgs);
                 consumeMessageContext.setSuccess(false);
                 ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl
-                    .executeHookBefore(consumeMessageContext);
+                        .executeHookBefore(consumeMessageContext);
             }
 
             long beginTimestamp = System.currentTimeMillis();
@@ -171,8 +170,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 ConsumeMessageConcurrentlyService.this.processConsumeResult(status, context, this);
             }
             else {
-                log.warn(
-                    "processQueue is dropped without process consume result. messageQueue={}, msgTreeMap={}, msgs={}",
+                log.warn("processQueue is dropped without process consume result. messageQueue={}, msgTreeMap={}, msgs={}",
                         messageQueue, processQueue.getMsgTreeMap(), msgs);
             }
         }

@@ -32,9 +32,9 @@ public class Producer {
         producer.setSendMsgTimeout(10000);
         producer.start();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 4; i++) {
             try {
-                Message msg = new Message("TopicTest",// topic
+                Message msg = new Message("TopicTest_Lien",// topic
                     "TagA",// tag
                     ("Hello RocketMQ " + i).getBytes()// body
                         );

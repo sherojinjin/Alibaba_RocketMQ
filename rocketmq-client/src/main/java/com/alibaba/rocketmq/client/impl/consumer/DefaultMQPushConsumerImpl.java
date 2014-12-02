@@ -697,9 +697,8 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                 this.defaultMQPushConsumer.changeInstanceNameToPID();
             }
 
-            this.mQClientFactory =
-                    MQClientManager.getInstance().getAndCreateMQClientInstance(this.defaultMQPushConsumer,
-                        this.rpcHook);
+            this.mQClientFactory = MQClientManager.getInstance().getAndCreateMQClientInstance(this.defaultMQPushConsumer
+                    , this.rpcHook);
 
             // 初始化Rebalance变量
             this.rebalanceImpl.setConsumerGroup(this.defaultMQPushConsumer.getConsumerGroup());

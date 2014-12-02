@@ -998,17 +998,15 @@ public class CommitLog {
         }
 
 
-        public AppendMessageResult doAppend(final long fileFromOffset, final ByteBuffer byteBuffer,
-                final int maxBlank, final Object msg) {
+        public AppendMessageResult doAppend(final long fileFromOffset, final ByteBuffer byteBuffer, final int maxBlank,
+                                            final Object msg) {
             /**
              * 生成消息ID STORETIMESTAMP + STOREHOSTADDRESS + OFFSET <br>
              */
             MessageExtBrokerInner msgInner = (MessageExtBrokerInner) msg;
             // PHY OFFSET
             long wroteOffset = fileFromOffset + byteBuffer.position();
-            String msgId =
-                    MessageDecoder.createMessageId(this.msgIdMemory, msgInner.getStoreHostBytes(),
-                        wroteOffset);
+            String msgId = MessageDecoder.createMessageId(this.msgIdMemory, msgInner.getStoreHostBytes(), wroteOffset);
 
             /**
              * 记录ConsumeQueue信息
@@ -1164,12 +1162,12 @@ public class CommitLog {
     }
 
 
-    public void removeQueurFromTopicQueueTable(final String topic, final int queueId) {
+    public void removeQueueFromTopicQueueTable(final String topic, final int queueId) {
         String key = topic + "-" + queueId;
         synchronized (this) {
             this.topicQueueTable.remove(key);
         }
 
-        LOGGER.info("removeQueurFromTopicQueueTable OK Topic: {} QueueId: {}", topic, queueId);
+        LOGGER.info("removeQueueFromTopicQueueTable OK Topic: {} QueueId: {}", topic, queueId);
     }
 }

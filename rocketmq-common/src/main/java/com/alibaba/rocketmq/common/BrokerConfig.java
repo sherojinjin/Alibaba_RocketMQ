@@ -95,12 +95,6 @@ public class BrokerConfig {
     // notify consumerId changed 开关
     private boolean notifyConsumerIdsChangedEnable = true;
 
-    /**
-     * Indicate if the broker is running in cloud environment where elastic IP is not available on default.
-     */
-    private boolean useElasticIp = false;
-
-
     public static String localHostName() {
         try {
             return InetAddress.getLocalHost().getHostName();

@@ -96,7 +96,7 @@ public interface MQProducer extends MQAdmin {
      * @throws RemotingException
      * @throws InterruptedException
      */
-    public void sendOneway(final Message msg) throws MQClientException, RemotingException,
+    public void sendOneWay(final Message msg) throws MQClientException, RemotingException,
             InterruptedException;
 
 

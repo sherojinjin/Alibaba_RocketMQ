@@ -313,9 +313,7 @@ public class MQClientInstance {
 
 
     private boolean isBrokerAddrExistInTopicRouteTable(final String addr) {
-        Iterator<Entry<String, TopicRouteData>> it = this.topicRouteTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, TopicRouteData> entry = it.next();
+        for (Entry<String, TopicRouteData> entry : this.topicRouteTable.entrySet()) {
             TopicRouteData topicRouteData = entry.getValue();
             List<BrokerData> bds = topicRouteData.getBrokerDatas();
             for (BrokerData bd : bds) {
@@ -980,6 +978,8 @@ public class MQClientInstance {
 
     /**
      * 发布消息过程中，寻找Broker地址，一定是找Master
+     * @param brokerName name of broker.
+     * @return Address of mater broker whose name matches.
      */
     public String findBrokerAddressInPublish(final String brokerName) {
         HashMap<Long/* brokerId */, String/* address */> map = this.brokerAddrTable.get(brokerName);

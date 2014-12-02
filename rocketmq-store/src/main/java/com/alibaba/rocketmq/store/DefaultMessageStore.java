@@ -266,8 +266,8 @@ public class DefaultMessageStore implements MessageStore {
                             minCommitLogOffset,//
                             maxCLOffsetInConsumeQueue);
 
-                        DefaultMessageStore.this.commitLog.removeQueurFromTopicQueueTable(nextQT.getValue()
-                            .getTopic(), nextQT.getValue().getQueueId());
+                        DefaultMessageStore.this.commitLog.removeQueueFromTopicQueueTable(nextQT.getValue()
+                                .getTopic(), nextQT.getValue().getQueueId());
 
                         nextQT.getValue().destroy();
                         itQT.remove();
@@ -392,7 +392,7 @@ public class DefaultMessageStore implements MessageStore {
         if (!this.runningFlags.isWritable()) {
             long value = this.printTimes.getAndIncrement();
             if ((value % 50000) == 0) {
-                log.warn("message store is not writeable, so putMessage is forbidden "
+                log.warn("message store is not writable, so putMessage is forbidden "
                         + this.runningFlags.getFlagBits());
             }
 
@@ -1831,7 +1831,7 @@ public class DefaultMessageStore implements MessageStore {
                         cq.getQueueId() //
                     );
 
-                    this.commitLog.removeQueurFromTopicQueueTable(cq.getTopic(), cq.getQueueId());
+                    this.commitLog.removeQueueFromTopicQueueTable(cq.getTopic(), cq.getQueueId());
                 }
                 it.remove();
 

@@ -58,6 +58,7 @@ import java.util.concurrent.*;
  */
 public class DefaultMQProducerImpl implements MQProducerInner {
     private final Logger log = ClientLogger.getLog();
+
     private final DefaultMQProducer defaultMQProducer;
     private final ConcurrentHashMap<String/* topic */, TopicPublishInfo> topicPublishInfoTable =
             new ConcurrentHashMap<String, TopicPublishInfo>();
@@ -303,8 +304,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
 
             @Override
             public void run() {
-                TransactionCheckListener transactionCheckListener =
-                        DefaultMQProducerImpl.this.checkListener();
+                TransactionCheckListener transactionCheckListener = DefaultMQProducerImpl.this.checkListener();
                 if (transactionCheckListener != null) {
                     LocalTransactionState localTransactionState = LocalTransactionState.UNKNOWN;
                     Throwable exception = null;
@@ -321,8 +321,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                             group, //
                             exception);
                 } else {
-                    log.warn("checkTransactionState, pick transactionCheckListener by group[{}] failed",
-                            group);
+                    log.warn("checkTransactionState, pick transactionCheckListener by group[{}] failed", group);
                 }
             }
 
@@ -496,9 +495,9 @@ public class DefaultMQProducerImpl implements MQProducerInner {
             String[] brokersSent = new String[timesTotal];
             for (; times < timesTotal && (endTimestamp - beginTimestamp) < maxTimeout; times++) {
                 String lastBrokerName = null == mq ? null : mq.getBrokerName();
-                MessageQueue tmpmq = topicPublishInfo.selectOneMessageQueue(lastBrokerName);
-                if (tmpmq != null) {
-                    mq = tmpmq;
+                MessageQueue messageQueue = topicPublishInfo.selectOneMessageQueue(lastBrokerName);
+                if (messageQueue != null) {
+                    mq = messageQueue;
                     brokersSent[times] = mq.getBrokerName();
                     try {
                         sendResult = this.sendKernelImpl(msg, mq, communicationMode, sendCallback);
@@ -754,11 +753,11 @@ public class DefaultMQProducerImpl implements MQProducerInner {
     /**
      * DEFAULT ONE_WAY -------------------------------------------------------
      */
-    public void sendOneway(Message msg) throws MQClientException, RemotingException, InterruptedException {
+    public void sendOneWay(Message msg) throws MQClientException, RemotingException, InterruptedException {
         try {
             this.sendDefaultImpl(msg, CommunicationMode.ONE_WAY, null);
         } catch (MQBrokerException e) {
-            throw new MQClientException("unknow exception", e);
+            throw new MQClientException("Unknown exception", e);
         }
     }
 
@@ -773,7 +772,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         Validators.checkMessage(msg, this.defaultMQProducer);
 
         if (!msg.getTopic().equals(mq.getTopic())) {
-            throw new MQClientException("message's topic not equal mq's topic", null);
+            throw new MQClientException("Message topic does not match topic of message queue", null);
         }
 
         return this.sendKernelImpl(msg, mq, CommunicationMode.SYNC, null);
@@ -790,13 +789,13 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         Validators.checkMessage(msg, this.defaultMQProducer);
 
         if (!msg.getTopic().equals(mq.getTopic())) {
-            throw new MQClientException("message's topic not equal mq's topic", null);
+            throw new MQClientException("Message topic does not match topic of message queue", null);
         }
 
         try {
             this.sendKernelImpl(msg, mq, CommunicationMode.ASYNC, sendCallback);
         } catch (MQBrokerException e) {
-            throw new MQClientException("unknow exception", e);
+            throw new MQClientException("Unknown exception", e);
         }
     }
 
@@ -804,7 +803,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
     /**
      * KERNEL ONE_WAY -------------------------------------------------------
      */
-    public void sendOneway(Message msg, MessageQueue mq) throws MQClientException, RemotingException,
+    public void sendOneWay(Message msg, MessageQueue mq) throws MQClientException, RemotingException,
             InterruptedException {
         // 有效性检查
         this.makeSureStateOK();
@@ -813,7 +812,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         try {
             this.sendKernelImpl(msg, mq, CommunicationMode.ONE_WAY, null);
         } catch (MQBrokerException e) {
-            throw new MQClientException("unknow exception", e);
+            throw new MQClientException("Unknown exception", e);
         }
     }
 
@@ -844,7 +843,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
             try {
                 mq = selector.select(topicPublishInfo.getMessageQueueList(), msg, arg);
             } catch (Throwable e) {
-                throw new MQClientException("select message queue throwed exception.", e);
+                throw new MQClientException("select message queue thrown exception.", e);
             }
 
             if (mq != null) {
@@ -866,7 +865,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         try {
             this.sendSelectImpl(msg, selector, arg, CommunicationMode.ASYNC, sendCallback);
         } catch (MQBrokerException e) {
-            throw new MQClientException("unknow exception", e);
+            throw new MQClientException("Unknown exception", e);
         }
     }
 
@@ -874,20 +873,20 @@ public class DefaultMQProducerImpl implements MQProducerInner {
     /**
      * SELECT ONE_WAY -------------------------------------------------------
      */
-    public void sendOneway(Message msg, MessageQueueSelector selector, Object arg) throws MQClientException,
+    public void sendOneWay(Message msg, MessageQueueSelector selector, Object arg) throws MQClientException,
             RemotingException, InterruptedException {
         try {
             this.sendSelectImpl(msg, selector, arg, CommunicationMode.ONE_WAY, null);
         } catch (MQBrokerException e) {
-            throw new MQClientException("unknow exception", e);
+            throw new MQClientException("Unknown exception", e);
         }
     }
 
 
     public TransactionSendResult sendMessageInTransaction(final Message msg,
-                                                          final LocalTransactionExecutor tranExecuter, final Object arg) throws MQClientException {
+                                                          final LocalTransactionExecutor tranExecutor, final Object arg) throws MQClientException {
         // 有效性检查
-        if (null == tranExecuter) {
+        if (null == tranExecutor) {
             throw new MQClientException("tranExecutor is null", null);
         }
         Validators.checkMessage(msg, this.defaultMQProducer);
@@ -909,7 +908,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         switch (sendResult.getSendStatus()) {
             case SEND_OK: {
                 try {
-                    localTransactionState = tranExecuter.executeLocalTransactionBranch(msg, arg);
+                    localTransactionState = tranExecutor.executeLocalTransactionBranch(msg, arg);
                     if (null == localTransactionState) {
                         localTransactionState = LocalTransactionState.UNKNOWN;
                     }
