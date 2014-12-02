@@ -15,12 +15,12 @@
  */
 package com.alibaba.rocketmq.client.producer.selector;
 
-import java.util.List;
-import java.util.Set;
-
 import com.alibaba.rocketmq.client.producer.MessageQueueSelector;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageQueue;
+
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -30,8 +30,8 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
  * @since 2013-7-25
  */
 public class SelectMessageQueueByMachineRoom implements MessageQueueSelector {
-    private Set<String> consumeridcs;
 
+    private Set<String> consumerIDCs;
 
     @Override
     public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
@@ -40,12 +40,12 @@ public class SelectMessageQueueByMachineRoom implements MessageQueueSelector {
     }
 
 
-    public Set<String> getConsumeridcs() {
-        return consumeridcs;
+    public Set<String> getConsumerIDCs() {
+        return consumerIDCs;
     }
 
 
-    public void setConsumeridcs(Set<String> consumeridcs) {
-        this.consumeridcs = consumeridcs;
+    public void setConsumerIDCs(Set<String> consumerIDCs) {
+        this.consumerIDCs = consumerIDCs;
     }
 }

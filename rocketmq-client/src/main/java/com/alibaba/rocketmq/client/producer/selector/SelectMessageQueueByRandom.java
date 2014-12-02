@@ -15,12 +15,12 @@
  */
 package com.alibaba.rocketmq.client.producer.selector;
 
-import java.util.List;
-import java.util.Random;
-
 import com.alibaba.rocketmq.client.producer.MessageQueueSelector;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageQueue;
+
+import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -29,9 +29,9 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
  * @author shijia.wxr<vintage.wang@gmail.com>
  * @since 2013-7-25
  */
-public class SelectMessageQueueByRandoom implements MessageQueueSelector {
-    private Random random = new Random(System.currentTimeMillis());
+public class SelectMessageQueueByRandom implements MessageQueueSelector {
 
+    private Random random = new Random(System.currentTimeMillis());
 
     @Override
     public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
