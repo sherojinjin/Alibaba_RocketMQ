@@ -382,7 +382,7 @@ public class HAService {
 
 
         private boolean reportSlaveMaxOffset(final long maxOffset) {
-            System.out.println("Slave reports local maximum offset: " + maxOffset);
+            LOGGER.info("Slave reports local maximum offset: " + maxOffset);
             reportOffset.clear();
             reportOffset.putLong(maxOffset);
             reportOffset.flip();
@@ -472,7 +472,7 @@ public class HAService {
                     long masterPhyOffset = this.byteBufferRead.getLong(this.dispatchPosition);
                     int bodySize = this.byteBufferRead.getInt(this.dispatchPosition + 8);
 
-                    System.out.println("Slave reads data received from master. offset:" + masterPhyOffset + ", size: " + bodySize);
+                    LOGGER.info("Slave reads data received from master. offset:" + masterPhyOffset + ", size: " + bodySize);
 
                     long slavePhyOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
 
