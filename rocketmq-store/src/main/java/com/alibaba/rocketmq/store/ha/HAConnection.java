@@ -109,6 +109,8 @@ public class HAConnection {
         private int processPosition = 0;
         private volatile long lastReadTimestamp = System.currentTimeMillis();
 
+        private static final int SIZE_OF_LONG = 8;
+
 
         public ReadSocketService(final SocketChannel socketChannel) throws IOException {
             this.selector = RemotingUtil.openSelector();
@@ -133,8 +135,7 @@ public class HAConnection {
                     }
 
                     // 检测心跳间隔时间，超过则强制断开
-                    long interval =
-                            HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now()
+                    long interval = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now()
                                     - this.lastReadTimestamp;
                     if (interval > HAConnection.this.haService.getDefaultMessageStore()
                             .getMessageStoreConfig().getHaHousekeepingInterval()) {
@@ -185,12 +186,12 @@ public class HAConnection {
                     int readSize = this.socketChannel.read(this.byteBufferRead);
                     if (readSize > 0) {
                         readSizeZeroTimes = 0;
-                        this.lastReadTimestamp =
-                                HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();
+                        this.lastReadTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock()
+                                .now();
                         // 接收Slave上传的offset
-                        if ((this.byteBufferRead.position() - this.processPosition) >= 8) {
-                            int pos = this.byteBufferRead.position() - (this.byteBufferRead.position() % 8);
-                            long readOffset = this.byteBufferRead.getLong(pos - 8);
+                        if ((this.byteBufferRead.position() - this.processPosition) >= SIZE_OF_LONG) {
+                            int pos = this.byteBufferRead.position() - (this.byteBufferRead.position() % SIZE_OF_LONG);
+                            long readOffset = this.byteBufferRead.getLong(pos - SIZE_OF_LONG);
                             this.processPosition = pos;
 
                             // 处理Slave的请求
@@ -244,7 +245,6 @@ public class HAConnection {
         private boolean lastWriteOver = true;
         private long lastWriteTimestamp = System.currentTimeMillis();
 
-
         public WriteSocketService(final SocketChannel socketChannel) throws IOException {
             this.selector = RemotingUtil.openSelector();
             this.socketChannel = socketChannel;
@@ -278,7 +278,6 @@ public class HAConnection {
                             if (masterOffset < 0) {
                                 masterOffset = 0;
                             }
-
                             this.nextTransferFromWhere = masterOffset;
                         } else {
                             this.nextTransferFromWhere = HAConnection.this.slaveRequestOffset;
@@ -291,9 +290,8 @@ public class HAConnection {
 
                     if (this.lastWriteOver) {
                         // 如果长时间没有发消息则尝试发心跳
-                        long interval =
-                                HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now()
-                                        - this.lastWriteTimestamp;
+                        long interval = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now()
+                                - this.lastWriteTimestamp;
 
                         if (interval > HAConnection.this.haService.getDefaultMessageStore()
                                 .getMessageStoreConfig().getHaSendHeartbeatInterval()) {
@@ -319,15 +317,13 @@ public class HAConnection {
 
                     // 传输数据,
                     // selectResult会赋值给this.selectMappedBufferResult，出现异常也会清理掉
-                    SelectMappedBufferResult selectResult =
-                            HAConnection.this.haService.getDefaultMessageStore().getCommitLogData(
-                                    this.nextTransferFromWhere);
+                    SelectMappedBufferResult selectResult = HAConnection.this.haService.getDefaultMessageStore()
+                            .getCommitLogData(this.nextTransferFromWhere);
                     if (selectResult != null) {
                         int size = selectResult.getSize();
                         if (size > HAConnection.this.haService.getDefaultMessageStore()
                                 .getMessageStoreConfig().getHaTransferBatchSize()) {
-                            size =
-                                    HAConnection.this.haService.getDefaultMessageStore()
+                            size = HAConnection.this.haService.getDefaultMessageStore()
                                             .getMessageStoreConfig().getHaTransferBatchSize();
                         }
 
@@ -384,6 +380,7 @@ public class HAConnection {
 
         /**
          * 表示是否传输完成
+         * @return Indicate whether all data transmissions are done.
          */
         private boolean transferData() throws Exception {
             int writeSizeZeroTimes = 0;
@@ -425,9 +422,8 @@ public class HAConnection {
                 }
             }
 
-            boolean result =
-                    !this.byteBufferHeader.hasRemaining()
-                            && !this.selectMappedBufferResult.getByteBuffer().hasRemaining();
+            boolean result = !this.byteBufferHeader.hasRemaining()
+                    && !this.selectMappedBufferResult.getByteBuffer().hasRemaining();
 
             if (!this.selectMappedBufferResult.getByteBuffer().hasRemaining()) {
                 this.selectMappedBufferResult.release();
