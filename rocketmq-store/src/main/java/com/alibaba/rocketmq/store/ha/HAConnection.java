@@ -269,12 +269,12 @@ public class HAConnection {
                     // 第一次传输，需要计算从哪里开始
                     // Slave如果本地没有数据，请求的Offset为0，那么master则从物理文件最后一个文件开始传送数据
                     if (-1 == this.nextTransferFromWhere) {
+                        System.out.println("First time data transfer to slave.");
                         if (0 == HAConnection.this.slaveRequestOffset) {
                             long masterOffset = HAConnection.this.haService.getDefaultMessageStore().getCommitLog()
                                     .getMaxOffset();
                             masterOffset = masterOffset - (masterOffset % HAConnection.this.haService
                                     .getDefaultMessageStore().getMessageStoreConfig().getMappedFileSizeCommitLog());
-
                             if (masterOffset < 0) {
                                 masterOffset = 0;
                             }
@@ -282,6 +282,8 @@ public class HAConnection {
                         } else {
                             this.nextTransferFromWhere = HAConnection.this.slaveRequestOffset;
                         }
+
+                        System.out.println("Master Offset: " + nextTransferFromWhere);
 
                         log.info("master transfer data from " + this.nextTransferFromWhere + " to slave["
                                 + HAConnection.this.clientAddr + "], and slave request "
@@ -302,7 +304,7 @@ public class HAConnection {
                             this.byteBufferHeader.putLong(this.nextTransferFromWhere);
                             this.byteBufferHeader.putInt(0);
                             this.byteBufferHeader.flip();
-
+                            System.out.println("Sending heartbeat to slaves.");
                             this.lastWriteOver = this.transferData();
                             if (!this.lastWriteOver)
                                 continue;
@@ -339,6 +341,8 @@ public class HAConnection {
                         this.byteBufferHeader.putLong(thisOffset);
                         this.byteBufferHeader.putInt(size);
                         this.byteBufferHeader.flip();
+
+                        System.out.println("Sending data to slave. Master Offset: " + nextTransferFromWhere + ", size: " + size);
 
                         this.lastWriteOver = this.transferData();
                     } else {
