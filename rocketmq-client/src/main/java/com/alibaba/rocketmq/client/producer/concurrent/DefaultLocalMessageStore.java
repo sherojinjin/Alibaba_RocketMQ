@@ -260,6 +260,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                lock.readLock().unlock();
             }
             return null;
         }
