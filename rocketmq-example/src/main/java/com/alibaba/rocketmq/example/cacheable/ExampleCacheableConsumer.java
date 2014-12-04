@@ -7,7 +7,11 @@ import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 
+import java.util.Random;
+
 public class ExampleCacheableConsumer {
+
+    private static final Random rand = new Random(System.currentTimeMillis());
 
     static class ExampleMessageHandler extends MessageHandler {
 
@@ -21,7 +25,7 @@ public class ExampleCacheableConsumer {
         @Override
         public int handle(MessageExt message) {
             System.out.println("MessageId:" + message.getMsgId() +  message.getTopic());
-            return 0;
+            return rand.nextInt(1000) > 500 ? 1000 : 0;
         }
     }
 
