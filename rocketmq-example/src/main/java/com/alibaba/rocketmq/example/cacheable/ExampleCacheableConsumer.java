@@ -3,7 +3,9 @@ package com.alibaba.rocketmq.example.cacheable;
 import com.alibaba.rocketmq.client.consumer.cacheable.CacheableConsumer;
 import com.alibaba.rocketmq.client.consumer.cacheable.MessageHandler;
 import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 
 public class ExampleCacheableConsumer {
 
@@ -39,6 +41,9 @@ public class ExampleCacheableConsumer {
 
         cacheableConsumer.setCorePoolSizeForDelayTasks(1); // default 2.
         cacheableConsumer.setCorePoolSizeForWorkTasks(5); // default 10.
+
+        cacheableConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
+        cacheableConsumer.setMessageModel(MessageModel.BROADCASTING);
 
         cacheableConsumer.start();
 
