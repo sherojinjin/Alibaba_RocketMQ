@@ -1,27 +1,25 @@
 package com.alibaba.rocketmq.client.consumer.cacheable;
 
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
-import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
-import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
-import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.common.message.MessageExt;
+import org.slf4j.Logger;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class CacheableConsumer
 {
+    private static final Logger LOGGER = ClientLogger.getLog();
+
     private String consumerGroupName;
 
     private DefaultLocalMessageStore localMessageStore;
@@ -74,7 +72,7 @@ public class CacheableConsumer
 
         topicHandlerMap.putIfAbsent(messageHandler.getTopic(), messageHandler);
         defaultMQPushConsumer.subscribe(messageHandler.getTopic(),
-                null == messageHandler.getTag() ? messageHandler.getTag() : "*");
+                null != messageHandler.getTag() ? messageHandler.getTag() : "*");
         return this;
     }
 
@@ -96,6 +94,7 @@ public class CacheableConsumer
         defaultMQPushConsumer.registerMessageListener(frontController);
         defaultMQPushConsumer.start();
         started = true;
+        LOGGER.debug("DefaultMQPushConsumer starts.");
     }
 
     public void setConsumerGroupName(String consumerGroupName) {
@@ -105,79 +104,4 @@ public class CacheableConsumer
     public boolean isStarted() {
         return started;
     }
-}
-
-
-class FrontController implements MessageListenerConcurrently {
-
-    private final ConcurrentHashMap<String, MessageHandler> topicHandlerMap;
-
-    private final ScheduledExecutorService scheduledExecutorWorkerService;
-
-    private final ScheduledExecutorService scheduledExecutorDelayService;
-
-    public FrontController(ConcurrentHashMap<String, MessageHandler> topicHandlerMap,
-                           ScheduledExecutorService scheduledExecutorWorkerService,
-                           ScheduledExecutorService scheduledExecutorDelayService) {
-        this.topicHandlerMap = topicHandlerMap;
-        this.scheduledExecutorDelayService = scheduledExecutorDelayService;
-        this.scheduledExecutorWorkerService = scheduledExecutorWorkerService;
-
-    }
-
-
-    @Override
-    public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> messages,
-                                                    ConsumeConcurrentlyContext context) {
-        for (final Message message : messages) {
-            final MessageHandler messageHandler = topicHandlerMap.get(message.getTopic());
-            scheduledExecutorWorkerService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    int result = messageHandler.handle(message);
-                    if (result > 0) {
-                        scheduledExecutorDelayService.schedule(
-                                new DelayTask(scheduledExecutorDelayService, messageHandler, message),
-                                result, TimeUnit.MILLISECONDS);
-
-
-
-                        //TODO Implement a message store with the following features.
-                        // 1) index for quick access;
-                        // 2) able to persist timestamp to execute;
-                        // 3) able to mark and sweep deprecated data without fraction.
-                        //localMessageStore.stash(message);
-                    }
-                }
-            });
-        }
-        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-    }
-}
-
-
-
-class DelayTask implements Runnable {
-    private final Message message;
-
-    private final MessageHandler messageHandler;
-
-    private final ScheduledExecutorService executorService;
-
-    public DelayTask(ScheduledExecutorService executorService, MessageHandler messageHandler,
-                     Message message) {
-        this.message = message;
-        this.messageHandler = messageHandler;
-        this.executorService = executorService;
-    }
-
-    @Override
-    public void run() {
-        int result = messageHandler.handle(message);
-        if (result > 0) {
-            this.executorService.schedule(this, result, TimeUnit.MILLISECONDS);
-        }
-
-    }
-
 }

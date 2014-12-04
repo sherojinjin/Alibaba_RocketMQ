@@ -1,6 +1,5 @@
 package com.alibaba.rocketmq.example.cacheable;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.consumer.cacheable.CacheableConsumer;
 import com.alibaba.rocketmq.client.consumer.cacheable.MessageHandler;
 import com.alibaba.rocketmq.client.exception.MQClientException;
@@ -19,7 +18,7 @@ public class ExampleCacheableConsumer {
          */
         @Override
         public int handle(Message message) {
-            System.out.println(JSON.toJSONString(message));
+            System.out.println(message.getTopic());
             return 0;
         }
     }
@@ -32,13 +31,15 @@ public class ExampleCacheableConsumer {
         /**
          * Topic is strictly required.
          */
-        exampleMessageHandler.setTopic("TopicTest");
+        exampleMessageHandler.setTopic("TopicTest_Lien");
 
         exampleMessageHandler.setTag("*");
 
         cacheableConsumer.registerMessageHandler(exampleMessageHandler);
 
         cacheableConsumer.start();
+
+        System.out.println("User client starts.");
     }
 
 }
