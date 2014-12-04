@@ -556,6 +556,8 @@ public class HAService {
                         this.socketChannel = RemotingUtil.connect(socketAddress);
                         if (this.socketChannel != null) {
                             this.socketChannel.register(this.selector, SelectionKey.OP_READ);
+                        } else {
+                            LOGGER.error("Unable to establish a connection.");
                         }
                     }
                 }
@@ -564,7 +566,11 @@ public class HAService {
                 this.currentReportedOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
                 this.lastWriteTimestamp = System.currentTimeMillis();
                 this.lastReadTimestamp = System.currentTimeMillis();
-                reportSlaveMaxOffset(currentReportedOffset);
+                if (null != socketChannel) {
+                    reportSlaveMaxOffset(currentReportedOffset);
+                } else {
+                    LOGGER.error("No established connection, unable to report maximum offset of slave store.");
+                }
             }
 
             return this.socketChannel != null;
