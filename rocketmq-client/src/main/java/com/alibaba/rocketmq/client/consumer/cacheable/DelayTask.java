@@ -33,11 +33,15 @@ public class DelayTask implements Runnable {
         Set<Map.Entry<Message, Message>> set = message.entrySet();
 
         for (Map.Entry<Message, Message> entry : set) {
-            Message me = entry.getKey();
+            Message me = new Message(entry.getKey().getTopic(), entry.getKey().getTags(), entry.getKey().getKeys(),
+                    entry.getKey().getBody());
+            me.putUserProperty("next_time", entry.getKey().getProperty("next_time"));
             if (Long.parseLong(me.getProperty("next_time")) - System.currentTimeMillis() < 1000) {
                 int result = messageHandler.handle(me);
                 if (result > 0) {
+                    me.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
                     this.executorService.schedule(this, result, TimeUnit.MILLISECONDS);
+                    localMessageStore.stash(me);
                 }
             } else {
                 localMessageStore.stash(me);
@@ -49,7 +53,7 @@ public class DelayTask implements Runnable {
         TreeMap<Message, Message> messageTreeMap = new TreeMap<Message, Message>(new Comparator<Message>() {
             @Override
             public int compare(Message o1, Message o2) {
-                if (Long.parseLong(o1.getProperty("next_time")) < Long.parseLong(o2.getProperty("next_time")))
+                if (Long.parseLong(o1.getProperty("next_time")) - Long.parseLong(o2.getProperty("next_time")) < 0)
                     return -1;
                 return 1;
             }

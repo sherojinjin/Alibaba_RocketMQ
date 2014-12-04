@@ -27,8 +27,9 @@ public class ProcessMessageTask implements Runnable {
     public void run() {
         int result = messageHandler.handle(message);
         if (result > 0) {
-            message.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
-            localMessageStore.stash(message);
+            Message tmp = new Message(message.getTopic(), message.getTags(), message.getKeys(), message.getBody());
+            tmp.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
+            localMessageStore.stash(tmp);
 
             scheduledExecutorDelayService.schedule(
                     new DelayTask(scheduledExecutorDelayService, messageHandler, localMessageStore),
