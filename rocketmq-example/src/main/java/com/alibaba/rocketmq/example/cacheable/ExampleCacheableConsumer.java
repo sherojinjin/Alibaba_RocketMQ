@@ -37,6 +37,9 @@ public class ExampleCacheableConsumer {
 
         cacheableConsumer.registerMessageHandler(exampleMessageHandler);
 
+        cacheableConsumer.setCorePoolSizeForDelayTasks(1); // default 2.
+        cacheableConsumer.setCorePoolSizeForWorkTasks(5); // default 10.
+
         cacheableConsumer.start();
 
         System.out.println("User client starts.");

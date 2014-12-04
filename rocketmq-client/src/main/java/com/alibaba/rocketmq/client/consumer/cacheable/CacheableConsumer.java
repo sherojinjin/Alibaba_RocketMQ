@@ -34,9 +34,13 @@ public class CacheableConsumer
 
     private boolean started;
 
-    private int corePoolSizeForDelayTasks = 2;
+    private static final int CORE_POOL_SIZE_FOR_DELAY_TASKS = 2;
 
-    private int corePoolSizeForWorkTasks = 10;
+    private static final int CORE_POOL_SIZE_FOR_WORK_TASKS = 10;
+
+    private int corePoolSizeForDelayTasks = CORE_POOL_SIZE_FOR_DELAY_TASKS;
+
+    private int corePoolSizeForWorkTasks = CORE_POOL_SIZE_FOR_WORK_TASKS;
 
     private ScheduledExecutorService scheduledExecutorDelayService = Executors
             .newScheduledThreadPool(corePoolSizeForDelayTasks);
@@ -103,5 +107,13 @@ public class CacheableConsumer
 
     public boolean isStarted() {
         return started;
+    }
+
+    public void setCorePoolSizeForDelayTasks(int corePoolSizeForDelayTasks) {
+        this.corePoolSizeForDelayTasks = corePoolSizeForDelayTasks;
+    }
+
+    public void setCorePoolSizeForWorkTasks(int corePoolSizeForWorkTasks) {
+        this.corePoolSizeForWorkTasks = corePoolSizeForWorkTasks;
     }
 }
