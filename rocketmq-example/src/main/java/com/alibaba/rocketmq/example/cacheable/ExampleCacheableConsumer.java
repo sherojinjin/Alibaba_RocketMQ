@@ -4,7 +4,7 @@ import com.alibaba.rocketmq.client.consumer.cacheable.CacheableConsumer;
 import com.alibaba.rocketmq.client.consumer.cacheable.MessageHandler;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
-import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 
 public class ExampleCacheableConsumer {
@@ -19,8 +19,8 @@ public class ExampleCacheableConsumer {
          * supposed to be consumed again N milliseconds later.
          */
         @Override
-        public int handle(Message message) {
-            System.out.println(message.getTopic());
+        public int handle(MessageExt message) {
+            System.out.println("MessageId:" + message.getMsgId() +  message.getTopic());
             return 0;
         }
     }

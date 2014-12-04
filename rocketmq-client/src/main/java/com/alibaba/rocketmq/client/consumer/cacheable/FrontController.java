@@ -3,7 +3,6 @@ package com.alibaba.rocketmq.client.consumer.cacheable;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
-import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 
 import java.util.List;
@@ -30,7 +29,7 @@ public class FrontController implements MessageListenerConcurrently {
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> messages,
                                                     ConsumeConcurrentlyContext context) {
-        for (Message message : messages) {
+        for (MessageExt message : messages) {
             final MessageHandler messageHandler = topicHandlerMap.get(message.getTopic());
             scheduledExecutorWorkerService.submit(new ProcessMessageTask(message, messageHandler,
                     scheduledExecutorDelayService));

@@ -1,18 +1,18 @@
 package com.alibaba.rocketmq.client.consumer.cacheable;
 
-import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.message.MessageExt;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ProcessMessageTask implements Runnable {
-    private Message message;
+    private MessageExt message;
 
     private MessageHandler messageHandler;
 
     private ScheduledExecutorService scheduledExecutorDelayService;
 
-    public ProcessMessageTask(Message message, MessageHandler messageHandler,
+    public ProcessMessageTask(MessageExt message, MessageHandler messageHandler,
                               ScheduledExecutorService scheduledExecutorDelayService) {
         this.message = message;
         this.messageHandler = messageHandler;
