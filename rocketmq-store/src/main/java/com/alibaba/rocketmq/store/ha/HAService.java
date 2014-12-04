@@ -377,6 +377,9 @@ public class HAService {
             long interval = Math.min(current - this.lastWriteTimestamp, current - lastReadTimestamp);
             boolean needHeartbeat = (interval > HAService.this.defaultMessageStore.getMessageStoreConfig()
                     .getHaSendHeartbeatInterval());
+            if (needHeartbeat) {
+                LOGGER.info("It's time to report offset.");
+            }
             return needHeartbeat;
         }
 
@@ -400,6 +403,13 @@ public class HAService {
                     return false;
                 }
             }
+
+            if (reportOffset.hasRemaining()) {
+                LOGGER.error("Slave failed to report maximum offset.");
+            } else {
+                LOGGER.info("Slave reporting maximum offset completes.");
+            }
+
             return !this.reportOffset.hasRemaining();
         }
 
@@ -435,6 +445,7 @@ public class HAService {
             while (this.byteBufferRead.hasRemaining()) {
                 try {
                     int readSize = this.socketChannel.read(this.byteBufferRead);
+                    LOGGER.info("Slave read " + readSize + " bytes from master.");
                     if (readSize > 0) {
                         readSizeZeroTimes = 0;
                         lastReadTimestamp = HAService.this.defaultMessageStore.getSystemClock().now();
@@ -444,7 +455,9 @@ public class HAService {
                             return false;
                         }
                     } else if (readSize == 0) {
-                        if (++readSizeZeroTimes >= 3) {
+                        readSizeZeroTimes++;
+                        LOGGER.warn("No." + readSizeZeroTimes + " time, slave read 0 byte from master.");
+                        if (readSizeZeroTimes >= 3) {
                             break;
                         }
                     } else {

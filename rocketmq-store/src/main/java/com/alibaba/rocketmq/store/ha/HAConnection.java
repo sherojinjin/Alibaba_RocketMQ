@@ -124,7 +124,6 @@ public class HAConnection {
         @Override
         public void run() {
             HAConnection.log.info(this.getServiceName() + " service started");
-
             while (!this.isStopped()) {
                 try {
                     this.selector.select(1000);
@@ -184,6 +183,7 @@ public class HAConnection {
             while (this.byteBufferRead.hasRemaining()) {
                 try {
                     int readSize = this.socketChannel.read(this.byteBufferRead);
+                    log.info("Master read " + readSize + " bytes from slave.");
                     if (readSize > 0) {
                         readSizeZeroTimes = 0;
                         this.lastReadTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock()
@@ -206,7 +206,10 @@ public class HAConnection {
                             HAConnection.this.haService.notifyTransferSome(HAConnection.this.slaveAckOffset);
                         }
                     } else if (readSize == 0) {
-                        if (++readSizeZeroTimes >= 3) {
+                        readSizeZeroTimes++;
+                        log.warn("No." + readSizeZeroTimes + " time read 0 byte from slave.");
+                        if (readSizeZeroTimes >= 3) {
+                            log.error("Exceeds 3 times. Abort reading.");
                             break;
                         }
                     } else {
@@ -306,8 +309,9 @@ public class HAConnection {
                             this.byteBufferHeader.flip();
                             log.info("Sending heartbeat to slaves.");
                             this.lastWriteOver = this.transferData();
-                            if (!this.lastWriteOver)
+                            if (!this.lastWriteOver) {
                                 continue;
+                            }
                         }
                     }
                     // 继续传输
@@ -336,8 +340,7 @@ public class HAConnection {
                         this.selectMappedBufferResult = selectResult;
 
                         // Build Header
-                        this.byteBufferHeader.position(0);
-                        this.byteBufferHeader.limit(HEADER_SIZE);
+                        byteBufferHeader.clear();
                         this.byteBufferHeader.putLong(thisOffset);
                         this.byteBufferHeader.putInt(size);
                         this.byteBufferHeader.flip();
@@ -395,7 +398,10 @@ public class HAConnection {
                     writeSizeZeroTimes = 0;
                     this.lastWriteTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();
                 } else if (writeSize == 0) {
-                    if (++writeSizeZeroTimes >= 3) {
+                    writeSizeZeroTimes++;
+                    log.warn("No." + writeSizeZeroTimes + " time writing 0 byte to slave. Connection is not stable.");
+                    if (writeSizeZeroTimes >= 3) {
+                        log.error("Exceeds 3 times. Abort writing.");
                         break;
                     }
                 } else {
@@ -417,7 +423,10 @@ public class HAConnection {
                         writeSizeZeroTimes = 0;
                         this.lastWriteTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();
                     } else if (writeSize == 0) {
-                        if (++writeSizeZeroTimes >= 3) {
+                        writeSizeZeroTimes++;
+                        log.warn("No." + writeSizeZeroTimes + " time write 0 byte to slave. Connection is not stable.");
+                        if (writeSizeZeroTimes >= 3) {
+                            log.error("Exceeds 3 times. Abort writing.");
                             break;
                         }
                     } else {
@@ -428,6 +437,10 @@ public class HAConnection {
 
             boolean result = !this.byteBufferHeader.hasRemaining()
                     && !this.selectMappedBufferResult.getByteBuffer().hasRemaining();
+
+            if (result) {
+                log.info("Writing data to slave completes.");
+            }
 
             if (!this.selectMappedBufferResult.getByteBuffer().hasRemaining()) {
                 this.selectMappedBufferResult.release();
