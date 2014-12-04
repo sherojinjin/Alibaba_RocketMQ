@@ -1,5 +1,6 @@
 package com.alibaba.rocketmq.client.consumer.cacheable;
 
+import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.message.Message;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -12,28 +13,26 @@ public class ProcessMessageTask implements Runnable {
 
     private ScheduledExecutorService scheduledExecutorDelayService;
 
+    private DefaultLocalMessageStore localMessageStore;
+
     public ProcessMessageTask(Message message, MessageHandler messageHandler,
-                              ScheduledExecutorService scheduledExecutorDelayService) {
+                              ScheduledExecutorService scheduledExecutorDelayService, DefaultLocalMessageStore localMessageStore) {
         this.message = message;
         this.messageHandler = messageHandler;
         this.scheduledExecutorDelayService = scheduledExecutorDelayService;
+        this.localMessageStore = localMessageStore;
     }
 
     @Override
     public void run() {
         int result = messageHandler.handle(message);
         if (result > 0) {
+            message.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
+            localMessageStore.stash(message);
+
             scheduledExecutorDelayService.schedule(
-                    new DelayTask(scheduledExecutorDelayService, messageHandler, message),
+                    new DelayTask(scheduledExecutorDelayService, messageHandler, localMessageStore),
                     result, TimeUnit.MILLISECONDS);
-
-
-
-            //TODO Implement a message store with the following features.
-            // 1) index for quick access;
-            // 2) able to persist timestamp to execute;
-            // 3) able to mark and sweep deprecated data without fraction.
-            //localMessageStore.stash(message);
         }
     }
 

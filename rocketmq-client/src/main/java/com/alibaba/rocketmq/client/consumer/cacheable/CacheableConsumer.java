@@ -55,8 +55,8 @@ public class CacheableConsumer
     public CacheableConsumer(String consumerGroupName) {
         this.consumerGroupName = consumerGroupName;
         this.topicHandlerMap = new ConcurrentHashMap<String, MessageHandler>();
-        defaultMQPushConsumer = new DefaultMQPushConsumer(consumerGroupName);
-        localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
+        defaultMQPushConsumer = new DefaultMQPushConsumer(this.consumerGroupName);
+        localMessageStore = new DefaultLocalMessageStore(this.consumerGroupName);
         defaultMQPushConsumer.setInstanceName(getInstanceName());
         defaultMQPushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
     }
@@ -90,7 +90,7 @@ public class CacheableConsumer
         }
 
         MessageListenerConcurrently frontController = new FrontController(topicHandlerMap,
-                scheduledExecutorWorkerService, scheduledExecutorDelayService);
+                scheduledExecutorWorkerService, scheduledExecutorDelayService, localMessageStore);
         defaultMQPushConsumer.registerMessageListener(frontController);
         defaultMQPushConsumer.start();
         started = true;
