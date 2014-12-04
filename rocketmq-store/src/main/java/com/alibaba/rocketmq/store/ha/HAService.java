@@ -564,6 +564,7 @@ public class HAService {
                 this.currentReportedOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
                 this.lastWriteTimestamp = System.currentTimeMillis();
                 this.lastReadTimestamp = System.currentTimeMillis();
+                reportSlaveMaxOffset(currentReportedOffset);
             }
 
             return this.socketChannel != null;
