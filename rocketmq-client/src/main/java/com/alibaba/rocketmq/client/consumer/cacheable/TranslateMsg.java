@@ -66,7 +66,7 @@ public class TranslateMsg {
                 message.getProperty("msgId"));
 
         result.setTopic(message.getTopic());
-        result.setTopic(message.getTags());
+        result.setTags(message.getTags());
         result.setKeys(message.getKeys());
         result.setBody(message.getBody());
         result.setMsgId(message.getProperty("msgId"));
