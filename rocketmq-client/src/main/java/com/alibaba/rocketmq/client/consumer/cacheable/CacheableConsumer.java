@@ -6,6 +6,7 @@ import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
+import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.slf4j.Logger;
 
 import java.net.InetAddress;
@@ -34,9 +35,17 @@ public class CacheableConsumer
 
     private boolean started;
 
-    private int corePoolSizeForDelayTasks = 2;
+    private MessageModel messageModel = MessageModel.BROADCASTING;
 
-    private int corePoolSizeForWorkTasks = 10;
+    private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
+
+    private static final int CORE_POOL_SIZE_FOR_DELAY_TASKS = 2;
+
+    private static final int CORE_POOL_SIZE_FOR_WORK_TASKS = 10;
+
+    private int corePoolSizeForDelayTasks = CORE_POOL_SIZE_FOR_DELAY_TASKS;
+
+    private int corePoolSizeForWorkTasks = CORE_POOL_SIZE_FOR_WORK_TASKS;
 
     private ScheduledExecutorService scheduledExecutorDelayService = Executors
             .newScheduledThreadPool(corePoolSizeForDelayTasks);
@@ -58,7 +67,8 @@ public class CacheableConsumer
         defaultMQPushConsumer = new DefaultMQPushConsumer(this.consumerGroupName);
         localMessageStore = new DefaultLocalMessageStore(this.consumerGroupName);
         defaultMQPushConsumer.setInstanceName(getInstanceName());
-        defaultMQPushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
+        defaultMQPushConsumer.setMessageModel(messageModel);
+        defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
     }
 
     public CacheableConsumer registerMessageHandler(MessageHandler messageHandler) throws MQClientException {
@@ -103,5 +113,37 @@ public class CacheableConsumer
 
     public boolean isStarted() {
         return started;
+    }
+
+    public void setCorePoolSizeForDelayTasks(int corePoolSizeForDelayTasks) {
+        this.corePoolSizeForDelayTasks = corePoolSizeForDelayTasks;
+    }
+
+    public void setCorePoolSizeForWorkTasks(int corePoolSizeForWorkTasks) {
+        this.corePoolSizeForWorkTasks = corePoolSizeForWorkTasks;
+    }
+
+    public void setMessageModel(MessageModel messageModel) {
+        this.messageModel = messageModel;
+
+        if (started) {
+            throw new RuntimeException("Please set message model before start");
+        }
+
+        if (null != defaultMQPushConsumer) {
+            defaultMQPushConsumer.setMessageModel(messageModel);
+        }
+    }
+
+    public void setConsumeFromWhere(ConsumeFromWhere consumeFromWhere) {
+        this.consumeFromWhere = consumeFromWhere;
+
+        if (started) {
+            throw new RuntimeException("Please set consume-from-where before start");
+        }
+
+        if (null != defaultMQPushConsumer) {
+            defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
+        }
     }
 }

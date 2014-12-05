@@ -220,6 +220,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 RandomAccessFile readRandomAccessFile = null;
                 File currentReadFile = null;
                 while (messageRead < messageCount) {
+                    if(readIndex.get() > writeIndex.get())
+                        break;
                     if (null == readRandomAccessFile) {
                         currentReadFile = messageStoreNameFileMapping
                                 .get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);

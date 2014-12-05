@@ -3,9 +3,15 @@ package com.alibaba.rocketmq.example.cacheable;
 import com.alibaba.rocketmq.client.consumer.cacheable.CacheableConsumer;
 import com.alibaba.rocketmq.client.consumer.cacheable.MessageHandler;
 import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
+import com.alibaba.rocketmq.common.message.MessageExt;
+import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
+
+import java.util.Random;
 
 public class ExampleCacheableConsumer {
+
+    private static final Random rand = new Random(System.currentTimeMillis());
 
     static class ExampleMessageHandler extends MessageHandler {
 
@@ -17,9 +23,9 @@ public class ExampleCacheableConsumer {
          * supposed to be consumed again N milliseconds later.
          */
         @Override
-        public int handle(Message message) {
-            System.out.println(message.getTopic());
-            return 0;
+        public int handle(MessageExt message) {
+            System.out.println("MessageId:" + message.getMsgId() +  message.getTopic());
+            return rand.nextInt(1000) > 500 ? 10000 : 0;
         }
     }
 
@@ -31,11 +37,17 @@ public class ExampleCacheableConsumer {
         /**
          * Topic is strictly required.
          */
-        exampleMessageHandler.setTopic("TopicTest_Lien");
+        exampleMessageHandler.setTopic("TopicTest_Robert");
 
         exampleMessageHandler.setTag("*");
 
         cacheableConsumer.registerMessageHandler(exampleMessageHandler);
+
+        cacheableConsumer.setCorePoolSizeForDelayTasks(1); // default 2.
+        cacheableConsumer.setCorePoolSizeForWorkTasks(5); // default 10.
+
+        cacheableConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
+        cacheableConsumer.setMessageModel(MessageModel.BROADCASTING);
 
         cacheableConsumer.start();
 

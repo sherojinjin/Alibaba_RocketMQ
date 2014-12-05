@@ -2,8 +2,8 @@ package com.alibaba.rocketmq.client.consumer.cacheable;
 
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.message.MessageExt;
 
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -11,7 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class DelayTask implements Runnable {
-
+    private final MessageExt message;
     private final MessageHandler messageHandler;
 
     private final ScheduledExecutorService executorService;
@@ -19,8 +19,10 @@ public class DelayTask implements Runnable {
     private DefaultLocalMessageStore localMessageStore;
 
     public DelayTask(ScheduledExecutorService executorService, MessageHandler messageHandler,
-                     DefaultLocalMessageStore localMessageStore) {
+                     DefaultLocalMessageStore localMessageStore,
+                     MessageExt message) {
         this.localMessageStore = localMessageStore;
+        this.message = message;
         this.messageHandler = messageHandler;
         this.executorService = executorService;
     }
@@ -28,39 +30,36 @@ public class DelayTask implements Runnable {
     @Override
     public void run() {
         Message[] messages = localMessageStore.pop();
-        TreeMap<Message, Message> message = getMessageTree(messages);
+        TreeMap<String, MessageExt> messageSet = getMessageTree(messages);
 
-        Set<Map.Entry<Message, Message>> set = message.entrySet();
+        Set<Map.Entry<String, MessageExt>> set = messageSet.entrySet();
 
-        for (Map.Entry<Message, Message> entry : set) {
-            Message me = new Message(entry.getKey().getTopic(), entry.getKey().getTags(), entry.getKey().getKeys(),
-                    entry.getKey().getBody());
-            me.putUserProperty("next_time", entry.getKey().getProperty("next_time"));
+        for (Map.Entry<String, MessageExt> entry : set) {
+            MessageExt me = entry.getValue();
+            Message mes = TranslateMsg.getMessageFromMessageExt(me);
+
             if (Long.parseLong(me.getProperty("next_time")) - System.currentTimeMillis() < 1000) {
                 int result = messageHandler.handle(me);
                 if (result > 0) {
-                    me.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
+                    mes.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
                     this.executorService.schedule(this, result, TimeUnit.MILLISECONDS);
-                    localMessageStore.stash(me);
+                    localMessageStore.stash(mes);
                 }
             } else {
-                localMessageStore.stash(me);
+                localMessageStore.stash(mes);
             }
         }
     }
 
-    private TreeMap<Message, Message> getMessageTree(Message[] messages) {
-        TreeMap<Message, Message> messageTreeMap = new TreeMap<Message, Message>(new Comparator<Message>() {
-            @Override
-            public int compare(Message o1, Message o2) {
-                if (Long.parseLong(o1.getProperty("next_time")) - Long.parseLong(o2.getProperty("next_time")) < 0)
-                    return -1;
-                return 1;
-            }
-        });
-        for (final Message me : messages) {
-            messageTreeMap.put(me, me);
+    private TreeMap<String, MessageExt> getMessageTree(Message[] messages) {
+        TreeMap<String, MessageExt> messageTreeMap = new TreeMap<String, MessageExt>();
+
+        for (final Message message : messages) {
+            MessageExt me = TranslateMsg.getMessageExtFromMessage(message);
+            me.putUserProperty("next_time", message.getProperty("next_time"));
+            messageTreeMap.put(me.getMsgId(), me);
         }
+
         return messageTreeMap;
     }
 }

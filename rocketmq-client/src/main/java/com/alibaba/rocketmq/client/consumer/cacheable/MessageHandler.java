@@ -1,6 +1,6 @@
 package com.alibaba.rocketmq.client.consumer.cacheable;
 
-import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.message.MessageExt;
 
 /**
  * This interface defines how business unit processes each messages. It's assumed to be implemented by business
@@ -24,7 +24,7 @@ public abstract class MessageHandler {
      * @return 0 if business logic has already properly consumed this message; positive int N if this message is
      * supposed to be consumed again N milliseconds later.
      */
-    public abstract int handle(Message message);
+    public abstract int handle(MessageExt message);
 
 
     /**
