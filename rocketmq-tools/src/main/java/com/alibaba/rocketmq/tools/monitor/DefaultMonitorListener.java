@@ -25,24 +25,28 @@ public class DefaultMonitorListener implements MonitorListener {
     @Override
     public void beginRound() {
         log.info(LogPrefix + "=========================================beginRound");
+        System.out.println("=========================================beginRound");
     }
 
 
     @Override
     public void reportUndoneMsgs(UndoneMsgs undoneMsgs) {
         log.info(String.format(LogPrefix + "reportUndoneMsgs: %s", undoneMsgs));
+        System.out.println(undoneMsgs);
     }
 
 
     @Override
     public void reportFailedMsgs(FailedMsgs failedMsgs) {
         log.info(String.format(LogPrefix + "reportFailedMsgs: %s", failedMsgs));
+        System.out.println(failedMsgs);
     }
 
 
     @Override
     public void reportDeleteMsgsEvent(DeleteMsgsEvent deleteMsgsEvent) {
         log.info(String.format(LogPrefix + "reportDeleteMsgsEvent: %s", deleteMsgsEvent));
+        System.out.println(deleteMsgsEvent);
     }
 
 
@@ -79,5 +83,6 @@ public class DefaultMonitorListener implements MonitorListener {
     @Override
     public void endRound() {
         log.info(LogPrefix + "=========================================endRound");
+        System.out.println("=========================================endRound");
     }
 }
