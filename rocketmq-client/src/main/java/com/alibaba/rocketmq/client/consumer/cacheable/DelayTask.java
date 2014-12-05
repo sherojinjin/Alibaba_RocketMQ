@@ -55,6 +55,8 @@ public class DelayTask implements Runnable {
         TreeMap<String, MessageExt> messageTreeMap = new TreeMap<String, MessageExt>();
 
         for (final Message message : messages) {
+            if (null == message)
+                continue;
             MessageExt me = TranslateMsg.getMessageExtFromMessage(message);
             me.putUserProperty("next_time", message.getProperty("next_time"));
             messageTreeMap.put(me.getMsgId(), me);
