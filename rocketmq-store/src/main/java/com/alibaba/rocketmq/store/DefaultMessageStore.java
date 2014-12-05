@@ -1582,8 +1582,7 @@ public class DefaultMessageStore implements MessageStore {
 
         public void putRequest(final DispatchRequest dispatchRequest) {
             int requestsWriteSize = 0;
-            int putMsgIndexHighWater =
-                    DefaultMessageStore.this.getMessageStoreConfig().getPutMsgIndexHighWater();
+            int putMsgIndexHighWater = DefaultMessageStore.this.getMessageStoreConfig().getPutMsgIndexHighWater();
             synchronized (this) {
                 this.requestsWrite.add(dispatchRequest);
                 requestsWriteSize = this.requestsWrite.size();
@@ -1712,18 +1711,20 @@ public class DefaultMessageStore implements MessageStore {
             for (boolean doNext = true; doNext;) {
                 log.info("Begin doReput");
                 SelectMappedBufferResult result = DefaultMessageStore.this.commitLog.getData(reputFromOffset);
-                log.info("SelectMappedBufferResult " + (null == result ? " is OK ": " is null"));
+                log.info("SelectMappedBufferResult " + (null == result ? " is null ": " is OK"));
                 if (result != null) {
                     try {
                         for (int readSize = 0; readSize < result.getSize() && doNext;) {
                             DispatchRequest dispatchRequest = DefaultMessageStore.this.commitLog.
                                     checkMessageAndReturnSize(result.getByteBuffer(), false, false);
                             int size = dispatchRequest.getMsgSize();
+                            log.info("DispatchRequest#msgSize:" + size);
                             // 正常数据
                             if (size > 0) {
                                 DefaultMessageStore.this.putDispatchRequest(dispatchRequest);
-
-                                this.reputFromOffset = result.getStartOffset() + size;
+                                log.info("DispatchRequest done.");
+                                this.reputFromOffset += size;
+                                log.info("Update reputFromOffset to : " + reputFromOffset);
                                 readSize += size;
                                 DefaultMessageStore.this.storeStatsService
                                     .getSinglePutMessageTopicTimesTotal(dispatchRequest.getTopic())
