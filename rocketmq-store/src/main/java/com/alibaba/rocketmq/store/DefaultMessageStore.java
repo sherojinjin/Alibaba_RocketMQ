@@ -110,8 +110,7 @@ public class DefaultMessageStore implements MessageStore {
         this.brokerStatsManager = brokerStatsManager;
         this.allocateMappedFileService = new AllocateMappedFileService();
         this.commitLog = new CommitLog(this);
-        this.consumeQueueTable =
-                new ConcurrentHashMap<String/* topic */, ConcurrentHashMap<Integer/* queueId */, ConsumeQueue>>(32);
+        this.consumeQueueTable = new ConcurrentHashMap<String/* topic */, ConcurrentHashMap<Integer/* queueId */, ConsumeQueue>>(32);
 
         this.flushConsumeQueueService = new FlushConsumeQueueService();
         this.cleanCommitLogService = new CleanCommitLogService();
@@ -183,9 +182,7 @@ public class DefaultMessageStore implements MessageStore {
             result = result && this.loadConsumeQueue();
 
             if (result) {
-                this.storeCheckpoint =
-                        new StoreCheckpoint(StorePathConfigHelper.getStoreCheckpoint(this.messageStoreConfig
-                            .getStorePathRootDir()));
+                this.storeCheckpoint = new StoreCheckpoint(StorePathConfigHelper.getStoreCheckpoint(this.messageStoreConfig.getStorePathRootDir()));
 
                 this.indexService.load(lastExitOK);
 
@@ -1713,13 +1710,14 @@ public class DefaultMessageStore implements MessageStore {
 
         private void doReput() {
             for (boolean doNext = true; doNext;) {
+                log.info("Begin doReput");
                 SelectMappedBufferResult result = DefaultMessageStore.this.commitLog.getData(reputFromOffset);
+                log.info("SelectMappedBufferResult " + (null == result ? " is OK ": " is null"));
                 if (result != null) {
                     try {
                         for (int readSize = 0; readSize < result.getSize() && doNext;) {
-                            DispatchRequest dispatchRequest =
-                                    DefaultMessageStore.this.commitLog.checkMessageAndReturnSize(
-                                        result.getByteBuffer(), false, false);
+                            DispatchRequest dispatchRequest = DefaultMessageStore.this.commitLog.
+                                    checkMessageAndReturnSize(result.getByteBuffer(), false, false);
                             int size = dispatchRequest.getMsgSize();
                             // 正常数据
                             if (size > 0) {

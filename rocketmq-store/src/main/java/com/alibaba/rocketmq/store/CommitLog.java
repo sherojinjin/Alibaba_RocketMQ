@@ -183,8 +183,7 @@ public class CommitLog {
             long processOffset = mappedFile.getFileFromOffset();
             long mappedFileOffset = 0;
             while (true) {
-                DispatchRequest dispatchRequest =
-                        this.checkMessageAndReturnSize(byteBuffer, checkCRCOnRecover);
+                DispatchRequest dispatchRequest = this.checkMessageAndReturnSize(byteBuffer, checkCRCOnRecover);
                 int size = dispatchRequest.getMsgSize();
                 // 正常数据
                 if (size > 0) {
@@ -240,16 +239,19 @@ public class CommitLog {
 
             // 1 TOTALSIZE
             int totalSize = byteBuffer.getInt();
+            LOGGER.info("CommitLog#checkMessageAndReturnSize: totalSize: " + totalSize);
 
             // 2 MAGICCODE
             int magicCode = byteBuffer.getInt();
+            LOGGER.info("CommitLog#checkMessageAndReturnSize: magicCode: " + magicCode);
+
             switch (magicCode) {
                 case MessageMagicCode:
                     break;
                 case BlankMagicCode:
                     return new DispatchRequest(0);
                 default:
-                    LOGGER.warn("found a illegal magic code 0x" + Integer.toHexString(magicCode));
+                    LOGGER.warn("found an illegal magic code 0x" + Integer.toHexString(magicCode));
                     return new DispatchRequest(-1);
             }
 
@@ -447,12 +449,12 @@ public class CommitLog {
     private boolean isMappedFileMatchedRecover(final MappedFile mappedFile) {
         ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
 
-        int magicCode = byteBuffer.getInt(MessageDecoder.MessageMagicCodePostion);
+        int magicCode = byteBuffer.getInt(MessageDecoder.MESSAGE_MAGIC_CODE_POSITION);
         if (magicCode != MessageMagicCode) {
             return false;
         }
 
-        long storeTimestamp = byteBuffer.getLong(MessageDecoder.MessageStoreTimestampPostion);
+        long storeTimestamp = byteBuffer.getLong(MessageDecoder.MESSAGE_STORE_TIMESTAMP_POSITION);
         if (0 == storeTimestamp) {
             return false;
         }
@@ -660,7 +662,7 @@ public class CommitLog {
             SelectMappedBufferResult result = this.getMessage(offset, size);
             if (null != result) {
                 try {
-                    return result.getByteBuffer().getLong(MessageDecoder.MessageStoreTimestampPostion);
+                    return result.getByteBuffer().getLong(MessageDecoder.MESSAGE_STORE_TIMESTAMP_POSITION);
                 } finally {
                     result.release();
                 }

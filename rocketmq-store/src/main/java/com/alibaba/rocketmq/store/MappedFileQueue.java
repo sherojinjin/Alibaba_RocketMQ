@@ -458,12 +458,10 @@ public class MappedFileQueue {
             MappedFile mappedFile = this.getFirstMappedFile();
 
             if (mappedFile != null) {
-                int index =
-                        (int) ((offset / this.mappedFileSize) - (mappedFile.getFileFromOffset() / this.mappedFileSize));
+                int index = (int) ((offset / this.mappedFileSize) - (mappedFile.getFileFromOffset() / this.mappedFileSize));
+                log.info("Mapped file index: " + index);
                 if (index < 0 || index >= this.mappedFiles.size()) {
-                    logError
-                        .warn(
-                            "findMappedFileByOffset offset not matched, request Offset: {}, index: {}, mappedFileSize: {}, mappedFiles count: {}, StackTrace: {}",//
+                    logError.warn("findMappedFileByOffset offset not matched, request Offset: {}, index: {}, mappedFileSize: {}, mappedFiles count: {}, StackTrace: {}",//
                             offset,//
                             index,//
                             this.mappedFileSize,//
@@ -472,10 +470,16 @@ public class MappedFileQueue {
                 }
 
                 try {
-                    return this.mappedFiles.get(index);
+
+                    MappedFile mappedFileAtGivenIndex = this.mappedFiles.get(index);
+                    if (null != mappedFileAtGivenIndex) {
+                        log.info("Found mapped file.");
+                    }
+                    return mappedFileAtGivenIndex;
                 }
                 catch (Exception e) {
                     if (returnFirstOnNotFound) {
+                        log.info("The first mapped file is returned.");
                         return mappedFile;
                     }
                 }
