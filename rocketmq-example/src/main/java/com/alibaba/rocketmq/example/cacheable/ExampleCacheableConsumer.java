@@ -30,14 +30,14 @@ public class ExampleCacheableConsumer {
     }
 
     public static void main(String[] args) throws MQClientException, InterruptedException {
-        CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_ExampleCacheableConsumer");
+        CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_ExampleCacheableConsumer_missing_message");
 
         MessageHandler exampleMessageHandler = new ExampleMessageHandler();
 
         /**
          * Topic is strictly required.
          */
-        exampleMessageHandler.setTopic("TopicTest_Lien");
+        exampleMessageHandler.setTopic("yeah_tool_topic_tracking_click_lei");
 
         exampleMessageHandler.setTag("*");
 
