@@ -42,8 +42,8 @@ public class DelayTask implements Runnable {
                 int result = messageHandler.handle(me);
                 if (result > 0) {
                     mes.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
-                    this.executorService.schedule(this, result, TimeUnit.MILLISECONDS);
                     localMessageStore.stash(mes);
+                    this.executorService.schedule(this, result, TimeUnit.MILLISECONDS);
                 }
             } else {
                 localMessageStore.stash(mes);
