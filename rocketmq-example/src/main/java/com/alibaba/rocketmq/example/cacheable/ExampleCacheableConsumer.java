@@ -7,11 +7,11 @@ import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 
-import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ExampleCacheableConsumer {
 
-    private static final Random rand = new Random(System.currentTimeMillis());
+    private static final AtomicLong COUNTER = new AtomicLong();
 
     static class ExampleMessageHandler extends MessageHandler {
 
@@ -24,30 +24,33 @@ public class ExampleCacheableConsumer {
          */
         @Override
         public int handle(MessageExt message) {
-            System.out.println("MessageId:" + message.getMsgId() +  message.getTopic());
-            return rand.nextInt(1000) > 500 ? 1000 : 0;
+            if (COUNTER.incrementAndGet() % 10000 == 0) {
+                System.out.println("Consumed: " + COUNTER.longValue() + " messages.");
+            }
+            return 0;
         }
     }
 
     public static void main(String[] args) throws MQClientException, InterruptedException {
-        CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_ExampleCacheableConsumer_missing_message");
+        CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_Benchmark");
 
         MessageHandler exampleMessageHandler = new ExampleMessageHandler();
 
         /**
          * Topic is strictly required.
          */
-        exampleMessageHandler.setTopic("yeah_tool_topic_tracking_click_lei");
+        exampleMessageHandler.setTopic("T_Benchmark");
 
         exampleMessageHandler.setTag("*");
 
+        cacheableConsumer.registerMessageHandler(exampleMessageHandler);
         cacheableConsumer.registerMessageHandler(exampleMessageHandler);
 
         cacheableConsumer.setCorePoolSizeForDelayTasks(1); // default 2.
         cacheableConsumer.setCorePoolSizeForWorkTasks(5); // default 10.
 
         cacheableConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
-        cacheableConsumer.setMessageModel(MessageModel.BROADCASTING);
+        cacheableConsumer.setMessageModel(MessageModel.CLUSTERING);
 
         cacheableConsumer.start();
 
