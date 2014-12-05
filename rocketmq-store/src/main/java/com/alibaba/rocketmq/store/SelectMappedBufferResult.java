@@ -65,7 +65,8 @@ public class SelectMappedBufferResult {
 
 
     @Override
-    protected void finalize() {
+    protected void finalize() throws Throwable{
+        super.finalize();
         if (this.mappedFile != null) {
             this.release();
         }

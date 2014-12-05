@@ -25,19 +25,19 @@ public class ExampleCacheableConsumer {
         @Override
         public int handle(MessageExt message) {
             System.out.println("MessageId:" + message.getMsgId() +  message.getTopic());
-            return rand.nextInt(1000) > 500 ? 10000 : 0;
+            return rand.nextInt(1000) > 500 ? 1000 : 0;
         }
     }
 
     public static void main(String[] args) throws MQClientException, InterruptedException {
-        CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_ExampleCacheableConsumer");
+        CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_ExampleCacheableConsumer_missing_message");
 
         MessageHandler exampleMessageHandler = new ExampleMessageHandler();
 
         /**
          * Topic is strictly required.
          */
-        exampleMessageHandler.setTopic("TopicTest_Robert");
+        exampleMessageHandler.setTopic("yeah_tool_topic_tracking_click_lei");
 
         exampleMessageHandler.setTag("*");
 

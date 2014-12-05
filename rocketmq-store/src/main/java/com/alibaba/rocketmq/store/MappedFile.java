@@ -359,14 +359,22 @@ public class MappedFile extends ReferenceResource {
      * 读逻辑分区
      */
     public SelectMappedBufferResult selectMappedBuffer(int pos) {
+        LOGGER.info("Planning to read pos: " + pos);
         if (pos < this.wrotePosition.get() && pos >= 0) {
+            LOGGER.info("WrotePosition:" + wrotePosition.get() + ", to map from pos: " + pos);
             if (this.hold()) {
+                LOGGER.info("Hold successfully.");
                 ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
                 byteBuffer.position(pos);
                 int size = this.wrotePosition.get() - pos;
+                LOGGER.info("Mapped data size: " + size);
                 ByteBuffer byteBufferNew = byteBuffer.slice();
                 byteBufferNew.limit(size);
+                LOGGER.info("New slice created. new byte buffer position:" + byteBuffer.position()
+                        + ", limit: " + byteBuffer.limit() + ", capacity:" + byteBuffer.capacity());
                 return new SelectMappedBufferResult(this.fileFromOffset + pos, byteBufferNew, size, this);
+            } else {
+                LOGGER.info("Hold not successful.");
             }
         }
 

@@ -15,6 +15,9 @@
  */
 package com.alibaba.rocketmq.common.message;
 
+import com.alibaba.rocketmq.common.UtilAll;
+import com.alibaba.rocketmq.common.sysflag.MessageSysFlag;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -26,9 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.alibaba.rocketmq.common.UtilAll;
-import com.alibaba.rocketmq.common.sysflag.MessageSysFlag;
 
 
 /**
@@ -45,10 +45,10 @@ public class MessageDecoder {
     /**
      * 存储记录各个字段位置
      */
-    public final static int MessageMagicCodePostion = 4;
-    public final static int MessageFlagPostion = 16;
-    public final static int MessagePhysicOffsetPostion = 28;
-    public final static int MessageStoreTimestampPostion = 56;
+    public final static int MESSAGE_MAGIC_CODE_POSITION = 4;
+    public final static int MESSAGE_FLAG_POSITION = 16;
+    public final static int MESSAGE_PHYSIC_OFFSET_POSITION = 28;
+    public final static int MESSAGE_STORE_TIMESTAMP_POSITION = 56;
 
 
     public static String createMessageId(final ByteBuffer input, final ByteBuffer addr, final long offset) {
