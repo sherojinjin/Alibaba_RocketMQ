@@ -18,6 +18,9 @@ public class ExampleSendCallback implements SendCallback {
 
     private long previousStatsTime;
 
+    private static final long COUNT_INTERVAL = 1000L;
+
+
     public ExampleSendCallback(AtomicLong successfulSentCounter, long total, long startTime) {
         this.successfulSentCounter = successfulSentCounter;
         this.total = total;
@@ -29,9 +32,9 @@ public class ExampleSendCallback implements SendCallback {
     public void onSuccess(SendResult sendResult) {
         successfulSentCounter.incrementAndGet();
 
-        if (successfulSentCounter.longValue() % 10000 == 0) {
+        if (successfulSentCounter.longValue() % COUNT_INTERVAL == 0) {
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println(dateFormat.format(new Date()) + " TPS:" + successfulSentCounter.longValue() * 1000 / (System.currentTimeMillis() - previousStatsTime));
+            System.out.println(dateFormat.format(new Date()) + " TPS:" + COUNT_INTERVAL * 1000 / (System.currentTimeMillis() - previousStatsTime));
             previousStatsTime = System.currentTimeMillis();
         }
 
