@@ -24,7 +24,7 @@ public class ExampleCacheableConsumer {
          */
         @Override
         public int handle(MessageExt message) {
-            if (COUNTER.incrementAndGet() % 10000 == 0) {
+            if (COUNTER.incrementAndGet() % 1000 == 0) {
                 System.out.println("Consumed: " + COUNTER.longValue() + " messages.");
             }
             return 0;
