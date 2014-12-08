@@ -88,10 +88,6 @@
 		<java_source_version>1.6</java_source_version>
 		<java_target_version>1.6</java_target_version>
 		<file_encoding>UTF-8</file_encoding>
-		<serverKeyStore>/home/dev/Alibaba_RocketMQ/devenv/conf/server.ks</serverKeyStore>
-		<serverTrustKeyStore>/home/dev/Alibaba_RocketMQ/devenv/conf/server.ks</serverTrustKeyStore>
-		<clientKeyStore>/home/dev/Alibaba_RocketMQ/devenv/conf/client.ks</clientKeyStore>
-		<clientTrustKeyStore>/home/dev/Alibaba_RocketMQ/devenv/conf/client.ks</clientTrustKeyStore>
 	</properties>
 
 	<distributionManagement>
