@@ -294,7 +294,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                     } else {
                         ch.pipeline().addLast(//
                                 defaultEventExecutorGroup, //
-                                new SslHandler(sslContext.createSSLEngine()),
+                                new SslHandler(SslHelper.getSSLEngine(sslContext, SslRole.CLIENT)),
                                 new NettyEncoder(), //
                                 new NettyDecoder(), //
                                 new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),//

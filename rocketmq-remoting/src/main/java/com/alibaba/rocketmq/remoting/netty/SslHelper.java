@@ -4,6 +4,7 @@ import com.alibaba.rocketmq.remoting.exception.SSLContextCreationException;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -70,6 +71,20 @@ public class SslHelper {
         } catch (UnrecoverableKeyException e) {
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         }
+    }
+
+
+    public static SSLEngine getSSLEngine(SSLContext context, SslRole role) {
+        SSLEngine engine = context.createSSLEngine();
+        switch (role) {
+            case SERVER:
+                engine.setUseClientMode(false);
+                break;
+            case CLIENT:
+                engine.setUseClientMode(true);
+                break;
+        }
+        return engine;
     }
 
 }
