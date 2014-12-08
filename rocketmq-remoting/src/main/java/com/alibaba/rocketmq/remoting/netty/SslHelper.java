@@ -28,32 +28,44 @@ public class SslHelper {
 
             switch (role) {
                 case SERVER:
-                    keyStore.load(classLoader.getResourceAsStream("server.ks"), System.getProperty("RocketMQServerKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
-                    trustKeyStore.load(classLoader.getResourceAsStream("server.ks"), System.getProperty("RocketMQServerTrustKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
-                    keyManagerFactory.init(keyStore, System.getProperty("RocketMQServerKeyPassword", DEFAULT_KEY_PASSWORD).toCharArray());
+                    keyStore.load(classLoader.getResourceAsStream("server.ks"),
+                            System.getProperty("RocketMQServerKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
+                    trustKeyStore.load(classLoader.getResourceAsStream("server.ks"),
+                            System.getProperty("RocketMQServerTrustKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
+                    keyManagerFactory.init(keyStore,
+                            System.getProperty("RocketMQServerKeyPassword", DEFAULT_KEY_PASSWORD).toCharArray());
                     trustManagerFactory.init(trustKeyStore);
                     break;
 
                 case CLIENT:
-                    keyStore.load(classLoader.getResourceAsStream("client.ks"), System.getProperty("RocketMQClientKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
-                    trustKeyStore.load(classLoader.getResourceAsStream("client.ks"), System.getProperty("RocketMQClientTrustKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
-                    keyManagerFactory.init(keyStore, System.getProperty("RocketMQClientKeyPassword", DEFAULT_KEY_PASSWORD).toCharArray());
+                    keyStore.load(classLoader.getResourceAsStream("client.ks"),
+                            System.getProperty("RocketMQClientKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
+                    trustKeyStore.load(classLoader.getResourceAsStream("client.ks"),
+                            System.getProperty("RocketMQClientTrustKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
+                    keyManagerFactory.init(keyStore,
+                            System.getProperty("RocketMQClientKeyPassword", DEFAULT_KEY_PASSWORD).toCharArray());
                     trustManagerFactory.init(trustKeyStore);
                     break;
             }
             sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
             return sslContext;
         } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         } catch (KeyStoreException e) {
+            e.printStackTrace();
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         } catch (IOException e) {
+            e.printStackTrace();
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         } catch (CertificateException e) {
+            e.printStackTrace();
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         } catch (KeyManagementException e) {
+            e.printStackTrace();
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         } catch (UnrecoverableKeyException e) {
+            e.printStackTrace();
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         }
     }
