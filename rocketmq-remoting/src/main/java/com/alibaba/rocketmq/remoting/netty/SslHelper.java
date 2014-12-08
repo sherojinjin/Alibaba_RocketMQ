@@ -8,10 +8,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Properties;
 
@@ -31,17 +28,33 @@ public class SslHelper {
         }
     }
 
-    public static SSLContext getSSLContext() throws SSLContextCreationException {
+    public static SSLContext getSSLContext(SslRole role) throws SSLContextCreationException {
         try {
             SSLContext sslContext = SSLContext.getInstance("SSL");
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
             KeyStore keyStore = KeyStore.getInstance("JKS");
             KeyStore trustKeyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(SSL.getProperty("ssl.keyStore")),
-                    System.getProperty("RocketMQKeyStorePassword").toCharArray());
-            trustKeyStore.load(new FileInputStream(SSL.getProperty("ssl.trustKeyStore")),
-                    System.getProperty("RocketMQTrustKeyStorePassword").toCharArray());
+
+            switch (role) {
+                case SERVER:
+                    keyStore.load(new FileInputStream(SSL.getProperty("ssl.serverKeyStore")),
+                            System.getProperty("RocketMQServerKeyStorePassword").toCharArray());
+                    trustKeyStore.load(new FileInputStream(SSL.getProperty("ssl.serverTrustKeyStore")),
+                            System.getProperty("RocketMQServerTrustKeyStorePassword").toCharArray());
+                    keyManagerFactory.init(keyStore, System.getProperty("RocketMQServerKeyPassword").toCharArray());
+                    trustManagerFactory.init(trustKeyStore);
+                    break;
+
+                case CLIENT:
+                    keyStore.load(new FileInputStream(SSL.getProperty("ssl.clientKeyStore")),
+                            System.getProperty("RocketMQClientKeyStorePassword").toCharArray());
+                    trustKeyStore.load(new FileInputStream(SSL.getProperty("ssl.clientTrustKeyStore")),
+                            System.getProperty("RocketMQClientTrustKeyStorePassword").toCharArray());
+                    keyManagerFactory.init(keyStore, System.getProperty("RocketMQClientKeyPassword").toCharArray());
+                    trustManagerFactory.init(trustKeyStore);
+                    break;
+            }
             sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
             return sslContext;
         } catch (NoSuchAlgorithmException e) {
@@ -54,7 +67,13 @@ public class SslHelper {
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         } catch (KeyManagementException e) {
             throw new SSLContextCreationException("Error while creating SSLContext", e);
+        } catch (UnrecoverableKeyException e) {
+            throw new SSLContextCreationException("Error while creating SSLContext", e);
         }
     }
 
+}
+
+enum SslRole {
+    CLIENT, SERVER
 }
