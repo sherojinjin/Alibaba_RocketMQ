@@ -124,7 +124,7 @@ public class CacheableConsumer
         for (Map.Entry<String, MessageHandler> entry : set) {
             scheduledExecutorDelayService.scheduleAtFixedRate(
                     new DelayTask(entry.getValue(), localMessageStore),
-                    0, 100, TimeUnit.MILLISECONDS);
+                    2, 2, TimeUnit.SECONDS);
         }
 
     }

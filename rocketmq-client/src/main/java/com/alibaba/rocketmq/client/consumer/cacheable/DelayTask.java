@@ -4,9 +4,7 @@ import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 public class DelayTask implements Runnable {
     private final MessageHandler messageHandler;
@@ -22,22 +20,21 @@ public class DelayTask implements Runnable {
     @Override
     public void run() {
         Message[] messages = localMessageStore.pop();
-        TreeMap<String, MessageExt> messageSet = getMessageTree(messages);
+        TreeMap<String, MessageExt> messageExtMap = getMessageTree(messages);
 
-        Set<Map.Entry<String, MessageExt>> set = messageSet.entrySet();
+        for (Message message : messages) {
+            if (null == message)
+                continue;
+            MessageExt messageExt = messageExtMap.get(message.getProperty("msgId"));
 
-        for (Map.Entry<String, MessageExt> entry : set) {
-            MessageExt me = entry.getValue();
-            Message mes = TranslateMsg.getMessageFromMessageExt(me);
-
-            if (Long.parseLong(me.getProperty("next_time")) - System.currentTimeMillis() < 1000) {
-                int result = messageHandler.handle(me);
+            if (Long.parseLong(message.getProperty("next_time")) - System.currentTimeMillis() < 1000) {
+                int result = messageHandler.handle(messageExt);
                 if (result > 0) {
-                    mes.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
-                    localMessageStore.stash(mes);
+                    message.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
+                    localMessageStore.stash(message);
                 }
             } else {
-                localMessageStore.stash(mes);
+                localMessageStore.stash(message);
             }
         }
     }
