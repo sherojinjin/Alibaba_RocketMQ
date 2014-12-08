@@ -29,9 +29,11 @@ JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=${BASE_DIR}/lib"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.namesrv.domain=rocketmq.api"
 JAVA_OPT="${JAVA_OPT} -Denable_ssl=true"
 JAVA_OPT="${JAVA_OPT} -Duse_elastic_ip=true"
+
 JAVA_OPT="${JAVA_OPT} -DRocketMQServerKeyStorePassword=changeit"
 JAVA_OPT="${JAVA_OPT} -DRocketMQServerTrustKeyStorePassword=changeit"
 JAVA_OPT="${JAVA_OPT} -DRocketMQServerKeyPassword=changeit"
+
 JAVA_OPT="${JAVA_OPT} -DRocketMQClientKeyStorePassword=changeit"
 JAVA_OPT="${JAVA_OPT} -DRocketMQClientTrustKeyStorePassword=changeit"
 JAVA_OPT="${JAVA_OPT} -DRocketMQClientKeyPassword=changeit"

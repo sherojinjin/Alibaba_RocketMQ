@@ -31,8 +31,8 @@ public class SslHelper {
     public static SSLContext getSSLContext(SslRole role) throws SSLContextCreationException {
         try {
             SSLContext sslContext = SSLContext.getInstance("SSL");
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             KeyStore keyStore = KeyStore.getInstance("JKS");
             KeyStore trustKeyStore = KeyStore.getInstance("JKS");
 
