@@ -12,9 +12,12 @@ import org.slf4j.Logger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class CacheableConsumer
@@ -100,11 +103,30 @@ public class CacheableConsumer
         }
 
         MessageListenerConcurrently frontController = new FrontController(topicHandlerMap,
-                scheduledExecutorWorkerService, scheduledExecutorDelayService, localMessageStore);
+                scheduledExecutorWorkerService, localMessageStore);
         defaultMQPushConsumer.registerMessageListener(frontController);
         defaultMQPushConsumer.start();
+
+        startPopThread();
+
         started = true;
+
         LOGGER.debug("DefaultMQPushConsumer starts.");
+    }
+
+    /**
+     * 不同TOPIC对应不同handler
+     */
+    private void startPopThread() {
+        scheduledExecutorDelayService = Executors
+                .newScheduledThreadPool(topicHandlerMap.size());
+        Set<Map.Entry<String, MessageHandler>> set = topicHandlerMap.entrySet();
+        for (Map.Entry<String, MessageHandler> entry : set) {
+            scheduledExecutorDelayService.scheduleAtFixedRate(
+                    new DelayTask(entry.getValue(), localMessageStore),
+                    0, 100, TimeUnit.MILLISECONDS);
+        }
+
     }
 
     public void setConsumerGroupName(String consumerGroupName) {

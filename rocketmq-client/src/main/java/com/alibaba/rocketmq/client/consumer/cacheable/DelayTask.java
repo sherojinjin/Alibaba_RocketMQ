@@ -7,24 +7,16 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class DelayTask implements Runnable {
-    private final MessageExt message;
     private final MessageHandler messageHandler;
-
-    private final ScheduledExecutorService executorService;
 
     private DefaultLocalMessageStore localMessageStore;
 
-    public DelayTask(ScheduledExecutorService executorService, MessageHandler messageHandler,
-                     DefaultLocalMessageStore localMessageStore,
-                     MessageExt message) {
+    public DelayTask(MessageHandler messageHandler,
+                     DefaultLocalMessageStore localMessageStore) {
         this.localMessageStore = localMessageStore;
-        this.message = message;
         this.messageHandler = messageHandler;
-        this.executorService = executorService;
     }
 
     @Override
@@ -43,7 +35,6 @@ public class DelayTask implements Runnable {
                 if (result > 0) {
                     mes.putUserProperty("next_time", String.valueOf(System.currentTimeMillis() + result));
                     localMessageStore.stash(mes);
-                    this.executorService.schedule(this, result, TimeUnit.MILLISECONDS);
                 }
             } else {
                 localMessageStore.stash(mes);
