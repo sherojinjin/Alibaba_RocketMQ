@@ -19,6 +19,7 @@ public class Producer {
                 .configureConcurrentSendBatchSize(100)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
                 .configureSendMessageTimeOutInMilliSeconds(3000)
+                .configureDefaultTopicQueueNumber(16)
                 .build();
 
                 producer.registerCallback(new ExampleSendCallback(successCount, count, System.currentTimeMillis()));

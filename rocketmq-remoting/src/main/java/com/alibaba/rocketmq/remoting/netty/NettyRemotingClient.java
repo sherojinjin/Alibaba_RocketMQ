@@ -22,16 +22,14 @@ import com.alibaba.rocketmq.remoting.RemotingClient;
 import com.alibaba.rocketmq.remoting.common.Pair;
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
-import com.alibaba.rocketmq.remoting.exception.RemotingConnectException;
-import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
-import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
-import com.alibaba.rocketmq.remoting.exception.RemotingTooMuchRequestException;
+import com.alibaba.rocketmq.remoting.exception.*;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -39,7 +37,6 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLException;
 import java.net.SocketAddress;
 import java.util.*;
 import java.util.concurrent.*;
@@ -247,13 +244,13 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
         });
 
         if (nettyClientConfig.isSsl()) {
-
             try {
-                sslContext = SslHelper.getClientSSLContext();
-            } catch (SSLException e) {
+                sslContext = SslHelper.getSSLContext();
+            } catch (SSLContextCreationException e) {
+                log.error(e.getMessage());
                 e.printStackTrace();
+                System.exit(1);
             }
-
         }
     }
 
@@ -297,7 +294,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                     } else {
                         ch.pipeline().addLast(//
                                 defaultEventExecutorGroup, //
-                                sslContext.newHandler(ch.alloc()),
+                                new SslHandler(sslContext.createSSLEngine()),
                                 new NettyEncoder(), //
                                 new NettyDecoder(), //
                                 new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),//

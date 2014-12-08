@@ -31,10 +31,10 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.ssl.SslContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -70,7 +70,7 @@ public abstract class NettyRemotingAbstract {
 
     protected final NettyEventExecutor nettyEventExecutor = new NettyEventExecutor();
 
-    protected SslContext sslContext;
+    protected SSLContext sslContext;
 
 
     public abstract ChannelEventListener getChannelEventListener();

@@ -25,6 +25,7 @@ import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTooMuchRequestException;
+import com.alibaba.rocketmq.remoting.exception.SSLContextCreationException;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -32,7 +33,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -40,9 +41,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
-import java.security.cert.CertificateException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -131,15 +130,11 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         if (nettyServerConfig.isSsl()) {
             log.debug("Detected SSL enabled");
             try {
-
-                sslContext = SslContext.newServerContext(SslHelper.certificate(), SslHelper.privateKey()
-                        , SslHelper.privateKeyPassword());
-            } catch (SSLException e) {
+                sslContext = SslHelper.getSSLContext();
+            } catch (SSLContextCreationException e) {
                 log.error(e.getMessage());
                 e.printStackTrace();
                 System.exit(1);
-            } catch (CertificateException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -191,7 +186,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                             } else {
                                 ch.pipeline().addLast(
                                         defaultEventExecutorGroup, //
-                                        sslContext.newHandler(ch.alloc()),
+                                        new SslHandler(sslContext.createSSLEngine()),
                                         new FileRegionEncoder(),
                                         new NettyEncoder(), //
                                         new NettyDecoder(), //

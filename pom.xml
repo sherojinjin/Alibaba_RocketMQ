@@ -88,8 +88,8 @@
 		<java_source_version>1.6</java_source_version>
 		<java_target_version>1.6</java_target_version>
 		<file_encoding>UTF-8</file_encoding>
-		<private.key>/home/dev/Alibaba_RocketMQ/devenv/conf/private.pem</private.key>
-		<certificate>/home/dev/Alibaba_RocketMQ/devenv/conf/cer.pem</certificate>
+		<keyStore>/home/dev/Alibaba_RocketMQ/devenv/conf/server.ks</keyStore>
+		<trustKeyStore>/home/dev/Alibaba_RocketMQ/devenv/conf/client.ks</trustKeyStore>
 	</properties>
 
 	<distributionManagement>

@@ -1,12 +1,17 @@
 package com.alibaba.rocketmq.remoting.netty;
 
-import io.netty.handler.ssl.SslContext;
+import com.alibaba.rocketmq.remoting.exception.SSLContextCreationException;
 
-import javax.net.ssl.SSLException;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Properties;
 
@@ -26,38 +31,30 @@ public class SslHelper {
         }
     }
 
-    public static File certificate() throws SSLException, CertificateException {
-        if (null == SSL.getProperty("ssl.cert")) {
-            System.err.println("ssl.properties file does not contain configuration for certificate path");
-            System.exit(1);
+    public static SSLContext getSSLContext() throws SSLContextCreationException {
+        try {
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            KeyStore trustKeyStore = KeyStore.getInstance("JKS");
+            keyStore.load(new FileInputStream(SSL.getProperty("ssl.keyStore")),
+                    System.getProperty("RocketMQKeyStorePassword").toCharArray());
+            trustKeyStore.load(new FileInputStream(SSL.getProperty("ssl.trustKeyStore")),
+                    System.getProperty("RocketMQTrustKeyStorePassword").toCharArray());
+            sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+            return sslContext;
+        } catch (NoSuchAlgorithmException e) {
+            throw new SSLContextCreationException("Error while creating SSLContext", e);
+        } catch (KeyStoreException e) {
+            throw new SSLContextCreationException("Error while creating SSLContext", e);
+        } catch (IOException e) {
+            throw new SSLContextCreationException("Error while creating SSLContext", e);
+        } catch (CertificateException e) {
+            throw new SSLContextCreationException("Error while creating SSLContext", e);
+        } catch (KeyManagementException e) {
+            throw new SSLContextCreationException("Error while creating SSLContext", e);
         }
-        return new File(SSL.getProperty("ssl.cert"));
     }
 
-    public static File privateKey() throws SSLException, CertificateException {
-        if (null == SSL.getProperty("ssl.key")) {
-            System.err.println("ssl.properties file does not contain configuration for certificate path");
-            System.exit(1);
-        }
-        return new File(SSL.getProperty("ssl.key"));
-    }
-
-    public static String privateKeyPassword() {
-        String password = null;
-        password = System.getenv("ROCKETMQ_KEY_PASSWORD");
-        if (null != password) {
-            return password;
-        } else {
-            password = System.getProperty("ssl_key.password");
-            if (null != password) {
-                return password;
-            }
-            return "";
-        }
-
-    }
-
-    public static SslContext getClientSSLContext() throws SSLException {
-        return SslContext.newClientContext((TrustManagerFactory)null);
-    }
 }
