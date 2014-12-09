@@ -7,6 +7,11 @@ import org.slf4j.Logger;
 public class ResendMessageTask implements Runnable {
 
     /**
+     * Indicate number of messages to retrieve from local message store each time.
+     */
+    private static final int BATCH_FETCH_MESSAGE_FROM_STORE_SIZE = 1000;
+
+    /**
      * Logger instance.
      */
     private static final Logger LOGGER = ClientLogger.getLog();
@@ -23,9 +28,10 @@ public class ResendMessageTask implements Runnable {
     @Override
     public void run() {
         LOGGER.debug("Start to resend");
-        Message[] messages = localMessageStore.pop();
-        if (null != messages && messages.length > 0) {
+        Message[] messages = localMessageStore.pop(BATCH_FETCH_MESSAGE_FROM_STORE_SIZE);
+        while (null != messages && messages.length > 0) {
             multiThreadMQProducer.send(messages);
+            messages = localMessageStore.pop(BATCH_FETCH_MESSAGE_FROM_STORE_SIZE);
         }
     }
 }

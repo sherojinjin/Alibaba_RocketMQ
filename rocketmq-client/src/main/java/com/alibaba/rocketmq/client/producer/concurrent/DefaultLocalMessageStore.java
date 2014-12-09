@@ -215,7 +215,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 if(!lock.readLock().tryLock()) {
                     lock.readLock().lockInterruptibly();
                 }
-
+                messageCount = getNumberOfMessageStashed();
                 Message[] messages = new Message[messageCount];
                 int messageRead = 0;
                 RandomAccessFile readRandomAccessFile = null;
@@ -258,10 +258,87 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 updateConfig();
                 return messages;
             } catch (InterruptedException e) {
+                LOGGER.error("Pop message error, caused by {}", e.getMessage());
                 e.printStackTrace();
             } catch (FileNotFoundException e) {
+                LOGGER.error("Pop message error, caused by {}", e.getMessage());
                 e.printStackTrace();
             } catch (IOException e) {
+                LOGGER.error("Pop message error, caused by {}", e.getMessage());
+                e.printStackTrace();
+            } finally {
+                lock.readLock().unlock();
+            }
+            return null;
+        }
+    }
+
+    @Override
+    public Message[] pop(int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("n should be positive");
+        }
+
+        int messageCount = getNumberOfMessageStashed();
+
+        if (messageCount <= n) {
+            return pop();
+        } else {
+            try {
+                if(!lock.readLock().tryLock()) {
+                    lock.readLock().lockInterruptibly();
+                }
+                Message[] messages = new Message[n];
+                int messageRead = 0;
+                RandomAccessFile readRandomAccessFile = null;
+                File currentReadFile = null;
+                while (messageRead < n) {
+                    if(readIndex.get() > writeIndex.get()) {
+                        break;
+                    }
+
+                    if (null == readRandomAccessFile) {
+                        currentReadFile = messageStoreNameFileMapping
+                                .get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                        if (null == currentReadFile || !currentReadFile.exists()) {
+                            throw new RuntimeException("Data file corrupted");
+                        }
+
+                        readRandomAccessFile = new RandomAccessFile(currentReadFile, "rw");
+
+                        if (readOffSet.longValue() > 0) {
+                            readRandomAccessFile.seek(readOffSet.longValue());
+                        }
+                    }
+
+                    long messageSize = readRandomAccessFile.readLong();
+                    byte[] data = new byte[(int)messageSize];
+                    readRandomAccessFile.read(data);
+                    messages[messageRead++] = JSON.parseObject(data, Message.class);
+                    readIndex.incrementAndGet();
+                    readOffSet.set(readRandomAccessFile.getFilePointer());
+
+                    if (readIndex.longValue() % MESSAGES_PER_FILE == 0 && currentReadFile.exists()) {
+                        readRandomAccessFile.close();
+                        readRandomAccessFile = null;
+                        readOffSet.set(0L);
+                        messageStoreNameFileMapping
+                                .remove((readIndex.longValue() - 1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                        if (!currentReadFile.delete()) {
+                            LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
+                        }
+                    }
+                }
+                updateConfig();
+                return messages;
+            } catch (InterruptedException e) {
+                LOGGER.error("Pop message error, caused by {}", e.getMessage());
+                e.printStackTrace();
+            } catch (FileNotFoundException e) {
+                LOGGER.error("Pop message error, caused by {}", e.getMessage());
+                e.printStackTrace();
+            } catch (IOException e) {
+                LOGGER.error("Pop message error, caused by {}", e.getMessage());
                 e.printStackTrace();
             } finally {
                 lock.readLock().unlock();
