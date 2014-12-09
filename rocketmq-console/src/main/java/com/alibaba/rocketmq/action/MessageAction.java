@@ -38,6 +38,7 @@ public class MessageAction extends AbstractAction {
     public String queryMsgById(ModelMap map, HttpServletRequest request,
             @RequestParam(required = false) String msgId) {
         Collection<Option> options = messageService.getOptionsForQueryMsgById();
+        putPublicAttribute(map, "queryMsgById", options, request);
         try {
             if (request.getMethod().equals(GET)) {
 
