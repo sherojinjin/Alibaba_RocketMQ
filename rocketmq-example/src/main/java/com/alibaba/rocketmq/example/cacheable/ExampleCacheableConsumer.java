@@ -14,6 +14,13 @@ public class ExampleCacheableConsumer {
     private static final AtomicLong COUNTER = new AtomicLong();
 
     static class ExampleMessageHandler extends MessageHandler {
+        private long lastTimeStamp;
+
+        private long lastConsumptionNumber;
+
+        public ExampleMessageHandler(long lastTimeStamp) {
+            this.lastTimeStamp = lastTimeStamp;
+        }
 
         /**
          * User define processing logic, implemented by ultimate business developer.
@@ -24,26 +31,28 @@ public class ExampleCacheableConsumer {
          */
         @Override
         public int handle(MessageExt message) {
-            if (COUNTER.incrementAndGet() % 1000 == 0) {
-                System.out.println("Consumed: " + COUNTER.longValue() + " messages.");
+            if (COUNTER.incrementAndGet() % 100 == 0) {
+                System.out.println("By far, this consumer has consumed: " + COUNTER.longValue() + " messages.");
+                System.out.println("Current TPS: " + (COUNTER.longValue() - lastConsumptionNumber) * 1000.0F / (System.currentTimeMillis() - lastTimeStamp));
+                lastConsumptionNumber = COUNTER.longValue();
+                lastTimeStamp = System.currentTimeMillis();
             }
             return 0;
         }
     }
 
     public static void main(String[] args) throws MQClientException, InterruptedException {
-        CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_Benchmark");
+        CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_QuickStart");
 
-        MessageHandler exampleMessageHandler = new ExampleMessageHandler();
+        MessageHandler exampleMessageHandler = new ExampleMessageHandler(System.currentTimeMillis());
 
         /**
          * Topic is strictly required.
          */
-        exampleMessageHandler.setTopic("T_Benchmark");
+        exampleMessageHandler.setTopic("T_QuickStart");
 
         exampleMessageHandler.setTag("*");
 
-        cacheableConsumer.registerMessageHandler(exampleMessageHandler);
         cacheableConsumer.registerMessageHandler(exampleMessageHandler);
 
         cacheableConsumer.setCorePoolSizeForDelayTasks(1); // default 2.

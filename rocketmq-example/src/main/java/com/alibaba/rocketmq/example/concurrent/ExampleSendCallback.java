@@ -8,6 +8,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * <p>
+ * <strong>Warning:</strong>If the message is not sent successfully for the first time, the statistics won't be correct.
+ * </p>
+ * @author Li Zhanhui
+ */
 public class ExampleSendCallback implements SendCallback {
 
     private AtomicLong successfulSentCounter;

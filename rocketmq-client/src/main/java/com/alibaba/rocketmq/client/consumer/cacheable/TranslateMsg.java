@@ -8,7 +8,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 
 
-public class TranslateMsg {
+public final class TranslateMsg {
     public static Message getMessageFromMessageExt(MessageExt messageExt) {
         Message result = new Message(messageExt.getTopic(), messageExt.getTags(), messageExt.getKeys(),
                 messageExt.getBody());
@@ -55,7 +55,7 @@ public class TranslateMsg {
             storeHost = new InetSocketAddress(store, Integer.parseInt(message.getProperty("storeHost_port")));
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println(" try to change message to messageExt failed! ");
+            System.err.println("Wrapping message to messageExt failed! ");
         }
 
         MessageExt result = new MessageExt(Integer.parseInt(message.getProperty("queueId")),

@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -58,7 +56,8 @@ public class CacheableConsumer
 
     private static String getInstanceName() {
         try {
-            return BASE_INSTANCE_NAME + InetAddress.getLocalHost().getHostAddress() + "_" + CONSUMER_NAME_COUNTER.incrementAndGet();
+            return BASE_INSTANCE_NAME + InetAddress.getLocalHost().getHostAddress() + "_" +
+                    CONSUMER_NAME_COUNTER.incrementAndGet();
         } catch (UnknownHostException e) {
             return BASE_INSTANCE_NAME + "127.0.0.1_" + CONSUMER_NAME_COUNTER.incrementAndGet();
         }
@@ -114,19 +113,9 @@ public class CacheableConsumer
         LOGGER.debug("DefaultMQPushConsumer starts.");
     }
 
-    /**
-     * 不同TOPIC对应不同handler
-     */
     private void startPopThread() {
-        scheduledExecutorDelayService = Executors
-                .newScheduledThreadPool(topicHandlerMap.size());
-        Set<Map.Entry<String, MessageHandler>> set = topicHandlerMap.entrySet();
-        for (Map.Entry<String, MessageHandler> entry : set) {
-            scheduledExecutorDelayService.scheduleAtFixedRate(
-                    new DelayTask(entry.getValue(), localMessageStore),
-                    2, 2, TimeUnit.SECONDS);
-        }
-
+        scheduledExecutorDelayService.scheduleWithFixedDelay(new DelayTask(topicHandlerMap, localMessageStore), 2, 2,
+                TimeUnit.SECONDS);
     }
 
     public void setConsumerGroupName(String consumerGroupName) {

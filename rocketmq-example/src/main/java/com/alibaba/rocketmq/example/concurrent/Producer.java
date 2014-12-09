@@ -14,7 +14,7 @@ public class Producer {
         }
         AtomicLong successCount = new AtomicLong(0L);
         MultiThreadMQProducer producer = MultiThreadMQProducer.configure()
-                .configureProducerGroup("PG_Benchmark")
+                .configureProducerGroup("PG_QuickStart")
                 .configureCorePoolSize(200)
                 .configureConcurrentSendBatchSize(100)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
@@ -28,7 +28,7 @@ public class Producer {
 
         long start = System.currentTimeMillis();
         for (int i = 0; i < count; i++) {
-            messages[i] = new Message("T_Benchmark", "Test MultiThread message".getBytes());
+            messages[i] = new Message("T_QuickStart", "Test MultiThread message".getBytes());
         }
         producer.send(messages);
 
