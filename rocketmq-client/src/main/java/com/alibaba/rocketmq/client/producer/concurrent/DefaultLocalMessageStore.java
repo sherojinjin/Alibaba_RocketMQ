@@ -137,6 +137,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             bufferedWriter.newLine();
             bufferedWriter.write("readOffSet=" + readOffSet.longValue());
             bufferedWriter.newLine();
+            bufferedWriter.flush();
         } catch (IOException e) {
             LOGGER.error("Unable to update config file", e.getMessage());
         } finally {
@@ -221,8 +222,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 RandomAccessFile readRandomAccessFile = null;
                 File currentReadFile = null;
                 while (messageRead < messageCount) {
-                    if(readIndex.get() > writeIndex.get())
+                    if(readIndex.get() > writeIndex.get()) {
                         break;
+                    }
                     if (null == readRandomAccessFile) {
                         currentReadFile = messageStoreNameFileMapping
                                 .get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
