@@ -26,6 +26,7 @@ JAVA_OPT="${JAVA_OPT} -XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection
 JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${HOME}/rmq_bk_gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps"
 JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=${BASE_DIR}/lib"
+JAVA_OPT="${JAVA_OPT} -XX:-HeapDumpOnOutOfMemoryError"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.namesrv.domain=rocketmq.api"
 JAVA_OPT="${JAVA_OPT} -Denable_ssl=true"
 JAVA_OPT="${JAVA_OPT} -Duse_elastic_ip=true"
