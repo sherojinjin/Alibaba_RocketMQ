@@ -26,16 +26,16 @@ public class ExampleSendCallback implements SendCallback {
 
     private static final long COUNT_INTERVAL = 1000L;
 
-
-    public ExampleSendCallback(AtomicLong successfulSentCounter, long total, long startTime) {
+    public ExampleSendCallback(AtomicLong successfulSentCounter, long total) {
         this.successfulSentCounter = successfulSentCounter;
         this.total = total;
-        this.start = startTime;
-        previousStatsTime = startTime;
     }
 
     @Override
     public void onSuccess(SendResult sendResult) {
+        if (0 == previousStatsTime) {
+            start = previousStatsTime = System.currentTimeMillis();
+        }
         successfulSentCounter.incrementAndGet();
 
         if (successfulSentCounter.longValue() % COUNT_INTERVAL == 0) {
@@ -46,7 +46,7 @@ public class ExampleSendCallback implements SendCallback {
 
 
         //System.out.println("ExampleSendCallback#onSuccess:" + successfulSentCounter.incrementAndGet() + " sent OK. " + sendResult);
-        if (successfulSentCounter.longValue() >= total) {
+        if (total > 0 && successfulSentCounter.longValue() >= total) {
             long interval = System.currentTimeMillis() - start;
             System.out.println("All Messages Sent Successfully in " + interval + "ms. Average TPS:" + (total * 1000.0F / interval));
         }
