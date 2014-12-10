@@ -27,7 +27,7 @@ public class Producer {
                 .configureSendMessageTimeOutInMilliSeconds(3000)
                 .configureDefaultTopicQueueNumber(16)
                 .build();
-                producer.registerCallback(new ExampleSendCallback(successCount, count, System.currentTimeMillis()));
+                producer.registerCallback(new ExampleSendCallback(successCount, count));
         if (count < 0) {
             Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
                 @Override
