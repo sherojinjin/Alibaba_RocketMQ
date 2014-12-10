@@ -35,7 +35,7 @@ public class Producer {
                     Message[] messages = buildMessages(3000);
                     producer.send(messages);
                 }
-            }, 0, 1000, TimeUnit.MILLISECONDS);
+            }, 3000, 1000, TimeUnit.MILLISECONDS);
         } else {
             long start = System.currentTimeMillis();
             Message[] messages = buildMessages(count);
