@@ -357,7 +357,7 @@ public class MQClientAPIImpl {
                                 + responseFuture.getTimeoutMillis() + "ms", responseFuture.getCause()));
                     }
                     else {
-                        sendCallback.onException(new MQClientException("unknow reseaon", responseFuture
+                        sendCallback.onException(new MQClientException("unknown reason", responseFuture
                             .getCause()));
                     }
                 }

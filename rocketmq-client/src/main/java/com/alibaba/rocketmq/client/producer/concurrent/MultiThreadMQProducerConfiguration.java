@@ -4,7 +4,7 @@ public class MultiThreadMQProducerConfiguration {
 
     private String producerGroup;
 
-    private int corePoolSize = 200;
+    private int corePoolSize = 10;
 
     private int defaultTopicQueueNumber = 4;
 

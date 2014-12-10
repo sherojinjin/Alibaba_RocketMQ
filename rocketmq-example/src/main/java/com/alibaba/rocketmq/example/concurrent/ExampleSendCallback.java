@@ -40,7 +40,7 @@ public class ExampleSendCallback implements SendCallback {
 
         if (successfulSentCounter.longValue() % COUNT_INTERVAL == 0) {
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println(dateFormat.format(new Date()) + " TPS:" + COUNT_INTERVAL * 1000 / (System.currentTimeMillis() - previousStatsTime));
+            System.out.println(dateFormat.format(new Date()) + " TPS:" + COUNT_INTERVAL * 1000.0F / (System.currentTimeMillis() - previousStatsTime));
             previousStatsTime = System.currentTimeMillis();
         }
 
@@ -48,7 +48,7 @@ public class ExampleSendCallback implements SendCallback {
         //System.out.println("ExampleSendCallback#onSuccess:" + successfulSentCounter.incrementAndGet() + " sent OK. " + sendResult);
         if (successfulSentCounter.longValue() >= total) {
             long interval = System.currentTimeMillis() - start;
-            System.out.println("All Messages Sent Successfully in " + interval + "ms. Average TPS:" + (total * 1000L / interval));
+            System.out.println("All Messages Sent Successfully in " + interval + "ms. Average TPS:" + (total * 1000.0F / interval));
         }
     }
 

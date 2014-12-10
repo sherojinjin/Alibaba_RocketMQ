@@ -1,13 +1,17 @@
 package com.alibaba.rocketmq.client.consumer.cacheable;
 
+import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DelayTask implements Runnable {
+
+    private static final Logger LOGGER = ClientLogger.getLog();
 
     private static final int BATCH_SIZE = 1000;
 
@@ -29,6 +33,7 @@ public class DelayTask implements Runnable {
 
     @Override
     public void run() {
+        LOGGER.info("Start re-send messages");
         Message[] messages = localMessageStore.pop(BATCH_SIZE);
         while (messages != null && messages.length > 0) {
             //TODO:Sorting here does not make sense.

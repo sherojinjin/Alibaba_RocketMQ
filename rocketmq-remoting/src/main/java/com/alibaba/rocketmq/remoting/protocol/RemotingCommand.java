@@ -15,17 +15,17 @@
  */
 package com.alibaba.rocketmq.remoting.protocol;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.rocketmq.remoting.CommandCustomHeader;
+import com.alibaba.rocketmq.remoting.annotation.CFNotNull;
+import com.alibaba.rocketmq.remoting.exception.RemotingCommandException;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.alibaba.fastjson.annotation.JSONField;
-import com.alibaba.rocketmq.remoting.CommandCustomHeader;
-import com.alibaba.rocketmq.remoting.annotation.CFNotNull;
-import com.alibaba.rocketmq.remoting.exception.RemotingCommandException;
 
 
 /**
@@ -35,15 +35,18 @@ import com.alibaba.rocketmq.remoting.exception.RemotingCommandException;
  * @since 2013-7-13
  */
 public class RemotingCommand {
+
     public static String RemotingVersionKey = "rocketmq.remoting.version";
+
     private static volatile int ConfigVersion = -1;
-    private static AtomicInteger RequestId = new AtomicInteger(0);
+
+    private static final AtomicInteger REQUEST_OPAQUE_ID_GENERATOR = new AtomicInteger(0);
 
     private static final int RPC_TYPE = 0; // 0, REQUEST_COMMAND
     // 1, RESPONSE_COMMAND
 
     private static final int RPC_ONEWAY = 1; // 0, RPC
-    // 1, Oneway
+    // 1, One way
 
     /**
      * Header 部分
@@ -51,7 +54,7 @@ public class RemotingCommand {
     private int code;
     private LanguageCode language = LanguageCode.JAVA;
     private int version = 0;
-    private int opaque = RequestId.getAndIncrement();
+    private int opaque = REQUEST_OPAQUE_ID_GENERATOR.getAndIncrement();
     private int flag = 0;
     private String remark;
     private HashMap<String, String> extFields;
@@ -78,10 +81,8 @@ public class RemotingCommand {
 
 
     public static RemotingCommand createResponseCommand(Class<? extends CommandCustomHeader> classHeader) {
-        RemotingCommand cmd =
-                createResponseCommand(RemotingSysResponseCode.SYSTEM_ERROR, "not set any response code",
-                    classHeader);
-
+        RemotingCommand cmd = createResponseCommand(RemotingSysResponseCode.SYSTEM_ERROR, "not set any response code",
+                classHeader);
         return cmd;
     }
 
@@ -484,7 +485,7 @@ public class RemotingCommand {
 
 
     public static int createNewRequestId() {
-        return RequestId.incrementAndGet();
+        return REQUEST_OPAQUE_ID_GENERATOR.incrementAndGet();
     }
 
 

@@ -1,13 +1,11 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 
 import java.util.concurrent.*;
@@ -86,9 +84,7 @@ public class MultiThreadMQProducer {
     }
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
-        LOGGER.error("Send message failed, enter resend later logic. Exception message: {}, caused by: {}",
-                e.getMessage(), e.getCause().getMessage());
-        System.out.println("Stashing: " + JSON.toJSONString(msg));
+        LOGGER.error("Send message failed, enter resend later logic. Exception:", e);
         localMessageStore.stash(msg);
     }
 
@@ -98,14 +94,9 @@ public class MultiThreadMQProducer {
             public void run() {
                 try {
                     defaultMQProducer.send(msg, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
-                } catch (MQClientException e) {
-                    handleSendMessageFailure(msg, e);
-                } catch (RemotingException e) {
-                    handleSendMessageFailure(msg, e);
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     handleSendMessageFailure(msg, e);
                 }
-
             }
         });
     }
@@ -120,7 +111,6 @@ public class MultiThreadMQProducer {
         if (messages.length <= concurrentSendBatchSize) {
             sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
         } else {
-
             Message[] sendBatchArray = null;
             int remain = 0;
             for (int i = 0; i < messages.length; i += concurrentSendBatchSize) {

@@ -1,11 +1,13 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
-import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.remoting.exception.RemotingException;
+import org.slf4j.Logger;
 
 class BatchSendMessageTask implements Runnable {
+
+    private static final Logger LOGGER = ClientLogger.getLog();
 
     private Message[] messages;
 
@@ -21,8 +23,8 @@ class BatchSendMessageTask implements Runnable {
 
     @Override
     public void run() {
+        LOGGER.debug("Batch resending " + (null == messages ? 0 : messages.length) + " messages.");
         for (Message message : messages) {
-
             if (null == message) {
                 continue;
             }
@@ -30,11 +32,7 @@ class BatchSendMessageTask implements Runnable {
             try {
                 multiThreadMQProducer.getDefaultMQProducer().send(message,
                         new SendMessageCallback(multiThreadMQProducer, sendCallback, message));
-            } catch (MQClientException e) {
-                multiThreadMQProducer.handleSendMessageFailure(message, e);
-            } catch (RemotingException e) {
-                multiThreadMQProducer.handleSendMessageFailure(message, e);
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 multiThreadMQProducer.handleSendMessageFailure(message, e);
             }
         }
