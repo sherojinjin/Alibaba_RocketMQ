@@ -129,10 +129,6 @@ public class CacheableConsumer
                 TimeUnit.SECONDS);
     }
 
-    public void setConsumerGroupName(String consumerGroupName) {
-        this.consumerGroupName = consumerGroupName;
-    }
-
     public boolean isStarted() {
         return started;
     }
@@ -169,6 +165,9 @@ public class CacheableConsumer
         }
     }
 
+    public String getConsumerGroupName() {
+        return consumerGroupName;
+    }
 
     /**
      * This method shuts down this client properly.
