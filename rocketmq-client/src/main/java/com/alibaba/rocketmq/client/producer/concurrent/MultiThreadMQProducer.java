@@ -41,7 +41,11 @@ public class MultiThreadMQProducer {
 
     private long lastStatsTimeStamp = System.currentTimeMillis();
 
-    private float successTps = 0.0F;
+    private float officialTps = 0.0F;
+
+    private float accumulativeTPSDelta = 0.0F;
+
+    private int count;
 
     private AtomicLong numberOfMessageStashedDueToLackOfSemaphoreToken = new AtomicLong(0L);
 
@@ -114,30 +118,69 @@ public class MultiThreadMQProducer {
             public void run() {
                 float tps = (successSendingCounter.longValue() - lastSuccessfulSendingCount) * 1000.0F
                         / (System.currentTimeMillis() - lastStatsTimeStamp);
+                count++;
 
-                if (tps > successTps + TPS_TOL) {
-                    int updatedSemaphoreCapacity = Math.min(semaphoreCapacity + (int)(tps - successTps) + 1,
-                            MultiThreadMQProducerConfiguration.MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
+                if (tps > officialTps + TPS_TOL || tps < officialTps - TPS_TOL) {
+                    adjustThrottle(tps);
+                } else {
+                    accumulativeTPSDelta += tps - officialTps;
+                    if (Math.abs(accumulativeTPSDelta) > TPS_TOL) {
+                        adjustThrottle(tps);
+                    }
+                }
+
+                lastStatsTimeStamp = System.currentTimeMillis();
+                lastSuccessfulSendingCount = successSendingCounter.longValue();
+            }
+
+            private void adjustThrottle(float tps) {
+                int updatedSemaphoreCapacity = 0;
+                if (tps > officialTps) {
+                    if (accumulativeTPSDelta > TPS_TOL) { //Update due to accumulative TPS delta surpass TPS_TOL
+                        updatedSemaphoreCapacity = Math.min(semaphoreCapacity + (int)accumulativeTPSDelta / count,
+                                MultiThreadMQProducerConfiguration.MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
+                    } else { //Update due to a specific second-average TPS > officialTPS + TPS_TOL
+                        updatedSemaphoreCapacity = Math.min(semaphoreCapacity + (int)(tps - officialTps) + 1,
+                                MultiThreadMQProducerConfiguration.MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
+                    }
+
                     if (updatedSemaphoreCapacity > semaphoreCapacity) {
                         semaphore.release(updatedSemaphoreCapacity - semaphoreCapacity);
                         semaphoreCapacity = updatedSemaphoreCapacity;
                     }
-                    successTps = tps;
-                } else if (tps < successTps - TPS_TOL) {
-                    int updatedSemaphoreCapacity = Math.max(semaphoreCapacity + (int)(tps - successTps) - 1,
-                            MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
+                } else {
+                    if (-1 * accumulativeTPSDelta > TPS_TOL) { //Update due to accumulative TPS delta surpass TPS_TOL
+                        updatedSemaphoreCapacity = Math.max(semaphoreCapacity + (int)accumulativeTPSDelta / count,
+                                MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
+                    } else { //Update due to a specific second-average TPS < officialTPS - TPS_TOL
+                        updatedSemaphoreCapacity = Math.max(semaphoreCapacity + (int)(tps - officialTps) - 1,
+                                MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
+                    }
+
                     if (updatedSemaphoreCapacity < semaphoreCapacity) {
                         int delta = semaphoreCapacity - updatedSemaphoreCapacity;
                         semaphore.reducePermits(delta);
                         semaphoreCapacity = updatedSemaphoreCapacity;
                     }
-                    successTps = tps;
                 }
-                lastStatsTimeStamp = System.currentTimeMillis();
-                lastSuccessfulSendingCount = successSendingCounter.longValue();
+
+                //Update official TPS.
+                officialTps = tps;
+
+                //reset accumulative TPS delta.
+                accumulativeTPSDelta = 0.0F;
+
+                //reset count.
+                count = 0;
+
+                LOGGER.info("Semaphore capacity adjusted to:" + semaphoreCapacity);
             }
+
         }, 3000, 1000, TimeUnit.MILLISECONDS);
     }
+
+
+
 
     public void startResendFailureMessageService(long interval) {
             resendFailureMessagePoolExecutor.scheduleWithFixedDelay(

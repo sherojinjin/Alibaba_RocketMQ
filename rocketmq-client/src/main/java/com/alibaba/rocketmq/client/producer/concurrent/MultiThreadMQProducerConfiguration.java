@@ -18,11 +18,11 @@ public class MultiThreadMQProducerConfiguration {
 
     private LocalMessageStore localMessageStore;
 
-    private int numberOfMessageInitiallyHeldImMemory = 3000;
-
     public static final int MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 20000;
 
     public static final int MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 1000;
+
+    private int numberOfMessageInitiallyHeldImMemory = MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY;
 
     public MultiThreadMQProducerConfiguration configureProducerGroup(String producerGroup) {
         this.producerGroup = producerGroup;
