@@ -22,6 +22,7 @@ export CLASSPATH=.:${BASE_DIR}/conf:${CLASSPATH}
 # JVM 参数配置
 #===========================================================================================
 JAVA_OPT="${JAVA_OPT} -server -Xms1g -Xmx1g -Xmn256m -XX:PermSize=128m -XX:MaxPermSize=128m"
+JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${HOME}/rmq_srv_gc.log -XX:+PrintGCDetails"
 JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=${BASE_DIR}/lib"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.namesrv.domain=rocketmq.api"
 JAVA_OPT="${JAVA_OPT} -Denable_ssl=true"

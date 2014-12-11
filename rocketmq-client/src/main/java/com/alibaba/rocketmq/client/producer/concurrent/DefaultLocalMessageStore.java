@@ -174,8 +174,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             if (writeIndex.longValue() % MESSAGES_PER_FILE == 0) {
                 writeOffSet.set(0L);
             }
-            if (readIndex.get() > writeIndex.get())
+
+            //Fix possible discrepancy
+            if (readIndex.get() > writeIndex.get()) {
                 readIndex.lazySet(writeIndex.get());
+            }
+
             updateConfig();
         } catch (InterruptedException e) {
             throw new RuntimeException("Lock exception", e);
