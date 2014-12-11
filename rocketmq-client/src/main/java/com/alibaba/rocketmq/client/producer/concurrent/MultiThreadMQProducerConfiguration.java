@@ -18,6 +18,12 @@ public class MultiThreadMQProducerConfiguration {
 
     private LocalMessageStore localMessageStore;
 
+    private int numberOfMessageInitiallyHeldImMemory = 5000;
+
+    public static final int MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 20000;
+
+    public static final int MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 1000;
+
     public MultiThreadMQProducerConfiguration configureProducerGroup(String producerGroup) {
         this.producerGroup = producerGroup;
         return this;
@@ -55,6 +61,11 @@ public class MultiThreadMQProducerConfiguration {
 
     public MultiThreadMQProducerConfiguration configureLocalMessageStore(LocalMessageStore localMessageStore) {
         this.localMessageStore = localMessageStore;
+        return this;
+    }
+
+    public MultiThreadMQProducerConfiguration configureNumberOfMessageInitiallyHeldImMemory(int numberOfMessageInitiallyHeldImMemory) {
+        this.numberOfMessageInitiallyHeldImMemory = numberOfMessageInitiallyHeldImMemory;
         return this;
     }
 
@@ -108,5 +119,9 @@ public class MultiThreadMQProducerConfiguration {
 
     public LocalMessageStore getLocalMessageStore() {
         return localMessageStore;
+    }
+
+    public int getNumberOfMessageInitiallyHeldImMemory() {
+        return numberOfMessageInitiallyHeldImMemory;
     }
 }

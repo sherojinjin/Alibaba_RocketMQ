@@ -9,12 +9,15 @@ import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MultiThreadMQProducer {
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
     private int concurrentSendBatchSize = 100;
+
+    private static final int TPS_TOL = 100;
 
     private final ThreadPoolExecutor sendMessagePoolExecutor;
 
@@ -27,6 +30,20 @@ public class MultiThreadMQProducer {
     private final LocalMessageStore localMessageStore;
 
     private volatile boolean started;
+
+    private final CustomizableSemaphore semaphore;
+
+    private int semaphoreCapacity;
+
+    private final AtomicLong successSendingCounter = new AtomicLong(0L);
+
+    private long lastSuccessfulSendingCount = 0L;
+
+    private long lastStatsTimeStamp = System.currentTimeMillis();
+
+    private float successTps = 0.0F;
+
+    private AtomicLong numberOfMessageStashedDueToLackOfSemaphoreToken = new AtomicLong(0L);
 
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
@@ -44,6 +61,10 @@ public class MultiThreadMQProducer {
 
         resendFailureMessagePoolExecutor = Executors
                 .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
+
+        semaphoreCapacity = configuration.getNumberOfMessageInitiallyHeldImMemory();
+
+        semaphore = new CustomizableSemaphore(semaphoreCapacity, true);
 
         defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup());
 
@@ -72,6 +93,39 @@ public class MultiThreadMQProducer {
         }
 
         startResendFailureMessageService(configuration.getResendFailureMessageDelay());
+
+        startMonitorTPS();
+    }
+
+    private void startMonitorTPS() {
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                float tps = (successSendingCounter.longValue() - lastSuccessfulSendingCount) * 1000.0F
+                        / (System.currentTimeMillis() - lastStatsTimeStamp);
+
+                if (tps > successTps + TPS_TOL) {
+                    int updatedSemaphoreCapacity = Math.min((int)(semaphoreCapacity*1.2),
+                            MultiThreadMQProducerConfiguration.MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
+                    if (updatedSemaphoreCapacity > semaphoreCapacity) {
+                        semaphore.release(updatedSemaphoreCapacity - semaphoreCapacity);
+                        semaphoreCapacity = updatedSemaphoreCapacity;
+                    }
+                    successTps = tps;
+                } else if (tps < successTps - TPS_TOL) {
+                    int updatedSemaphoreCapacity = Math.max((int) (semaphoreCapacity * 0.8), MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
+
+                    if (updatedSemaphoreCapacity < semaphoreCapacity) {
+                        int delta = semaphoreCapacity - updatedSemaphoreCapacity;
+                        semaphore.reducePermits(delta);
+                        semaphoreCapacity = updatedSemaphoreCapacity;
+                    }
+                    successTps = tps;
+                }
+                lastStatsTimeStamp = System.currentTimeMillis();
+                lastSuccessfulSendingCount = successSendingCounter.longValue();
+            }
+        }, 3000, 1000, TimeUnit.MILLISECONDS);
     }
 
     public void startResendFailureMessageService(long interval) {
@@ -84,7 +138,7 @@ public class MultiThreadMQProducer {
     }
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
-        LOGGER.error("Send message failed, enter resend later logic. Exception:", e);
+        LOGGER.error("Send message failed. Enter re-send logic. Exception:", e);
         localMessageStore.stash(msg);
     }
 
@@ -93,7 +147,13 @@ public class MultiThreadMQProducer {
             @Override
             public void run() {
                 try {
-                    defaultMQProducer.send(msg, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
+                    //Acquire a token from semaphore.
+                    if (semaphore.tryAcquire()) {
+                        defaultMQProducer.send(msg, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
+                    } else {
+                        //In case all tokens are taken.
+                        localMessageStore.stash(msg);
+                    }
                 } catch (Exception e) {
                     handleSendMessageFailure(msg, e);
                 }
@@ -102,14 +162,28 @@ public class MultiThreadMQProducer {
     }
 
 
+    /**
+     * This method is assumed to be called by client user. Tokens will be assigned later on.
+     * @param messages Messages to send.
+     */
     public void send(final Message[] messages) {
+        send(messages, false);
+    }
 
+    /**
+     * This method would send message with or without token from semaphore. Ultimate client user is not supposed to use
+     * this method unless you know what you are doing.
+     *
+     * @param messages Messages to send.
+     * @param hasTokens If these messages have already been assigned with tokens: true for yes; false for no.
+     */
+    protected void send(final Message[] messages, boolean hasTokens) {
         if (null == messages || messages.length == 0) {
             return;
         }
 
         if (messages.length <= concurrentSendBatchSize) {
-            sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
+            sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this, hasTokens));
         } else {
             Message[] sendBatchArray = null;
             int remain = 0;
@@ -117,7 +191,7 @@ public class MultiThreadMQProducer {
                 sendBatchArray = new Message[concurrentSendBatchSize];
                 remain = Math.min(concurrentSendBatchSize, messages.length - i);
                 System.arraycopy(messages, i, sendBatchArray, 0, remain);
-                sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
+                sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this, hasTokens));
             }
         }
     }
@@ -135,5 +209,43 @@ public class MultiThreadMQProducer {
         sendMessagePoolExecutor.shutdown();
         localMessageStore.close();
         getDefaultMQProducer().shutdown();
+    }
+
+    public CustomizableSemaphore getSemaphore() {
+        return semaphore;
+    }
+
+    public LocalMessageStore getLocalMessageStore() {
+        return localMessageStore;
+    }
+
+    public AtomicLong getSuccessSendingCounter() {
+        return successSendingCounter;
+    }
+
+    public AtomicLong getNumberOfMessageStashedDueToLackOfSemaphoreToken() {
+        return numberOfMessageStashedDueToLackOfSemaphoreToken;
+    }
+
+    /**
+     * This class is to expose reducePermits(int reduction) method publicly.
+     */
+    static class CustomizableSemaphore extends Semaphore {
+        public CustomizableSemaphore(int permits) {
+            super(permits);
+        }
+
+        public CustomizableSemaphore(int permits, boolean fair) {
+            super(permits, fair);
+        }
+
+        /**
+         * Override to expose this method publicly.
+         * @param reduction amount of permits to reduce.
+         */
+        @Override
+        public void reducePermits(int reduction) {
+            super.reducePermits(reduction);
+        }
     }
 }

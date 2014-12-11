@@ -20,6 +20,13 @@ public class SendMessageCallback implements SendCallback {
 
     @Override
     public void onSuccess(SendResult sendResult) {
+        //Release the semaphore token.
+        multiThreadMQProducer.getSemaphore().release();
+
+        //Update statistical data.
+        multiThreadMQProducer.getSuccessSendingCounter().incrementAndGet();
+
+        //Execute user callback.
         if (null != hook) {
             hook.onSuccess(sendResult);
         }
@@ -27,9 +34,13 @@ public class SendMessageCallback implements SendCallback {
 
     @Override
     public void onException(Throwable e) {
+        //We need to release the semaphore token.
+        multiThreadMQProducer.getSemaphore().release();
+
+        //Stash the message and log the exception.
+        multiThreadMQProducer.handleSendMessageFailure(message, e);
         if (null != hook) {
             hook.onException(e);
         }
-        multiThreadMQProducer.handleSendMessageFailure(message, e);
     }
 }
