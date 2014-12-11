@@ -17,7 +17,7 @@ class BatchSendMessageTask implements Runnable {
 
     private boolean hasTokens;
 
-    private static final int WARNING_INTERVAL = 100;
+    private static final int WARNING_INTERVAL = 1000;
 
     public BatchSendMessageTask(Message[] messages, SendCallback sendCallback,
                                 MultiThreadMQProducer multiThreadMQProducer, boolean hasTokens) {
