@@ -18,7 +18,7 @@ public class MultiThreadMQProducerConfiguration {
 
     private LocalMessageStore localMessageStore;
 
-    private int numberOfMessageInitiallyHeldImMemory = 5000;
+    private int numberOfMessageInitiallyHeldImMemory = 3000;
 
     public static final int MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 20000;
 

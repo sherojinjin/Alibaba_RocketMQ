@@ -111,6 +111,17 @@ public class CacheableConsumer
         started = true;
 
         LOGGER.debug("DefaultMQPushConsumer starts.");
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    shutdown();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void startPopThread() {
@@ -156,5 +167,26 @@ public class CacheableConsumer
         if (null != defaultMQPushConsumer) {
             defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
         }
+    }
+
+
+    /**
+     * This method shuts down this client properly.
+     * @throws InterruptedException If unable to shut down within 1 minute.
+     */
+    private void shutdown() throws InterruptedException {
+        //Stop pulling messages from server.
+        defaultMQPushConsumer.shutdown();
+
+        //Stop popping messages from local message store.
+        scheduledExecutorDelayService.shutdown();
+        scheduledExecutorDelayService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+
+        //Stop consuming messages.
+        scheduledExecutorWorkerService.shutdown();
+        scheduledExecutorWorkerService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+
+        //Refresh local message store configuration file.
+        localMessageStore.close();
     }
 }

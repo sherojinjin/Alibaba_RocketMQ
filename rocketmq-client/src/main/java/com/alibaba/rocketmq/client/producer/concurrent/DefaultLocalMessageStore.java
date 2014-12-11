@@ -2,16 +2,12 @@ package com.alibaba.rocketmq.client.producer.concurrent;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.log.ClientLogger;
-import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
 import java.io.*;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -40,8 +36,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private ScheduledExecutorService updateConfigScheduledExecutorService;
-
     public DefaultLocalMessageStore(String producerGroup) {
         localMessageStoreDirectory = new File(STORE_LOCATION, producerGroup);
 
@@ -50,7 +44,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 throw new RuntimeException("Local message store directory does not exist and unable to create one");
             }
         }
-
         loadConfig();
     }
 
@@ -97,7 +90,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         randomAccessFile.seek(writeOffSet.longValue());
                     }
                 }
-                syncConfig();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -112,17 +104,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
             }
         }
-    }
-
-    public void syncConfig() {
-        updateConfigScheduledExecutorService = Executors
-                .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("DataProgressUpdateService"));
-        updateConfigScheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                updateConfig();
-            }
-        }, 10, 10, TimeUnit.SECONDS);
     }
 
     private void updateConfig() {
@@ -200,8 +181,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             throw new RuntimeException("Lock exception", e);
         } catch (IOException e) {
             throw new RuntimeException("IO Error", e);
-        }
-        finally {
+        } finally {
             lock.writeLock().unlock();
         }
     }
@@ -355,12 +335,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }
     }
 
-
     public void close() {
         updateConfig();
-
-        if (null != updateConfigScheduledExecutorService) {
-            updateConfigScheduledExecutorService.shutdown();
-        }
     }
 }

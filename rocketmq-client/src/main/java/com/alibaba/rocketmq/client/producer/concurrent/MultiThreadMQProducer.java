@@ -95,6 +95,17 @@ public class MultiThreadMQProducer {
         startResendFailureMessageService(configuration.getResendFailureMessageDelay());
 
         startMonitorTPS();
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    shutdown();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void startMonitorTPS() {
@@ -105,7 +116,7 @@ public class MultiThreadMQProducer {
                         / (System.currentTimeMillis() - lastStatsTimeStamp);
 
                 if (tps > successTps + TPS_TOL) {
-                    int updatedSemaphoreCapacity = Math.min((int)(semaphoreCapacity*1.2),
+                    int updatedSemaphoreCapacity = Math.min(semaphoreCapacity + (int)(tps - successTps) + 1,
                             MultiThreadMQProducerConfiguration.MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
                     if (updatedSemaphoreCapacity > semaphoreCapacity) {
                         semaphore.release(updatedSemaphoreCapacity - semaphoreCapacity);
@@ -113,8 +124,8 @@ public class MultiThreadMQProducer {
                     }
                     successTps = tps;
                 } else if (tps < successTps - TPS_TOL) {
-                    int updatedSemaphoreCapacity = Math.max((int) (semaphoreCapacity * 0.8), MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
-
+                    int updatedSemaphoreCapacity = Math.max(semaphoreCapacity + (int)(tps - successTps) - 1,
+                            MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
                     if (updatedSemaphoreCapacity < semaphoreCapacity) {
                         int delta = semaphoreCapacity - updatedSemaphoreCapacity;
                         semaphore.reducePermits(delta);
@@ -204,11 +215,27 @@ public class MultiThreadMQProducer {
         return defaultMQProducer;
     }
 
-    public void shutdown() {
+    /**
+     * This method properly shutdown this producer client.
+     * @throws InterruptedException if unable to shutdown within 1 minute.
+     */
+    public void shutdown() throws InterruptedException {
+        //No more messages from client or local message store.
+        semaphore.drainPermits();
+
+        //Stop thread which pops messages from local message store.
         resendFailureMessagePoolExecutor.shutdown();
+        resendFailureMessagePoolExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
+
+        //Stop threads which send message to broker.
         sendMessagePoolExecutor.shutdown();
-        localMessageStore.close();
+        sendMessagePoolExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
+
+        //Stop defaultMQProducer.
         getDefaultMQProducer().shutdown();
+
+        //Refresh local message store configuration file.
+        localMessageStore.close();
     }
 
     public CustomizableSemaphore getSemaphore() {
