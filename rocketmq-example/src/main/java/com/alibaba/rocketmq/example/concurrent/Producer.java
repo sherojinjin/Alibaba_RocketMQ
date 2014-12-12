@@ -34,13 +34,9 @@ public class Producer {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                if (lastSent.longValue() == 0) {
-                    lastSent.set(successCount.longValue());
-                } else {
-                    long currentSuccessSent = successCount.longValue();
-                    System.out.println("TPS: " + (currentSuccessSent - lastSent.longValue()));
-                    lastSent.set(currentSuccessSent);
-                }
+                long currentSuccessSent = successCount.longValue();
+                System.out.println("TPS: " + (currentSuccessSent - lastSent.longValue()));
+                lastSent.set(currentSuccessSent);
             }
         }, 0, 1, TimeUnit.SECONDS);
 
