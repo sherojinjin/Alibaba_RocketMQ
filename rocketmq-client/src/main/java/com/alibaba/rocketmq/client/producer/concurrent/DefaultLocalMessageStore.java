@@ -135,12 +135,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     @Override
     public void stash(Message message) {
         LOGGER.debug("Stashing message: {}", JSON.toJSONString(message));
-        writeIndex.incrementAndGet();
-        long currentWriteIndex = writeIndex.longValue();
         try {
             if (!lock.writeLock().tryLock()) {
                 lock.writeLock().lockInterruptibly();
             }
+            writeIndex.incrementAndGet();
+            long currentWriteIndex = writeIndex.longValue();
 
             if (1 == currentWriteIndex ||
                     (currentWriteIndex -1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
