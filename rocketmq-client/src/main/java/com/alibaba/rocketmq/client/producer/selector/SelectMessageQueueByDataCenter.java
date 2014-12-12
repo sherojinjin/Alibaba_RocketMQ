@@ -44,7 +44,7 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
 
     @Override
     public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
-        String ip = RemotingUtil.getLocalAddress();
+        String ip = RemotingUtil.getLocalAddress(false);
 
         DataCenter dataCenter = DataCenterLocator.locate(ip);
 
