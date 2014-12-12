@@ -40,6 +40,7 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
     private static final Logger LOGGER = ClientLogger.getLog();
 
     private static final AtomicInteger ROUND_ROBIN_SAME_DATA_CENTER = new AtomicInteger(0);
+
     private static final AtomicInteger ROUND_ROBIN = new AtomicInteger(0);
 
     private static final String LOCAL_IP = RemotingUtil.getLocalAddress(false);
@@ -77,7 +78,11 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
         } else {
              messageQueue = mqs.get(ROUND_ROBIN.incrementAndGet() % mqs.size());
         }
-        LOGGER.info("Choosing broker: " + messageQueue.getBrokerName());
+
+        if ((ROUND_ROBIN_SAME_DATA_CENTER.longValue() + ROUND_ROBIN.longValue()) % 1000 == 0) {
+            LOGGER.info("Choosing broker: " + messageQueue.getBrokerName());
+        }
+
         return messageQueue;
     }
 }
