@@ -11,6 +11,7 @@ public class Producer {
 
     private static final AtomicLong SEQUENCE_GENERATOR = new AtomicLong(0L);
 
+
     public static void main(String[] args) {
         int count = 0;
         if (args.length > 0) {
@@ -18,7 +19,8 @@ public class Producer {
         } else {
             count = -1;
         }
-        AtomicLong successCount = new AtomicLong(0L);
+        final AtomicLong successCount = new AtomicLong(0L);
+        final AtomicLong lastSent = new AtomicLong(0L);
         final MultiThreadMQProducer producer = MultiThreadMQProducer.configure()
                 .configureProducerGroup("PG_QuickStart")
                 .configureCorePoolSize(200)
@@ -27,7 +29,21 @@ public class Producer {
                 .configureSendMessageTimeOutInMilliSeconds(3000)
                 .configureDefaultTopicQueueNumber(16)
                 .build();
-                producer.registerCallback(new ExampleSendCallback(successCount, count));
+                producer.registerCallback(new ExampleSendCallback(successCount));
+
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                if (lastSent.longValue() == 0) {
+                    lastSent.set(successCount.longValue());
+                } else {
+                    long currentSuccessSent = successCount.longValue();
+                    System.out.println("TPS: " + (currentSuccessSent - lastSent.longValue()));
+                    lastSent.set(currentSuccessSent);
+                }
+            }
+        }, 0, 1, TimeUnit.SECONDS);
+
         if (count < 0) {
             Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
                 @Override
