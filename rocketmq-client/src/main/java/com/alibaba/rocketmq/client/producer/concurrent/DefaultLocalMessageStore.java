@@ -3,7 +3,6 @@ package com.alibaba.rocketmq.client.producer.concurrent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -37,7 +35,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
   private final AtomicLong readIndex = new AtomicLong(0L);
   private final AtomicLong readOffSet = new AtomicLong(0L);
-  
+
   private volatile long configWriteIndex = writeIndex.get();
   private volatile long configWriteOffSet = writeOffSet.get();
   private volatile long configReadIndex = readIndex.get();
@@ -78,33 +76,33 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     executor.execute(new Runnable() {
       @Override
       public void run() {
-        while (!closed || blockingQueue.size()>0) {
+        while (!closed || blockingQueue.size() > 0) {
           try {
             boolean success = doStash();
             if (!success) {
               Thread.sleep(50);
             }
           } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("sleep error", e);
           }
         }
       }
     });
-    executor.execute(new Runnable(){
+    executor.execute(new Runnable() {
 
       @Override
       public void run() {
-        try{
-          while(!closed || blockingQueue.size()>0){
+        try {
+          while (!closed || blockingQueue.size() > 0) {
             saveConfig();
             Thread.sleep(1000);
           }
-        }catch (InterruptedException e){
-          e.printStackTrace();
+        } catch (InterruptedException e) {
+          LOGGER.error("sleep error", e);
         }
-        
+
       }
-      
+
     });
 
   }
@@ -153,16 +151,14 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             randomAccessFile.seek(writeOffSet.longValue());
           }
         }
-      } catch (FileNotFoundException e) {
-        e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
+      } catch (Exception e) {
+        LOGGER.error("load config error", e);
       } finally {
         if (null != inputStream) {
           try {
             inputStream.close();
           } catch (IOException e) {
-            // ignore.
+            LOGGER.error("close config error", e);
           }
         }
         updateConfig();
@@ -171,7 +167,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
   }
 
   private void updateConfig() {
-    
+
     configUpdateLock.lock();
     configWriteIndex = writeIndex.get();
     configWriteOffSet = writeOffSet.get();
@@ -214,7 +210,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     try {
       blockingQueue.put(message);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOGGER.error("error occur ", e);
     }
   }
 
@@ -343,15 +339,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }
         updateConfig();
         return messages;
-      } catch (InterruptedException e) {
-        LOGGER.error("Pop message error, caused by {}", e.getMessage());
-        e.printStackTrace();
-      } catch (FileNotFoundException e) {
-        LOGGER.error("Pop message error, caused by {}", e.getMessage());
-        e.printStackTrace();
-      } catch (IOException e) {
-        LOGGER.error("Pop message error, caused by {}", e.getMessage());
-        e.printStackTrace();
+      } catch (Exception e) {
+        LOGGER.error("Pop message error", e);
       } finally {
         lock.readLock().unlock();
       }
@@ -418,15 +407,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }
         updateConfig();
         return messages;
-      } catch (InterruptedException e) {
-        LOGGER.error("Pop message error, caused by {}", e.getMessage());
-        e.printStackTrace();
-      } catch (FileNotFoundException e) {
-        LOGGER.error("Pop message error, caused by {}", e.getMessage());
-        e.printStackTrace();
-      } catch (IOException e) {
-        LOGGER.error("Pop message error, caused by {}", e.getMessage());
-        e.printStackTrace();
+      } catch (Exception e) {
+        LOGGER.error("Pop message error", e);
       } finally {
         lock.readLock().unlock();
       }
@@ -442,12 +424,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
   public void close() {
     closed = true;
-    
-    while(blockingQueue.size() >0){
+
+    while (blockingQueue.size() > 0) {
       try {
         Thread.sleep(50);
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        LOGGER.error("close local store error", e);
       }
     }
     executor.shutdown();
