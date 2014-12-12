@@ -35,18 +35,18 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
 
     private static final Random RANDOM = new Random();
 
-    private static final float SAME_DATA_CENTER_LOAD = 0.75F;
+    private static final float SAME_DATA_CENTER_LOAD = 0.8F;
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
     private static final AtomicInteger ROUND_ROBIN_SAME_DATA_CENTER = new AtomicInteger(0);
     private static final AtomicInteger ROUND_ROBIN = new AtomicInteger(0);
 
+    private static final String LOCAL_IP = RemotingUtil.getLocalAddress(false);
+
     @Override
     public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
-        String ip = RemotingUtil.getLocalAddress(false);
-
-        DataCenter dataCenter = DataCenterLocator.locate(ip);
+        DataCenter dataCenter = DataCenterLocator.locate(LOCAL_IP);
 
         List<MessageQueue> sameDataCenterQueues = new ArrayList<MessageQueue>();
 
@@ -60,7 +60,7 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
         } else {
             for (MessageQueue messageQueue : mqs) {
                 String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
-                String[] ipSegments = ip.split("\\.");
+                String[] ipSegments = LOCAL_IP.split("\\.");
                 if (brokerNameSegments[1].equals(ipSegments[1])) {
                     sameDataCenterQueues.add(messageQueue);
                 }
@@ -68,7 +68,7 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
 
         }
 
-        //randomize
+        //Round robin.
         boolean chooseSameDataCenter = RANDOM.nextFloat() <= SAME_DATA_CENTER_LOAD;
         MessageQueue messageQueue = null;
         if (chooseSameDataCenter && !sameDataCenterQueues.isEmpty()) {
