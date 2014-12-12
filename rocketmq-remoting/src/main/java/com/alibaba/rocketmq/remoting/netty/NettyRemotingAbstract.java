@@ -322,7 +322,7 @@ public abstract class NettyRemotingAbstract {
             Entry<Integer, ResponseFuture> next = it.next();
             ResponseFuture rep = next.getValue();
 
-            if ((rep.getBeginTimestamp() + rep.getTimeoutMillis() * 2 + 1000) <= System.currentTimeMillis()) {
+            if ((rep.getBeginTimestamp() + rep.getTimeoutMillis() + 1000) <= System.currentTimeMillis()) {
                 LOGGER.info("Removing_opaque due to timeout: opaqueId = " + next.getKey());
                 it.remove();
                 try {
