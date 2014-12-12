@@ -4,6 +4,7 @@ import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.client.producer.SendCallback;
+import com.alibaba.rocketmq.client.producer.selector.SelectMessageQueueByDataCenter;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
@@ -206,7 +207,7 @@ public class MultiThreadMQProducer {
                 @Override
                 public void run() {
                     try {
-                        defaultMQProducer.send(msg, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
+                        defaultMQProducer.send(msg, new SelectMessageQueueByDataCenter(), null, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
                     } catch (Exception e) {
                         handleSendMessageFailure(msg, e);
                     }
