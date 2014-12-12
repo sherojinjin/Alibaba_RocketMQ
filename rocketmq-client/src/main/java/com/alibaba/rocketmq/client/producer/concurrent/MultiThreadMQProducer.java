@@ -193,26 +193,28 @@ public class MultiThreadMQProducer {
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
         LOGGER.error("Send message failed. Enter re-send logic. Exception:", e);
+
         localMessageStore.stash(msg);
+
+        //Release assigned token.
+        semaphore.release();
     }
 
     public void send(final Message msg) {
-        sendMessagePoolExecutor.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    //Acquire a token from semaphore.
-                    if (semaphore.tryAcquire()) {
+        if (semaphore.tryAcquire()) { //Acquire a token from semaphore.
+            sendMessagePoolExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
                         defaultMQProducer.send(msg, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
-                    } else {
-                        //In case all tokens are taken.
-                        localMessageStore.stash(msg);
+                    } catch (Exception e) {
+                        handleSendMessageFailure(msg, e);
                     }
-                } catch (Exception e) {
-                    handleSendMessageFailure(msg, e);
                 }
-            }
-        });
+            });
+        } else {
+            localMessageStore.stash(msg);
+        }
     }
 
 
@@ -237,15 +239,34 @@ public class MultiThreadMQProducer {
         }
 
         if (messages.length <= concurrentSendBatchSize) {
-            sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this, hasTokens));
+            if (!hasTokens) { //No tokens pre-assigned.
+                if (semaphore.tryAcquire(messages.length)) { //Try to acquire tokens.
+                    sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
+                } else { //Stash all these messages if no sufficient tokens are available.
+                    for (Message message : messages) {
+                        localMessageStore.stash(message);
+                    }
+                }
+            } else {
+                //As these messages already got tokens, send them directly.
+                sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
+            }
         } else {
             Message[] sendBatchArray = null;
             int remain = 0;
-            for (int i = 0; i < messages.length; i += concurrentSendBatchSize) {
-                sendBatchArray = new Message[concurrentSendBatchSize];
+            for (int i = 0; i < messages.length; i += remain) {
                 remain = Math.min(concurrentSendBatchSize, messages.length - i);
+                sendBatchArray = new Message[remain];
                 System.arraycopy(messages, i, sendBatchArray, 0, remain);
-                sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this, hasTokens));
+                if (hasTokens) { //If messages have pre-assigned tokens, send them directly.
+                    sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
+                } else if (semaphore.tryAcquire(sendBatchArray.length)) { //Try to acquire tokens and send them.
+                    sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
+                } else { // Stash messages if no sufficient tokens available.
+                    for (Message message : sendBatchArray) {
+                        localMessageStore.stash(message);
+                    }
+                }
             }
         }
     }
