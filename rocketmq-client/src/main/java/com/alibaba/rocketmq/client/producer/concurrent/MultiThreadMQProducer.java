@@ -193,7 +193,11 @@ public class MultiThreadMQProducer {
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
         LOGGER.error("Send message failed. Enter re-send logic. Exception:", e);
+
         localMessageStore.stash(msg);
+
+        //Release assigned token.
+        semaphore.release();
     }
 
     public void send(final Message msg) {
