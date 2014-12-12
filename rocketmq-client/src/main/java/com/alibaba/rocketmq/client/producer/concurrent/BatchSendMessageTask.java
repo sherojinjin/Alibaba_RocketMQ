@@ -15,8 +15,6 @@ class BatchSendMessageTask implements Runnable {
 
     private MultiThreadMQProducer multiThreadMQProducer;
 
-
-
     public BatchSendMessageTask(Message[] messages, SendCallback sendCallback,
                                 MultiThreadMQProducer multiThreadMQProducer) {
         this.messages = messages;

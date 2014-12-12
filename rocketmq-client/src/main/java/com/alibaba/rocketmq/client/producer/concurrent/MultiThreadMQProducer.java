@@ -197,22 +197,20 @@ public class MultiThreadMQProducer {
     }
 
     public void send(final Message msg) {
-        sendMessagePoolExecutor.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    //Acquire a token from semaphore.
-                    if (semaphore.tryAcquire()) {
+        if (semaphore.tryAcquire()) { //Acquire a token from semaphore.
+            sendMessagePoolExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
                         defaultMQProducer.send(msg, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
-                    } else {
-                        //In case all tokens are taken.
-                        localMessageStore.stash(msg);
+                    } catch (Exception e) {
+                        handleSendMessageFailure(msg, e);
                     }
-                } catch (Exception e) {
-                    handleSendMessageFailure(msg, e);
                 }
-            }
-        });
+            });
+        } else {
+            localMessageStore.stash(msg);
+        }
     }
 
 
@@ -256,9 +254,9 @@ public class MultiThreadMQProducer {
                 remain = Math.min(concurrentSendBatchSize, messages.length - i);
                 sendBatchArray = new Message[remain];
                 System.arraycopy(messages, i, sendBatchArray, 0, remain);
-                if (hasTokens) { //If messages have pre-assigned tokens.
+                if (hasTokens) { //If messages have pre-assigned tokens, send them directly.
                     sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
-                } else if (semaphore.tryAcquire(sendBatchArray.length)) { //Tro to acquire tokens.
+                } else if (semaphore.tryAcquire(sendBatchArray.length)) { //Try to acquire tokens and send them.
                     sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
                 } else { // Stash messages if no sufficient tokens available.
                     for (Message message : sendBatchArray) {
