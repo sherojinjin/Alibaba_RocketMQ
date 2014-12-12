@@ -35,7 +35,7 @@ public class SendMessageCallback implements SendCallback {
     @Override
     public void onException(Throwable e) {
         //We need to release the semaphore token.
-        multiThreadMQProducer.getSemaphore().release();
+        //multiThreadMQProducer.getSemaphore().release();
 
         //Stash the message and log the exception.
         multiThreadMQProducer.handleSendMessageFailure(message, e);

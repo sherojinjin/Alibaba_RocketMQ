@@ -7,6 +7,7 @@ import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.client.producer.selector.SelectMessageQueueByDataCenter;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
+
 import org.slf4j.Logger;
 
 import java.util.concurrent.*;
@@ -61,8 +62,12 @@ public class MultiThreadMQProducer {
 
         this.concurrentSendBatchSize = configuration.getConcurrentSendBatchSize();
 
-        sendMessagePoolExecutor = new ScheduledThreadPoolExecutor(configuration.getCorePoolSize(),
-                new ThreadPoolExecutor.CallerRunsPolicy());
+        sendMessagePoolExecutor = new ThreadPoolExecutor(configuration.getCorePoolSize(), Integer.MAX_VALUE,
+            60L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>(),new ThreadFactoryImpl("SenderThread-"),new ThreadPoolExecutor.CallerRunsPolicy());
+            
+//            new ScheduledThreadPoolExecutor(configuration.getCorePoolSize(),
+//                new ThreadPoolExecutor.CallerRunsPolicy());
+//        sendMessagePoolExecutor.setThreadFactory();
 
         resendFailureMessagePoolExecutor = Executors
                 .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
@@ -322,7 +327,10 @@ public class MultiThreadMQProducer {
     /**
      * This class is to expose reducePermits(int reduction) method publicly.
      */
-    static class CustomizableSemaphore extends Semaphore {
+    public static class CustomizableSemaphore extends Semaphore {
+
+      private static final long serialVersionUID = 1L;
+
         public CustomizableSemaphore(int permits) {
             super(permits);
         }
