@@ -2,7 +2,6 @@ package com.alibaba.rocketmq.client.producer.concurrent;
 
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.SendCallback;
-import com.alibaba.rocketmq.client.producer.selector.SelectMessageQueueByDataCenter;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
@@ -33,7 +32,8 @@ class BatchSendMessageTask implements Runnable {
                 continue;
             }
             try {
-                multiThreadMQProducer.getDefaultMQProducer().send(message, new SelectMessageQueueByDataCenter(), null,
+                multiThreadMQProducer.getDefaultMQProducer().send(message,
+                        multiThreadMQProducer.getMessageQueueSelector(), null,
                         new SendMessageCallback(multiThreadMQProducer, sendCallback, message));
             } catch (Exception e) {
                 multiThreadMQProducer.handleSendMessageFailure(message, e);

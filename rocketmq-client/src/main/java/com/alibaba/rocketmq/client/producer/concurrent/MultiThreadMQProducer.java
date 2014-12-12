@@ -3,6 +3,7 @@ package com.alibaba.rocketmq.client.producer.concurrent;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
+import com.alibaba.rocketmq.client.producer.MessageQueueSelector;
 import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.client.producer.selector.SelectMessageQueueByDataCenter;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
@@ -49,6 +50,8 @@ public class MultiThreadMQProducer {
     private int count;
 
     private AtomicLong numberOfMessageStashedDueToLackOfSemaphoreToken = new AtomicLong(0L);
+
+    private MessageQueueSelector messageQueueSelector = new SelectMessageQueueByDataCenter();
 
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
@@ -207,7 +210,7 @@ public class MultiThreadMQProducer {
                 @Override
                 public void run() {
                     try {
-                        defaultMQProducer.send(msg, new SelectMessageQueueByDataCenter(), null, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
+                        defaultMQProducer.send(msg, messageQueueSelector, null, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
                     } catch (Exception e) {
                         handleSendMessageFailure(msg, e);
                     }
@@ -317,6 +320,10 @@ public class MultiThreadMQProducer {
 
     public AtomicLong getNumberOfMessageStashedDueToLackOfSemaphoreToken() {
         return numberOfMessageStashedDueToLackOfSemaphoreToken;
+    }
+
+    public MessageQueueSelector getMessageQueueSelector() {
+        return messageQueueSelector;
     }
 
     /**

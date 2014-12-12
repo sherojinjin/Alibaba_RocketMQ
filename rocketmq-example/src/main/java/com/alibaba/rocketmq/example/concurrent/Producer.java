@@ -26,7 +26,7 @@ public class Producer {
                 .configureCorePoolSize(200)
                 .configureConcurrentSendBatchSize(100)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
-                .configureSendMessageTimeOutInMilliSeconds(3000)
+                .configureSendMessageTimeOutInMilliSeconds(30000)
                 .configureDefaultTopicQueueNumber(16)
                 .build();
                 producer.registerCallback(new ExampleSendCallback(successCount));
@@ -41,7 +41,7 @@ public class Producer {
         }, 0, 1, TimeUnit.SECONDS);
 
         if (count < 0) {
-            Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+            Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
                     Message[] messages = buildMessages(3000);
