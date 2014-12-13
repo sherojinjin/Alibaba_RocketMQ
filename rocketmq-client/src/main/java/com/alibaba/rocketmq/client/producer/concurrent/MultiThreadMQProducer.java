@@ -329,7 +329,7 @@ public class MultiThreadMQProducer {
     /**
      * This class is to expose reducePermits(int reduction) method publicly.
      */
-    static class CustomizableSemaphore extends Semaphore {
+    public static class CustomizableSemaphore extends Semaphore {
         public CustomizableSemaphore(int permits) {
             super(permits);
         }

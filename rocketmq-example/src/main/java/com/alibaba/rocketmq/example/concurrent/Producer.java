@@ -35,7 +35,8 @@ public class Producer {
             @Override
             public void run() {
                 long currentSuccessSent = successCount.longValue();
-                System.out.println("TPS: " + (currentSuccessSent - lastSent.longValue()));
+                System.out.println("TPS: " + (currentSuccessSent - lastSent.longValue()) +
+                        ". Semaphore available number:" + producer.getSemaphore().availablePermits());
                 lastSent.set(currentSuccessSent);
             }
         }, 0, 1, TimeUnit.SECONDS);

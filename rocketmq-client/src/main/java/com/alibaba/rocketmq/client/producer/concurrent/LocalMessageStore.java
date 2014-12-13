@@ -17,12 +17,6 @@ public interface LocalMessageStore {
     public int getNumberOfMessageStashed();
 
     /**
-     * This method pops out all messages stashed.
-     * @return All messages in form of array.
-     */
-    Message[] pop();
-
-    /**
      * This method would pop out at most <code>n</code> messages from local store.
      * @param n Number of messages assumed to be popped out.
      * @return Array of messages.
@@ -32,5 +26,5 @@ public interface LocalMessageStore {
     /**
      * Close this message store.
      */
-    void close();
+    void close() throws InterruptedException;
 }
