@@ -81,19 +81,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
             }
         }, 50, 100, TimeUnit.MILLISECONDS);
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                LOGGER.info("ShutdownHook invoked.");
-                try {
-                    close();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
         ready = true;
     }
 
