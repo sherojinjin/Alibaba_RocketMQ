@@ -68,7 +68,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             public void run() {
                 flush();
             }
-        }, 0, 1000, TimeUnit.MICROSECONDS);
+        }, 0, 1000, TimeUnit.MILLISECONDS);
 
         flushConfigAtFixedDirtyMessageNumberExecutorService = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryImpl("LocalMessageStoreFlushServiceFixedDirtyMessageNumber"));
@@ -96,6 +96,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         ready = true;
     }
 
+    /**
+     * This method will execute on startup.
+     */
     private void loadConfig() {
         configFile = new File(localMessageStoreDirectory, ".config");
         if (configFile.exists() && configFile.canRead()) {

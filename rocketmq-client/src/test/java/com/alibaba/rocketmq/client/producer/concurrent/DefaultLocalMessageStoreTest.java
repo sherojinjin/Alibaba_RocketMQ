@@ -8,23 +8,32 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class DefaultLocalMessageStoreTest {
 
     private static DefaultLocalMessageStore defaultLocalMessageStore = new DefaultLocalMessageStore("PG_Test");
 
     @Test
-    public void testStash() {
+    public void testStash() throws InterruptedException {
         for (int i = 0; i < 1; i++) {
             defaultLocalMessageStore.stash(new Message("Topic", "Data".getBytes()));
         }
+
+        for (int i = 0; i < 10; i++) {
+            Thread.sleep(1000);
+        }
+
     }
 
 
     @Test
-    public void testStashBulk() {
-        for (int i = 0; i < 5001; i++) {
-            defaultLocalMessageStore.stash(new Message("Topic", "Data".getBytes()));
+    public void testStashBulk() throws InterruptedException {
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 5001; j++) {
+                defaultLocalMessageStore.stash(new Message("Topic", "Data".getBytes()));
+            }
+            Thread.sleep(1000);
         }
     }
 
@@ -44,13 +53,13 @@ public class DefaultLocalMessageStoreTest {
     }
 
     @Test
-    public void testStash2() throws InterruptedException {
-        int number = 100;
+    public void testStressStash() throws InterruptedException {
+        int number = 10;
         ExecutorService service = Executors.newFixedThreadPool(number);
         final CountDownLatch l = new CountDownLatch(number);
         final Random r = new Random();
-        for (int i = 0; i < number; i++) {
-            service.execute(new Runnable() {
+        for (int i = 0; i < number - 1; i++) {
+            service.submit(new Runnable() {
                 @Override
                 public void run() {
                     l.countDown();
@@ -69,7 +78,44 @@ public class DefaultLocalMessageStoreTest {
             });
         }
 
-        Thread.sleep(99999999);
+        service.submit(new Runnable() {
+            @Override
+            public void run() {
+                l.countDown();
 
+                try {
+                    l.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                int badLoop = 0;
+                while (true) {
+                    Message[] messages = defaultLocalMessageStore.pop(200);
+                    if (messages == null || messages.length == 0) {
+                        if(++badLoop > 100) {
+                            System.out.println("Too many bad loops, going to exit.");
+                            break;
+                        }
+                        try {
+                            System.out.println("Empty loop. Going to sleep 100ms.");
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        while (messages != null && messages.length > 0) {
+                            System.out.println("Popped " + messages.length);
+                            messages = defaultLocalMessageStore.pop(200);
+                        }
+                    }
+                }
+
+
+            }
+        });
+
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.MINUTES);
     }
 }
