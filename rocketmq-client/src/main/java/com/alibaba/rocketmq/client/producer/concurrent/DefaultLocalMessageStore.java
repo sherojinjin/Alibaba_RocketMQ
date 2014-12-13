@@ -76,9 +76,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         flushConfigAtFixedDirtyMessageNumberExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                if (messagesToFlushCount.longValue() <= MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE) {
-                    return;
-                } else {
+                if (messagesToFlushCount.longValue() > MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE) {
                     flush();
                 }
             }
