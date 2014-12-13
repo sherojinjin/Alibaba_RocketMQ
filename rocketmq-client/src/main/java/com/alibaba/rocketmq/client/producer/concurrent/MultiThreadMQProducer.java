@@ -216,8 +216,10 @@ public class MultiThreadMQProducer {
                     }
                 }
             });
+            LOGGER.info("One message submitted to send.");
         } else {
             localMessageStore.stash(msg);
+            LOGGER.warn("One message stashed");
         }
     }
 
@@ -246,14 +248,17 @@ public class MultiThreadMQProducer {
             if (!hasTokens) { //No tokens pre-assigned.
                 if (semaphore.tryAcquire(messages.length)) { //Try to acquire tokens.
                     sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
+                    LOGGER.info(messages.length + " messages submitted to send.");
                 } else { //Stash all these messages if no sufficient tokens are available.
                     for (Message message : messages) {
                         localMessageStore.stash(message);
                     }
+                    LOGGER.warn(messages.length + " messages stashed.");
                 }
             } else {
                 //As these messages already got tokens, send them directly.
                 sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
+                LOGGER.info(messages.length + " messages submitted to send.");
             }
         } else {
             Message[] sendBatchArray = null;
@@ -264,12 +269,15 @@ public class MultiThreadMQProducer {
                 System.arraycopy(messages, i, sendBatchArray, 0, remain);
                 if (hasTokens) { //If messages have pre-assigned tokens, send them directly.
                     sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
+                    LOGGER.info(sendBatchArray.length + " messages submitted to send.");
                 } else if (semaphore.tryAcquire(sendBatchArray.length)) { //Try to acquire tokens and send them.
                     sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
+                    LOGGER.info(sendBatchArray.length + " messages submitted to send.");
                 } else { // Stash messages if no sufficient tokens available.
                     for (Message message : sendBatchArray) {
                         localMessageStore.stash(message);
                     }
+                    LOGGER.warn(sendBatchArray.length + " messages stashed");
                 }
             }
         }

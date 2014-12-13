@@ -47,6 +47,7 @@ public class Producer {
                 public void run() {
                     Message[] messages = buildMessages(3000);
                     producer.send(messages);
+                    System.out.println(messages.length + " messages from client are required to send.");
                 }
             }, 3000, 1000, TimeUnit.MILLISECONDS);
         } else {
