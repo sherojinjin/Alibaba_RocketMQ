@@ -85,6 +85,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
+                LOGGER.info("ShutdownHook invoked.");
                 try {
                     close();
                 } catch (InterruptedException e) {
@@ -361,10 +362,19 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     public void close() throws InterruptedException {
         flush();
-        flushConfigAtFixedRateExecutorService.shutdown();
-        flushConfigAtFixedDirtyMessageNumberExecutorService.shutdown();
+
+        if (!flushConfigAtFixedRateExecutorService.isShutdown()) {
+            flushConfigAtFixedRateExecutorService.shutdown();
+        }
+
+        if (!flushConfigAtFixedDirtyMessageNumberExecutorService.isShutdown()) {
+            flushConfigAtFixedDirtyMessageNumberExecutorService.shutdown();
+        }
+
         flushConfigAtFixedRateExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         flushConfigAtFixedDirtyMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         ready = false;
+
+        LOGGER.info("Default local message store shutdown complete");
     }
 }
