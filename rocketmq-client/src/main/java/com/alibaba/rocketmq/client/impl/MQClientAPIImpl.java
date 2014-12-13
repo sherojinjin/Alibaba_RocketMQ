@@ -332,8 +332,9 @@ public class MQClientAPIImpl {
         this.remotingClient.invokeAsync(addr, request, timeoutMillis, new InvokeCallback() {
             @Override
             public void operationComplete(ResponseFuture responseFuture) {
-                if (null == sendCallback)
+                if (null == sendCallback) {
                     return;
+                }
 
                 RemotingCommand response = responseFuture.getResponseCommand();
                 if (response != null) {
@@ -346,13 +347,11 @@ public class MQClientAPIImpl {
                     catch (Exception e) {
                         sendCallback.onException(e);
                     }
-                }
-                else {
+                } else {
                     if (!responseFuture.isSendRequestOK()) {
                         sendCallback.onException(new MQClientException("send request failed", responseFuture
                             .getCause()));
-                    }
-                    else if (responseFuture.isTimeout()) {
+                    } else if (responseFuture.isTimeout()) {
                         sendCallback.onException(new MQClientException("wait response timeout "
                                 + responseFuture.getTimeoutMillis() + "ms", responseFuture.getCause()));
                     }
