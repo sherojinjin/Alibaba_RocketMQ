@@ -41,9 +41,13 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private LinkedBlockingDeque<Message> messageQueue = new LinkedBlockingDeque<Message>();
 
-    private ScheduledExecutorService flushConfigExecutorService;
+    private ScheduledExecutorService flushConfigAtFixedRateExecutorService;
+
+    private ScheduledExecutorService flushConfigAtFixedDirtyMessageNumberExecutorService;
 
     private volatile boolean ready = false;
+
+    private static final int MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE = 1000;
 
     public DefaultLocalMessageStore(String producerGroup) {
         localMessageStoreDirectory = new File(STORE_LOCATION, producerGroup);
@@ -56,14 +60,29 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
         loadConfig();
 
-        flushConfigExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("LocalMessageStoreFlushService"));
+        flushConfigAtFixedRateExecutorService = Executors
+                .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("LocalMessageStoreFlushServiceFixedRate"));
 
-        flushConfigExecutorService.scheduleAtFixedRate(new Runnable() {
+        flushConfigAtFixedRateExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 flush();
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        }, 0, 1000, TimeUnit.MICROSECONDS);
+
+        flushConfigAtFixedDirtyMessageNumberExecutorService = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryImpl("LocalMessageStoreFlushServiceFixedDirtyMessageNumber"));
+
+        flushConfigAtFixedDirtyMessageNumberExecutorService.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                if (messagesToFlushCount.longValue() <= MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE) {
+                    return;
+                } else {
+                    flush();
+                }
+            }
+        }, 50, 100, TimeUnit.MILLISECONDS);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -138,6 +157,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }
     }
 
+    /**
+     * This method is synchronized as there may be multiple threads executing this thread.
+     */
     private synchronized void updateConfig() {
         BufferedWriter bufferedWriter = null;
         try {
@@ -183,6 +205,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     }
 
     private void flush() {
+        LOGGER.debug("Start to flush.");
         try {
             if (!lock.writeLock().tryLock()) {
                 lock.writeLock().lockInterruptibly();
@@ -194,7 +217,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 long currentWriteIndex = writeIndex.longValue();
 
                 if (1 == currentWriteIndex ||
-                        (currentWriteIndex -1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
+                        (currentWriteIndex - 1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
                     //we need to create a new file.
                     File newMessageStoreFile = new File(localMessageStoreDirectory, String.valueOf(currentWriteIndex));
                     if (!newMessageStoreFile.createNewFile()) {
@@ -229,10 +252,13 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
             updateConfig();
         } catch (InterruptedException e) {
+            e.printStackTrace();
             throw new RuntimeException("Lock exception", e);
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException("IO Error", e);
         } finally {
+            LOGGER.debug("Flush completes.");
             lock.writeLock().unlock();
         }
     }
@@ -248,7 +274,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }
 
         try {
-            if(!lock.readLock().tryLock()) {
+            if (!lock.readLock().tryLock()) {
                 lock.readLock().lockInterruptibly();
             }
 
@@ -291,7 +317,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 long messageSize = readRandomAccessFile.readLong();
-                byte[] data = new byte[(int)messageSize];
+                byte[] data = new byte[(int) messageSize];
                 readRandomAccessFile.read(data);
                 messages[messageRead++] = JSON.parseObject(data, Message.class);
                 readIndex.incrementAndGet();
@@ -332,8 +358,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     public void close() throws InterruptedException {
         flush();
-        flushConfigExecutorService.shutdown();
-        flushConfigExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+        flushConfigAtFixedRateExecutorService.shutdown();
+        flushConfigAtFixedRateExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         ready = false;
     }
 }

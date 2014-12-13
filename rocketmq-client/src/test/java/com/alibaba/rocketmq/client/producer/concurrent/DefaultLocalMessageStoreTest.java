@@ -4,6 +4,10 @@ import com.alibaba.rocketmq.common.message.Message;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DefaultLocalMessageStoreTest {
 
@@ -33,43 +37,39 @@ public class DefaultLocalMessageStoreTest {
     public void testPopBulk() {
 
         Message[] messages = defaultLocalMessageStore.pop(200);
-        while (messages.length >0) {
-            System.out.println(messages.length);
-            messages = defaultLocalMessageStore.pop(200);
-        }
-    }
-
-
-    private static Message[] buildMessages(int n, int size) {
-        Message[] messages = new Message[n];
-
-        byte[] data = new byte[size];
-        Arrays.fill(data, (byte)'T');
-
-        for (int i = 0; i < n; i++) {
-            messages[i] = new Message("Topic", "Hello".getBytes());
-        }
-
-        return messages;
-    }
-
-
-    public static void main(String[] args) throws InterruptedException {
-
-        for (Message message : buildMessages(10001, 1000)) {
-            defaultLocalMessageStore.stash(message);
-        }
-
-        Message[] messages = defaultLocalMessageStore.pop(200);
         while (messages.length > 0) {
             System.out.println(messages.length);
             messages = defaultLocalMessageStore.pop(200);
         }
-
-        defaultLocalMessageStore.close();
-
     }
 
+    @Test
+    public void testStash2() throws InterruptedException {
+        int number = 100;
+        ExecutorService service = Executors.newFixedThreadPool(number);
+        final CountDownLatch l = new CountDownLatch(number);
+        final Random r = new Random();
+        for (int i = 0; i < number; i++) {
+            service.execute(new Runnable() {
+                @Override
+                public void run() {
+                    l.countDown();
+                    try {
+                        l.await();
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                    for (int i = 0; i < 3000; i++) {
+                        byte[] bs = new byte[1024];
+                        Arrays.fill(bs, (byte) 'a');
+                        defaultLocalMessageStore.stash(new Message("Topic", bs));
+                    }
+                }
 
+            });
+        }
 
+        Thread.sleep(99999999);
+
+    }
 }
