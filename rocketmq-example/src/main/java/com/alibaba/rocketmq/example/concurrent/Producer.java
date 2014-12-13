@@ -1,7 +1,9 @@
 package com.alibaba.rocketmq.example.concurrent;
 
+import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.MultiThreadMQProducer;
 import com.alibaba.rocketmq.common.message.Message;
+import org.slf4j.Logger;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -14,6 +16,7 @@ public class Producer {
 
     private static final Random RANDOM = new Random();
 
+    private static final Logger LOGGER = ClientLogger.getLog();
 
     public static void main(String[] args) {
         int count = 0;
@@ -29,7 +32,7 @@ public class Producer {
                 .configureCorePoolSize(200)
                 .configureConcurrentSendBatchSize(100)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
-                .configureSendMessageTimeOutInMilliSeconds(30000)
+                .configureSendMessageTimeOutInMilliSeconds(3000)
                 .configureDefaultTopicQueueNumber(16)
                 .build();
                 producer.registerCallback(new ExampleSendCallback(successCount));
@@ -38,7 +41,7 @@ public class Producer {
             @Override
             public void run() {
                 long currentSuccessSent = successCount.longValue();
-                System.out.println("TPS: " + (currentSuccessSent - lastSent.longValue()) +
+                LOGGER.info("TPS: " + (currentSuccessSent - lastSent.longValue()) +
                         ". Semaphore available number:" + producer.getSemaphore().availablePermits());
                 lastSent.set(currentSuccessSent);
             }
@@ -50,14 +53,14 @@ public class Producer {
                 public void run() {
                     Message[] messages = buildMessages(RANDOM.nextInt(100));
                     producer.send(messages);
-                    System.out.println(messages.length + " messages from client are required to send.");
+                    LOGGER.info(messages.length + " messages from client are required to send.");
                 }
             }, 3000, 100, TimeUnit.MILLISECONDS);
         } else {
             long start = System.currentTimeMillis();
             Message[] messages = buildMessages(count);
             producer.send(messages);
-            System.out.println("Messages are sent in async manner. Cost " + (System.currentTimeMillis() - start) + "ms");
+            LOGGER.info("Messages are sent in async manner. Cost " + (System.currentTimeMillis() - start) + "ms");
         }
     }
 
