@@ -359,22 +359,16 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     }
 
     public void close() throws InterruptedException {
-        flush();
-
-        if (!flushConfigAtFixedRateExecutorService.isShutdown()
-                && !flushConfigAtFixedRateExecutorService.isTerminated()) {
+        if (ready) {
+            flush();
             flushConfigAtFixedRateExecutorService.shutdown();
-        }
-
-        if (!flushConfigAtFixedDirtyMessageNumberExecutorService.isShutdown()
-                && !flushConfigAtFixedDirtyMessageNumberExecutorService.isTerminated()) {
             flushConfigAtFixedDirtyMessageNumberExecutorService.shutdown();
+
+            flushConfigAtFixedRateExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+            flushConfigAtFixedDirtyMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         }
 
-        flushConfigAtFixedRateExecutorService.awaitTermination(30, TimeUnit.SECONDS);
-        flushConfigAtFixedDirtyMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         ready = false;
-
         LOGGER.info("Default local message store shutdown complete");
     }
 }
