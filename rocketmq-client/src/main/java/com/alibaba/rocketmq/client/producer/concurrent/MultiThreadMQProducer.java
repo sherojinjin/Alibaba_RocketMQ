@@ -112,6 +112,7 @@ public class MultiThreadMQProducer {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                LOGGER.info("Multi-thread MQ Producer shutdown hook invoked.");
             }
         });
     }
@@ -181,14 +182,16 @@ public class MultiThreadMQProducer {
             }
 
         }, 3000, 1000, TimeUnit.MILLISECONDS);
+        LOGGER.info("Monitor TPS and adjust semaphore size service starts.");
     }
 
 
 
 
     public void startResendFailureMessageService(long interval) {
-            resendFailureMessagePoolExecutor.scheduleWithFixedDelay(
-                    new ResendMessageTask(localMessageStore, this), 3100, interval, TimeUnit.MILLISECONDS);
+        resendFailureMessagePoolExecutor.scheduleWithFixedDelay(
+                new ResendMessageTask(localMessageStore, this), 3100, interval, TimeUnit.MILLISECONDS);
+        LOGGER.info("Resend failure message service starts.");
     }
 
     public void registerCallback(SendCallback sendCallback) {

@@ -196,8 +196,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
      */
     @Override
     public void stash(Message message) {
-        LOGGER.debug("Stashing message: {}", JSON.toJSONString(message));
-
         if (!ready) {
             throw new RuntimeException("Message store is not ready. You may have closed it already.");
         }
@@ -207,7 +205,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     }
 
     private void flush() {
-        LOGGER.debug("Start to flush.");
+        LOGGER.info("Local message store starts to flush.");
         try {
             if (!lock.writeLock().tryLock()) {
                 lock.writeLock().lockInterruptibly();
@@ -262,7 +260,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             e.printStackTrace();
             throw new RuntimeException("IO Error", e);
         } finally {
-            LOGGER.debug("Flush completes.");
+            LOGGER.info("Local message store flushing completes.");
             lock.writeLock().unlock();
         }
     }
