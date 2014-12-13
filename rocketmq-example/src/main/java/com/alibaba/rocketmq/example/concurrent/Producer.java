@@ -3,6 +3,7 @@ package com.alibaba.rocketmq.example.concurrent;
 import com.alibaba.rocketmq.client.producer.concurrent.MultiThreadMQProducer;
 import com.alibaba.rocketmq.common.message.Message;
 
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -10,6 +11,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Producer {
 
     private static final AtomicLong SEQUENCE_GENERATOR = new AtomicLong(0L);
+
+    private static final Random RANDOM = new Random();
 
 
     public static void main(String[] args) {
@@ -45,11 +48,11 @@ public class Producer {
             Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
-                    Message[] messages = buildMessages(3000);
+                    Message[] messages = buildMessages(RANDOM.nextInt(100));
                     producer.send(messages);
                     System.out.println(messages.length + " messages from client are required to send.");
                 }
-            }, 3000, 1000, TimeUnit.MILLISECONDS);
+            }, 3000, 100, TimeUnit.MILLISECONDS);
         } else {
             long start = System.currentTimeMillis();
             Message[] messages = buildMessages(count);
