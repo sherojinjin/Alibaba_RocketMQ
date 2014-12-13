@@ -48,12 +48,16 @@ public class Producer {
         }, 0, 1, TimeUnit.SECONDS);
 
         if (count < 0) {
+            final AtomicLong adder = new AtomicLong(0L);
             Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
                     Message[] messages = buildMessages(RANDOM.nextInt(100));
                     producer.send(messages);
-                    LOGGER.info(messages.length + " messages from client are required to send.");
+                    adder.incrementAndGet();
+                    if (adder.longValue() % 10 == 0) {
+                        LOGGER.info(messages.length + " messages from client are required to send.");
+                    }
                 }
             }, 3000, 100, TimeUnit.MILLISECONDS);
         } else {
