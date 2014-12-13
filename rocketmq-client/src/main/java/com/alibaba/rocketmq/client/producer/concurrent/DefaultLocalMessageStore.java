@@ -363,11 +363,13 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     public void close() throws InterruptedException {
         flush();
 
-        if (!flushConfigAtFixedRateExecutorService.isShutdown()) {
+        if (!flushConfigAtFixedRateExecutorService.isShutdown()
+                && !flushConfigAtFixedRateExecutorService.isTerminated()) {
             flushConfigAtFixedRateExecutorService.shutdown();
         }
 
-        if (!flushConfigAtFixedDirtyMessageNumberExecutorService.isShutdown()) {
+        if (!flushConfigAtFixedDirtyMessageNumberExecutorService.isShutdown()
+                && !flushConfigAtFixedDirtyMessageNumberExecutorService.isTerminated()) {
             flushConfigAtFixedDirtyMessageNumberExecutorService.shutdown();
         }
 
