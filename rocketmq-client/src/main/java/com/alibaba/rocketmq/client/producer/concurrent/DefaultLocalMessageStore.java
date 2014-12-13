@@ -208,7 +208,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             if (!lock.writeLock().tryLock()) {
                 lock.writeLock().lockInterruptibly();
             }
-            Message message = messageQueue.pollFirst();
+            //Take message from tail.
+            Message message = messageQueue.pollLast();
             while (null != message) {
                 messagesToFlushCount.decrementAndGet();
                 writeIndex.incrementAndGet();
@@ -246,7 +247,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 if (writeIndex.longValue() % MESSAGES_PER_FILE == 0) {
                     writeOffSet.set(0L);
                 }
-                message = messageQueue.pollFirst();
+                //Take message from tail.
+                message = messageQueue.pollLast();
             }
             updateConfig();
         } catch (InterruptedException e) {
@@ -285,7 +287,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
             int messageRead = 0;
 
-            //First to retrieve messages from message queue, which is held in memory.
+            //First to retrieve messages from message queue, beginning from head side, which is held in memory.
             Message message = messageQueue.pollFirst();
             while (null != message) {
                 messagesToFlushCount.decrementAndGet();
