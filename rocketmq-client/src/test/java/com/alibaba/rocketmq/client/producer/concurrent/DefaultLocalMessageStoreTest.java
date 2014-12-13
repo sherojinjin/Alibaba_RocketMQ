@@ -54,7 +54,7 @@ public class DefaultLocalMessageStoreTest {
 
     @Test
     public void testStressStash() throws InterruptedException {
-        int number = 10;
+        int number = 8;
         ExecutorService service = Executors.newFixedThreadPool(number);
         final CountDownLatch l = new CountDownLatch(number);
         final Random r = new Random();
