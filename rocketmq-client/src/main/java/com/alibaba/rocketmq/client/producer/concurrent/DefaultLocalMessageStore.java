@@ -359,7 +359,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     public void close() throws InterruptedException {
         flush();
         flushConfigAtFixedRateExecutorService.shutdown();
+        flushConfigAtFixedDirtyMessageNumberExecutorService.shutdown();
         flushConfigAtFixedRateExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+        flushConfigAtFixedDirtyMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         ready = false;
     }
 }
