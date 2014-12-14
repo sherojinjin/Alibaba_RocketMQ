@@ -52,7 +52,7 @@ public class Producer {
             Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
-                    Message[] messages = buildMessages(RANDOM.nextInt(500));
+                    Message[] messages = buildMessages(RANDOM.nextInt(100));
                     producer.send(messages);
                     adder.incrementAndGet();
                     if (adder.longValue() % 10 == 0) {
