@@ -15,21 +15,19 @@
  */
 package com.alibaba.rocketmq.namesrv.kvconfig;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.common.protocol.body.KVTable;
 import com.alibaba.rocketmq.namesrv.NamesrvController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
@@ -173,11 +171,11 @@ public class KVConfigManager {
                 HashMap<String, String> kvTable = this.configTable.get(namespace);
                 if (null != kvTable) {
                     StringBuilder sb = new StringBuilder();
-                    String splitor = "";
+                    String splitter = "";
                     for (Map.Entry<String, String> entry : kvTable.entrySet()) {
                         if (value.equals(entry.getValue())) {
-                            sb.append(splitor).append(entry.getKey());
-                            splitor = ";";
+                            sb.append(splitter).append(entry.getKey());
+                            splitter = ";";
                         }
                     }
                     return sb.toString();
@@ -259,15 +257,10 @@ public class KVConfigManager {
 
                 {
                     log.info("configTable SIZE: {}", this.configTable.size());
-                    Iterator<Entry<String, HashMap<String, String>>> it =
-                            this.configTable.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Entry<String, HashMap<String, String>> next = it.next();
-                        Iterator<Entry<String, String>> itSub = next.getValue().entrySet().iterator();
-                        while (itSub.hasNext()) {
-                            Entry<String, String> nextSub = itSub.next();
+                    for (Entry<String, HashMap<String, String>> next : this.configTable.entrySet()) {
+                        for (Entry<String, String> nextSub : next.getValue().entrySet()) {
                             log.info("configTable NS: {} Key: {} Value: {}", next.getKey(), nextSub.getKey(),
-                                nextSub.getValue());
+                                    nextSub.getValue());
                         }
                     }
                 }
