@@ -5,6 +5,7 @@ import com.alibaba.rocketmq.client.producer.concurrent.MultiThreadMQProducer;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +18,12 @@ public class Producer {
     private static final Random RANDOM = new Random();
 
     private static final Logger LOGGER = ClientLogger.getLog();
+
+    private static byte[] messageBody = new byte[1024];
+
+    static {
+        Arrays.fill(messageBody, (byte)'x');
+    }
 
     public static void main(String[] args) {
         int count = 0;
@@ -71,7 +78,7 @@ public class Producer {
     public static Message[] buildMessages(int n) {
         Message[] messages = new Message[n];
         for (int i = 0; i < n; i++) {
-            messages[i] = new Message("T_QuickStart", "Test MultiThread message".getBytes());
+            messages[i] = new Message("T_QuickStart", messageBody);
             messages[i].putUserProperty("sequenceId", String.valueOf(SEQUENCE_GENERATOR.incrementAndGet()));
         }
         return messages;
