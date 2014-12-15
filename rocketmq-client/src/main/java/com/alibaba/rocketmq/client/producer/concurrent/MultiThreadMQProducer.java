@@ -51,7 +51,7 @@ public class MultiThreadMQProducer {
 
     private AtomicLong numberOfMessageStashedDueToLackOfSemaphoreToken = new AtomicLong(0L);
 
-    private MessageQueueSelector messageQueueSelector = new SelectMessageQueueByDataCenter();
+    private MessageQueueSelector messageQueueSelector;
 
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
@@ -103,6 +103,8 @@ public class MultiThreadMQProducer {
         startResendFailureMessageService(configuration.getResendFailureMessageDelay());
 
         startMonitorTPS();
+        
+        messageQueueSelector = new SelectMessageQueueByDataCenter(defaultMQProducer);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override

@@ -1,31 +1,38 @@
 /**
  * Copyright (C) 2010-2013 Alibaba Group Holding Limited
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.alibaba.rocketmq.client.producer.selector;
 
-import com.alibaba.rocketmq.client.log.ClientLogger;
-import com.alibaba.rocketmq.client.producer.MessageQueueSelector;
-import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.common.message.MessageQueue;
-import com.alibaba.rocketmq.remoting.common.RemotingUtil;
-import org.slf4j.Logger;
-
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+
+import com.alibaba.rocketmq.client.impl.MQClientAPIImpl;
+import com.alibaba.rocketmq.client.log.ClientLogger;
+import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
+import com.alibaba.rocketmq.client.producer.MessageQueueSelector;
+import com.alibaba.rocketmq.common.Pair;
+import com.alibaba.rocketmq.common.constant.NSConfigKey;
+import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.message.MessageQueue;
+import com.alibaba.rocketmq.common.protocol.body.KVTable;
+import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 
 
 /**
@@ -33,56 +40,172 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
 
-    private static final Random RANDOM = new Random();
+  private static final Logger LOGGER = ClientLogger.getLog();
 
-    private static final float SAME_DATA_CENTER_LOAD = 0.8F;
+  private final Random random = new Random();
 
-    private static final Logger LOGGER = ClientLogger.getLog();
+  private float locationRatio = 0.8f;
 
-    private static final AtomicInteger ROUND_ROBIN_SAME_DATA_CENTER = new AtomicInteger(0);
+  private String dispatchStrategy = "BY_LOCATION";
 
-    private static final AtomicInteger ROUND_ROBIN = new AtomicInteger(0);
+  private final AtomicInteger roundRobin = new AtomicInteger(0);
 
-    private static final String LOCAL_IP = RemotingUtil.getLocalAddress(false);
+  private static final String LOCAL_DATACENTER_ID =
+      RemotingUtil.getLocalAddress(false).split(".")[1];
 
-    @Override
-    public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
-        DataCenter dataCenter = DataCenterLocator.locate(LOCAL_IP);
+  private List<Pair<String, Float>> dispatcherList = new ArrayList<Pair<String, Float>>();
 
-        List<MessageQueue> sameDataCenterQueues = new ArrayList<MessageQueue>();
+  private DefaultMQProducer defaultMQProducer;
 
-        if (null != dataCenter) {
-            for (MessageQueue messageQueue : mqs) {
-                String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
-                if (brokerNameSegments[1].equalsIgnoreCase(dataCenter.getName())) {
-                    sameDataCenterQueues.add(messageQueue);
-                }
+  /**
+   * @param defaultMQProducer
+   */
+  public SelectMessageQueueByDataCenter(DefaultMQProducer defaultMQProducer) {
+    this.defaultMQProducer = defaultMQProducer;
+    startConfigUpdater();
+  }
+
+  /**
+   * 
+   */
+  private void startConfigUpdater() {
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while (true) {
+
+          try {
+            KVTable kvTable = getMQClientAPIImpl().getKVListByNamespace("DC_SELECTOR", 3000);
+            Map<String, String> configMap = kvTable.getTable();
+            String strategy = configMap.get(NSConfigKey.DC_DISPATCH_STRTEGY.getKey());
+
+
+            if ("BY_LOCATION".equals(strategy)) {
+              String location_ratio =
+                  configMap.get(NSConfigKey.DC_DISPATCH_STRTEGY_LOCATION_RATIO.getKey());
+              try {
+                locationRatio = Float.parseFloat(location_ratio);
+                dispatchStrategy = strategy;
+              } catch (NumberFormatException e) {
+                LOGGER.warn("DC_DISPATCH_STRTEGY_LOCATION_RATIO parse error: {}", locationRatio);
+              }
             }
-        } else {
-            for (MessageQueue messageQueue : mqs) {
-                String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
-                String[] ipSegments = LOCAL_IP.split("\\.");
-                if (brokerNameSegments[1].equals(ipSegments[1])) {
-                    sameDataCenterQueues.add(messageQueue);
+            if ("BY_RATIO".equals(strategy)) {
+
+              String dispatch_ratio = configMap.get(NSConfigKey.DC_DISPATCH_RATIO.getKey());
+              if (dispatch_ratio != null) {
+                String[] values = dispatch_ratio.split(",");
+                List<Pair<String, Float>> newList = new ArrayList<Pair<String, Float>>();
+                for (String value : values) {
+                  String keyValue[] = value.split(":");
+                  if (keyValue.length != 2) {
+                    LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
+                    continue;
+                  }
+                  Float floatValue = null;
+                  try {
+                    floatValue = Float.parseFloat(keyValue[1]);
+                  } catch (NumberFormatException e) {
+                    LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
+                    continue;
+                  }
+
+                  newList.add(new Pair<String, Float>(keyValue[0], floatValue));
                 }
+
+                Collections.sort(newList, new Comparator<Pair<String, Float>>() {
+
+                  @Override
+                  public int compare(Pair<String, Float> o1, Pair<String, Float> o2) {
+                    return o1.getObject2().compareTo(o2.getObject2());
+                  }
+                });
+
+                if (newList.size() > 0) {
+                  for (int i = 1; i < newList.size() - 1; i++) {
+                    Pair<String, Float> pair = newList.get(i);
+                    pair.setObject2(pair.getObject2() + newList.get(i - 1).getObject2());
+                  }
+
+
+                  List<Pair<String, Float>> tmpList = getDispatcherList();
+                  setDispatcherList(newList);
+                  tmpList.clear();
+                  dispatchStrategy = strategy;
+                }
+              }
+
             }
-
+            Thread.sleep(60000);
+          } catch (Exception e) {
+            LOGGER.error("get DC_SELECTOR params error", e);
+          }
         }
+      }
+    }, "UpdateDCDispatchRatioThread-").start();
 
-        //Round robin.
-        boolean chooseSameDataCenter = RANDOM.nextFloat() <= SAME_DATA_CENTER_LOAD;
-        MessageQueue messageQueue = null;
-        if (chooseSameDataCenter && !sameDataCenterQueues.isEmpty()) {
-             messageQueue = sameDataCenterQueues
-                     .get(ROUND_ROBIN_SAME_DATA_CENTER.incrementAndGet() % sameDataCenterQueues.size());
-        } else {
-             messageQueue = mqs.get(ROUND_ROBIN.incrementAndGet() % mqs.size());
+  }
+
+  @Override
+  public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
+    float r = random.nextFloat();
+    List<MessageQueue> dateCenterQueues = new ArrayList<MessageQueue>();
+    if ("BY_LOCATION".equals(dispatchStrategy)) {
+      for (MessageQueue messageQueue : mqs) {
+        String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
+        if (r > locationRatio && !brokerNameSegments[1].equals(LOCAL_DATACENTER_ID)) {
+          dateCenterQueues.add(messageQueue);
+        } else if (r <= locationRatio && brokerNameSegments[1].equals(LOCAL_DATACENTER_ID)) {
+          dateCenterQueues.add(messageQueue);
         }
-
-        if ((ROUND_ROBIN_SAME_DATA_CENTER.longValue() + ROUND_ROBIN.longValue()) % 1000 == 0) {
-            LOGGER.info("Choosing broker: " + messageQueue.getBrokerName());
+      }
+    } else {
+      List<Pair<String, Float>> list = getDispatcherList();
+      String dc = list.get(0).getObject1();
+      for (int i = 0; i < list.size() - 2; i++) {
+        if (r > list.get(i).getObject2()) {
+          dc = list.get(i + 1).getObject1();
+          break;
         }
+      }
 
-        return messageQueue;
+      for (MessageQueue messageQueue : mqs) {
+        String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
+        if (brokerNameSegments[1].equals(dc)) {
+          dateCenterQueues.add(messageQueue);
+        }
+      }
     }
+
+
+    // Round robin.
+    MessageQueue messageQueue = null;
+    if (!dateCenterQueues.isEmpty()) {
+      messageQueue = dateCenterQueues.get(roundRobin.incrementAndGet() % dateCenterQueues.size());
+    } else {
+      messageQueue = mqs.get(roundRobin.incrementAndGet() % mqs.size());
+    }
+
+    if ((roundRobin.longValue()) % 1000 == 0) {
+      LOGGER.info("Choosing broker: " + messageQueue.getBrokerName());
+    }
+
+    return messageQueue;
+  }
+
+
+
+  public List<Pair<String, Float>> getDispatcherList() {
+    return dispatcherList;
+  }
+
+  public void setDispatcherList(List<Pair<String, Float>> dispatcherList) {
+    this.dispatcherList = dispatcherList;
+  }
+
+  private MQClientAPIImpl getMQClientAPIImpl() {
+    return this.defaultMQProducer.getDefaultMQProducerImpl().getmQClientFactory()
+        .getMQClientAPIImpl();
+  }
+
 }
