@@ -24,8 +24,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private final AtomicLong readIndex = new AtomicLong(0L);
     private final AtomicLong readOffSet = new AtomicLong(0L);
 
-    private final AtomicLong messagesToFlushCount = new AtomicLong(0L);
-
     private static final String STORE_LOCATION = System.getProperty("defaultLocalMessageStoreLocation",
             System.getProperty("user.home") + File.separator + ".localMessageStore");
 
@@ -39,7 +37,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private LinkedBlockingDeque<Message> messageQueue = new LinkedBlockingDeque<Message>();
+    private LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>(50000);
 
     private ScheduledExecutorService flushConfigAtFixedRateExecutorService;
 
@@ -76,7 +74,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         flushConfigAtFixedDirtyMessageNumberExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                if (messagesToFlushCount.longValue() > MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE) {
+                if (messageQueue.size() > MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE) {
                     flush();
                 }
             }
@@ -187,8 +185,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             throw new RuntimeException("Message store is not ready. You may have closed it already.");
         }
 
-        messageQueue.push(message);
-        messagesToFlushCount.incrementAndGet();
+        try {
+            //Block if no space available.
+            messageQueue.put(message);
+        } catch (InterruptedException e) {
+            LOGGER.error("Unable to stash message locally.", e);
+        }
     }
 
     private void flush() {
@@ -198,12 +200,14 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 lock.writeLock().lockInterruptibly();
             }
             //Take message from tail.
-            Message message = messageQueue.pollLast();
+            Message message = null;
+            if (messageQueue.size() > 0) {
+                message = messageQueue.take();
+            }
 
             int numberOfMessageToCommit = 0;
 
             while (null != message) {
-                messagesToFlushCount.decrementAndGet();
                 writeIndex.incrementAndGet();
                 long currentWriteIndex = writeIndex.longValue();
 
@@ -245,7 +249,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 //Take message from tail.
-                message = messageQueue.pollLast();
+                if (messageQueue.size() > 0) {
+                    message = messageQueue.take();
+                } else {
+                    break;
+                }
             }
             updateConfig();
         } catch (InterruptedException e) {
@@ -285,14 +293,18 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             int messageRead = 0;
 
             //First to retrieve messages from message queue, beginning from head side, which is held in memory.
-            Message message = messageQueue.pollFirst();
+            Message message = null;
+            if (messageQueue.size() > 0) {
+                message = messageQueue.take();
+            }
             while (null != message) {
-                messagesToFlushCount.decrementAndGet();
                 messages[messageRead++] = message;
                 if (messageRead == messageToRead) { //We've already got all messages we want to pop.
                     return messages;
                 }
-                message = messageQueue.pollFirst();
+                if (messageQueue.size() > 0) {
+                    message = messageQueue.take();
+                }
             }
 
             //In case we need more messages, read from local files.
@@ -349,7 +361,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     public int getNumberOfMessageStashed() {
         synchronized (DefaultLocalMessageStore.class) {
-            return writeIndex.intValue() - readIndex.intValue() + messagesToFlushCount.intValue();
+            return writeIndex.intValue() - readIndex.intValue() + messageQueue.size();
         }
     }
 

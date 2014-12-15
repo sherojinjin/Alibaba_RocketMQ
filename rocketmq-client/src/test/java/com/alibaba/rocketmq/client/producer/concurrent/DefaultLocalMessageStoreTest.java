@@ -71,7 +71,7 @@ public class DefaultLocalMessageStoreTest {
                     for (int i = 0; i < 3000; i++) {
                         byte[] bs = new byte[1024];
                         Arrays.fill(bs, (byte) 'a');
-                        defaultLocalMessageStore.stash(new Message("Topic", bs));
+                      defaultLocalMessageStore.stash(new Message("Topic", bs));
                     }
                 }
 
@@ -118,4 +118,46 @@ public class DefaultLocalMessageStoreTest {
         service.shutdown();
         service.awaitTermination(1, TimeUnit.MINUTES);
     }
+
+
+  @Test
+  public void testStash2() throws InterruptedException {
+    int number = 200;
+    ExecutorService service = Executors.newFixedThreadPool(number);
+    final CountDownLatch l = new CountDownLatch(number);
+    final Random r = new Random();
+    for(int i = 0;i<number;i++){
+      service.execute(new Runnable() {
+
+        @Override
+        public void run() {
+          l.countDown();
+          try {
+            l.await();
+          } catch (InterruptedException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+          }
+          while (true) {
+            try {
+              for (int i = 0; i < 3000; i++) {
+                byte[] bs = new byte[1024];
+                Arrays.fill(bs, (byte)'a');
+                defaultLocalMessageStore.stash(new Message("Topic", bs));
+              }
+
+              Thread.sleep((long) (10 * r.nextFloat()));
+            } catch (InterruptedException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+          }
+
+
+        }
+
+      });
+    }
+    Thread.sleep(99999999);
+  }
 }

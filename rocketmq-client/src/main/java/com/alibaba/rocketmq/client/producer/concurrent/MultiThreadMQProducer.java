@@ -208,22 +208,7 @@ public class MultiThreadMQProducer {
     }
 
     public void send(final Message msg) {
-        if (semaphore.tryAcquire()) { //Acquire a token from semaphore.
-            sendMessagePoolExecutor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        defaultMQProducer.send(msg, messageQueueSelector, null, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
-                    } catch (Exception e) {
-                        handleSendMessageFailure(msg, e);
-                    }
-                }
-            });
-            LOGGER.info("One message submitted to send.");
-        } else {
-            localMessageStore.stash(msg);
-            LOGGER.warn("One message stashed");
-        }
+        send(new Message[] {msg});
     }
 
 
