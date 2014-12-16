@@ -889,7 +889,7 @@ public class ClassUtil {
         }
 
         for (int i = 0; i < fromClasses.length; i++) {
-            if (isAssignable(classes[i], fromClasses[i]) == false) {
+            if (!isAssignable(classes[i], fromClasses[i])) {
                 return false;
             }
         }
