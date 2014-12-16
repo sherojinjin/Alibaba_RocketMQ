@@ -65,12 +65,12 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                         try {
                             KVTable kvTable = getMQClientAPIImpl().getKVListByNamespace("DC_SELECTOR", 3000);
                             Map<String, String> configMap = kvTable.getTable();
-                            String strategy = configMap.get(NSConfigKey.DC_DISPATCH_STRTEGY.getKey());
+                            String strategy = configMap.get(NSConfigKey.DC_DISPATCH_STRATEGY.getKey());
 
 
                             if ("BY_LOCATION".equals(strategy)) {
                                 String location_ratio =
-                                        configMap.get(NSConfigKey.DC_DISPATCH_STRTEGY_LOCATION_RATIO.getKey());
+                                        configMap.get(NSConfigKey.DC_DISPATCH_STRATEGY_LOCATION_RATIO.getKey());
                                 try {
                                     locationRatio = Float.parseFloat(location_ratio);
                                     dispatchStrategy = strategy;
