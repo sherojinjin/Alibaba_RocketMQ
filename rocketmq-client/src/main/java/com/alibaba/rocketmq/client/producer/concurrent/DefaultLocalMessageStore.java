@@ -242,8 +242,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 if(++numberOfMessageToCommit % MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE == 0) {
                     updateConfig();
                 }
-
-                //Take message from tail.
                 message = messageQueue.poll();
             }
             updateConfig();
