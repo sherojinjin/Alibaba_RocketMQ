@@ -199,15 +199,28 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }
     }
 
+    /**
+     * Flush message into hark disk. If no sufficient usable disk space, no flush operation will be performed.
+     */
     private void flush() {
+        flush(false);
+    }
+
+    /**
+     * Flush messages into hard disk.
+     * @param skipAvailableDiskSpaceCheck Indicate if available disk space check should be skipped.
+     */
+    private void flush(boolean skipAvailableDiskSpaceCheck) {
         LOGGER.info("Local message store starts to flush.");
 
-        float usableDiskSpaceRatio = getUsableDiskSpacePercent();
-        if ( usableDiskSpaceRatio < 1 - DISK_HIGH_WATER_LEVEL) {
-            LOGGER.error("No sufficient disk space! Cannot to flush!");
-            return;
-        } else if (usableDiskSpaceRatio < 1 - DISK_WARNING_WATER_LEVEL) {
-            LOGGER.warn("Usable disk space now is only: " + usableDiskSpaceRatio + "%!");
+        if (!skipAvailableDiskSpaceCheck) {
+            float usableDiskSpaceRatio = getUsableDiskSpacePercent();
+            if ( usableDiskSpaceRatio < 1 - DISK_HIGH_WATER_LEVEL) {
+                LOGGER.error("No sufficient disk space! Cannot to flush!");
+                return;
+            } else if (usableDiskSpaceRatio < 1 - DISK_WARNING_WATER_LEVEL) {
+                LOGGER.warn("Usable disk space now is only: " + usableDiskSpaceRatio + "%!");
+            }
         }
 
         try {
@@ -375,7 +388,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     public void close() throws InterruptedException {
         if (ready) {
-            flush();
+            flush(true);
             flushConfigAtFixedRateExecutorService.shutdown();
             flushConfigAtFixedDirtyMessageNumberExecutorService.shutdown();
 
