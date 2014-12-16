@@ -7,6 +7,8 @@ import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
 import java.io.*;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -46,6 +48,10 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private volatile boolean ready = false;
 
     private static final int MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE = 1000;
+
+    private static final float DISK_HIGH_WATER_LEVEL = 0.9F;
+
+    private static final float DISK_WARNING_WATER_LEVEL = 0.8F;
 
     public DefaultLocalMessageStore(String producerGroup) {
         localMessageStoreDirectory = new File(STORE_LOCATION, producerGroup);
@@ -195,6 +201,15 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private void flush() {
         LOGGER.info("Local message store starts to flush.");
+
+        float usableDiskSpaceRatio = getUsableDiskSpacePercent();
+        if ( usableDiskSpaceRatio < 1 - DISK_HIGH_WATER_LEVEL) {
+            LOGGER.error("No sufficient disk space! Cannot to flush!");
+            return;
+        } else if (usableDiskSpaceRatio < 1 - DISK_WARNING_WATER_LEVEL) {
+            LOGGER.warn("Usable disk space now is only: " + usableDiskSpaceRatio + "%!");
+        }
+
         try {
             if (!lock.tryLock()) {
                 lock.lockInterruptibly();
@@ -254,6 +269,16 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         } finally {
             LOGGER.info("Local message store flushing completes.");
             lock.unlock();
+        }
+    }
+
+    private float getUsableDiskSpacePercent() {
+        try {
+            FileStore fileStore = Files.getFileStore(localMessageStoreDirectory.toPath());
+            return fileStore.getUsableSpace() * 1.0F / fileStore.getTotalSpace();
+        } catch (IOException e) {
+            LOGGER.error("Unable to get disk usage.", e);
+            return 0.0F;
         }
     }
 
