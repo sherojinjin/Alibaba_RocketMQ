@@ -91,15 +91,17 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                                             LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
                                             continue;
                                         }
-                                        Float floatValue = null;
+                                        Float dcRatio = null;
                                         try {
-                                            floatValue = Float.parseFloat(keyValue[1]);
+                                            dcRatio = Float.parseFloat(keyValue[1]);
                                         } catch (NumberFormatException e) {
                                             LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
                                             continue;
                                         }
 
-                                        newList.add(new Pair<String, Float>(keyValue[0], floatValue));
+                                        if (null != dcRatio && dcRatio > 0) {
+                                            newList.add(new Pair<String, Float>(keyValue[0], dcRatio));
+                                        }
                                     }
 
                                     Collections.sort(newList, new Comparator<Pair<String, Float>>() {
