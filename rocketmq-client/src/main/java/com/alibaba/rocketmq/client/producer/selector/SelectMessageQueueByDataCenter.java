@@ -60,73 +60,77 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (defaultMQProducer.getDefaultMQProducerImpl().getServiceState() != ServiceState.SHUTDOWN_ALREADY) {
-                    try {
-                        KVTable kvTable = getMQClientAPIImpl().getKVListByNamespace("DC_SELECTOR", 3000);
-                        Map<String, String> configMap = kvTable.getTable();
-                        String strategy = configMap.get(NSConfigKey.DC_DISPATCH_STRTEGY.getKey());
+                try {
+                    while (defaultMQProducer.getDefaultMQProducerImpl().getServiceState() != ServiceState.SHUTDOWN_ALREADY) {
+                        try {
+                            KVTable kvTable = getMQClientAPIImpl().getKVListByNamespace("DC_SELECTOR", 3000);
+                            Map<String, String> configMap = kvTable.getTable();
+                            String strategy = configMap.get(NSConfigKey.DC_DISPATCH_STRTEGY.getKey());
 
 
-                        if ("BY_LOCATION".equals(strategy)) {
-                            String location_ratio =
-                                    configMap.get(NSConfigKey.DC_DISPATCH_STRTEGY_LOCATION_RATIO.getKey());
-                            try {
-                                locationRatio = Float.parseFloat(location_ratio);
-                                dispatchStrategy = strategy;
-                            } catch (Exception e) {
-                                LOGGER.warn("DC_DISPATCH_STRATEGY_LOCATION_RATIO parse error: {}", locationRatio);
-                            }
-                        } else if ("BY_RATIO".equals(strategy)) {
-
-                            String dispatch_ratio = configMap.get(NSConfigKey.DC_DISPATCH_RATIO.getKey());
-                            if (dispatch_ratio != null) {
-                                String[] values = dispatch_ratio.split(",");
-                                List<Pair<String, Float>> newList = new ArrayList<Pair<String, Float>>();
-                                for (String value : values) {
-                                    String keyValue[] = value.split(":");
-                                    if (keyValue.length != 2) {
-                                        LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
-                                        continue;
-                                    }
-                                    Float floatValue = null;
-                                    try {
-                                        floatValue = Float.parseFloat(keyValue[1]);
-                                    } catch (NumberFormatException e) {
-                                        LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
-                                        continue;
-                                    }
-
-                                    newList.add(new Pair<String, Float>(keyValue[0], floatValue));
-                                }
-
-                                Collections.sort(newList, new Comparator<Pair<String, Float>>() {
-
-                                    @Override
-                                    public int compare(Pair<String, Float> o1, Pair<String, Float> o2) {
-                                        return o2.getObject2().compareTo(o1.getObject2());
-                                    }
-                                });
-
-                                //Convert percent to percentile.
-                                if (newList.size() > 0) {
-                                    for (int i = 1; i < newList.size() - 1; i++) {
-                                        Pair<String, Float> pair = newList.get(i);
-                                        pair.setObject2(pair.getObject2() + newList.get(i - 1).getObject2());
-                                    }
-
-
-                                    List<Pair<String, Float>> tmpList = getDispatcherList();
-                                    setDispatcherList(newList);
-                                    tmpList.clear();
+                            if ("BY_LOCATION".equals(strategy)) {
+                                String location_ratio =
+                                        configMap.get(NSConfigKey.DC_DISPATCH_STRTEGY_LOCATION_RATIO.getKey());
+                                try {
+                                    locationRatio = Float.parseFloat(location_ratio);
                                     dispatchStrategy = strategy;
+                                } catch (Exception e) {
+                                    LOGGER.warn("DC_DISPATCH_STRATEGY_LOCATION_RATIO parse error: {}", locationRatio);
+                                }
+                            } else if ("BY_RATIO".equals(strategy)) {
+
+                                String dispatch_ratio = configMap.get(NSConfigKey.DC_DISPATCH_RATIO.getKey());
+                                if (dispatch_ratio != null) {
+                                    String[] values = dispatch_ratio.split(",");
+                                    List<Pair<String, Float>> newList = new ArrayList<Pair<String, Float>>();
+                                    for (String value : values) {
+                                        String keyValue[] = value.split(":");
+                                        if (keyValue.length != 2) {
+                                            LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
+                                            continue;
+                                        }
+                                        Float floatValue = null;
+                                        try {
+                                            floatValue = Float.parseFloat(keyValue[1]);
+                                        } catch (NumberFormatException e) {
+                                            LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
+                                            continue;
+                                        }
+
+                                        newList.add(new Pair<String, Float>(keyValue[0], floatValue));
+                                    }
+
+                                    Collections.sort(newList, new Comparator<Pair<String, Float>>() {
+
+                                        @Override
+                                        public int compare(Pair<String, Float> o1, Pair<String, Float> o2) {
+                                            return o2.getObject2().compareTo(o1.getObject2());
+                                        }
+                                    });
+
+                                    //Convert percent to percentile.
+                                    if (newList.size() > 0) {
+                                        for (int i = 1; i < newList.size() - 1; i++) {
+                                            Pair<String, Float> pair = newList.get(i);
+                                            pair.setObject2(pair.getObject2() + newList.get(i - 1).getObject2());
+                                        }
+
+
+                                        List<Pair<String, Float>> tmpList = getDispatcherList();
+                                        setDispatcherList(newList);
+                                        tmpList.clear();
+                                        dispatchStrategy = strategy;
+                                    }
                                 }
                             }
-
+                        } catch (Exception e) {
+                            LOGGER.error("get DC_SELECTOR params error", e);
                         }
+                        //Sleep 60 seconds per loop.
                         Thread.sleep(60 * 1000);
-                    } catch (Exception e) {
-                        LOGGER.error("get DC_SELECTOR params error", e);
                     }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }, "UpdateDCDispatchRatioThread-").start();
