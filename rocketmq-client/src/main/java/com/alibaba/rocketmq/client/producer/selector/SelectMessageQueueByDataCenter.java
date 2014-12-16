@@ -122,6 +122,8 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                                         dispatchStrategy = strategy;
                                     }
                                 }
+                            } else {
+                                LOGGER.warn("Unknown data center choosing strategy.");
                             }
                         } catch (Exception e) {
                             LOGGER.error("get DC_SELECTOR params error", e);
