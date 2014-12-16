@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DefaultLocalMessageStore implements LocalMessageStore {
 
@@ -35,7 +35,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private RandomAccessFile randomAccessFile;
 
-    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private ReentrantLock lock = new ReentrantLock();
 
     private LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>(50000);
 
@@ -196,15 +196,10 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private void flush() {
         LOGGER.info("Local message store starts to flush.");
         try {
-            if (!lock.writeLock().tryLock()) {
-                lock.writeLock().lockInterruptibly();
+            if (!lock.tryLock()) {
+                lock.lockInterruptibly();
             }
-            //Take message from tail.
-            Message message = null;
-            if (messageQueue.size() > 0) {
-                message = messageQueue.take();
-            }
-
+            Message message = messageQueue.poll();
             int numberOfMessageToCommit = 0;
 
             while (null != message) {
@@ -249,11 +244,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 //Take message from tail.
-                if (messageQueue.size() > 0) {
-                    message = messageQueue.take();
-                } else {
-                    break;
-                }
+                message = messageQueue.poll();
             }
             updateConfig();
         } catch (InterruptedException e) {
@@ -264,7 +255,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             throw new RuntimeException("IO Error", e);
         } finally {
             LOGGER.info("Local message store flushing completes.");
-            lock.writeLock().unlock();
+            lock.unlock();
         }
     }
 
@@ -279,8 +270,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }
 
         try {
-            if (!lock.readLock().tryLock()) {
-                lock.readLock().lockInterruptibly();
+            if (!lock.tryLock()) {
+                lock.lockInterruptibly();
             }
 
             int messageToRead = Math.min(getNumberOfMessageStashed(), n);
@@ -293,18 +284,13 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             int messageRead = 0;
 
             //First to retrieve messages from message queue, beginning from head side, which is held in memory.
-            Message message = null;
-            if (messageQueue.size() > 0) {
-                message = messageQueue.take();
-            }
+            Message message = messageQueue.poll();
             while (null != message) {
                 messages[messageRead++] = message;
                 if (messageRead == messageToRead) { //We've already got all messages we want to pop.
                     return messages;
                 }
-                if (messageQueue.size() > 0) {
-                    message = messageQueue.take();
-                }
+                message = messageQueue.poll();
             }
 
             //In case we need more messages, read from local files.
@@ -336,8 +322,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     readRandomAccessFile.close();
                     readRandomAccessFile = null;
                     readOffSet.set(0L);
-                    messageStoreNameFileMapping
-                            .remove((readIndex.longValue() - 1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                    messageStoreNameFileMapping.remove((readIndex.longValue() - 1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
                     if (!currentReadFile.delete()) {
                         LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
                     }
@@ -354,7 +339,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             LOGGER.error("Pop message error, caused by {}", e.getMessage());
             e.printStackTrace();
         } finally {
-            lock.readLock().unlock();
+            lock.unlock();
         }
         return null;
     }
