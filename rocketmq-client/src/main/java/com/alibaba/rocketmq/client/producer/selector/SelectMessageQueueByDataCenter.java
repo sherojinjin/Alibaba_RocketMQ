@@ -126,7 +126,7 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                         } catch (Exception e) {
                             LOGGER.error("get DC_SELECTOR params error", e);
                         }
-                        //Sleep 60 seconds per loop.
+                        //Sleep 60 seconds per loop, be it successful or not.
                         Thread.sleep(60 * 1000);
                     }
                 } catch (InterruptedException e) {
