@@ -74,12 +74,13 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                                 try {
                                     locationRatio = Float.parseFloat(location_ratio);
                                     dispatchStrategy = strategy;
+                                    LOGGER.info("Data center choosing strategy set to: " + dispatchStrategy);
                                 } catch (Exception e) {
                                     LOGGER.warn("DC_DISPATCH_STRATEGY_LOCATION_RATIO parse error: {}", locationRatio);
                                 }
                             } else if ("BY_RATIO".equals(strategy)) {
-
                                 String dispatch_ratio = configMap.get(NSConfigKey.DC_DISPATCH_RATIO.getKey());
+                                LOGGER.info("Fetched by-ratio values: " + dispatch_ratio);
                                 if (dispatch_ratio != null) {
                                     String[] values = dispatch_ratio.split(",");
                                     List<Pair<String, Float>> newList = new ArrayList<Pair<String, Float>>();
@@ -120,6 +121,11 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                                         setDispatcherList(newList);
                                         tmpList.clear();
                                         dispatchStrategy = strategy;
+                                        LOGGER.info("Data center choosing strategy set to: " + dispatchStrategy);
+                                        LOGGER.info("Data center percentile as follows:");
+                                        for (Pair<String, Float> item : getDispatcherList()) {
+                                            LOGGER.info(item.getObject1() + " --> " + item.getObject2());
+                                        }
                                     }
                                 }
                             } else {
@@ -152,7 +158,7 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                     dateCenterQueues.add(messageQueue);
                 }
             }
-        } else {
+        } else if ("BY_RATIO".equals(dispatchStrategy)) {
             List<Pair<String, Float>> list = getDispatcherList();
             String dc = list.get(0).getObject1();
             for (int i = 0; i < list.size() - 2; i++) {
@@ -168,6 +174,8 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                     dateCenterQueues.add(messageQueue);
                 }
             }
+        } else {
+            LOGGER.warn("Unknown strategy, please double check.");
         }
 
 
