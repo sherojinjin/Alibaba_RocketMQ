@@ -135,7 +135,6 @@ public class MessageService extends AbstractService {
         }
         finally {
             shutdownDefaultMQAdminExt(defaultMQAdminExt);
-
         }
         throw t;
     }

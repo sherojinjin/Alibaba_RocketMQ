@@ -18,6 +18,8 @@
                 			<li class="dropdown $!namesrv_flag" >
         							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Nameserv<b class="caret"></b></a>
         							<ul class="dropdown-menu">
+        							    <li><a href="$root/namesrv/getKvConfig.do">getKvConfig</a></li>
+        							    <li><a href="$root/namesrv/getKvConfigList.do">getKvConfigList</a></li>
         								<li><a href="$root/namesrv/updateKvConfig.do">UpdateKvConfig</a></li>
                                         <li><a href="$root/namesrv/deleteKvConfig.do">DeleteKvConfig</a></li>
         								<li><a href="$root/namesrv/getProjectGroup.do">GetProjectGroup</a></li>

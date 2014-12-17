@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.alibaba.rocketmq.common.protocol.body.KVTable;
 import org.apache.commons.cli.Option;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -34,7 +35,6 @@ public class NamesrvAction extends AbstractAction {
         return "namesrv_flag";
     }
 
-
     @RequestMapping(value = "/updateKvConfig.do", method = { RequestMethod.GET, RequestMethod.POST })
     public String updateKvConfig(ModelMap map, HttpServletRequest request,
             @RequestParam(required = false) String namespace, @RequestParam(required = false) String key,
@@ -61,7 +61,6 @@ public class NamesrvAction extends AbstractAction {
         return TEMPLATE;
     }
 
-
     @RequestMapping(value = "/deleteKvConfig.do", method = { RequestMethod.GET, RequestMethod.POST })
     public String deleteKvConfig(ModelMap map, HttpServletRequest request,
             @RequestParam(required = false) String namespace, @RequestParam(required = false) String key) {
@@ -86,6 +85,47 @@ public class NamesrvAction extends AbstractAction {
         return TEMPLATE;
     }
 
+    @RequestMapping(value = "/getKvConfig.do", method = { RequestMethod.GET, RequestMethod.POST})
+    public String getKvConfig(ModelMap map, HttpServletRequest request,
+                              @RequestParam(required = false) String namespace, @RequestParam(required = false) String key) {
+        Collection<Option> options = namesrvService.getOptionsForGetKvConfig();
+        putPublicAttribute(map, "getKvConfig", options, request);
+        try {
+            if (request.getMethod().equals(GET)) {
+
+            } else if (request.getMethod().equals(POST)) {
+                checkOptions(options);
+                String text = namesrvService.getKvConfig(namespace, key);
+                map.put("resultText", text);
+            } else {
+                throwUnknowRequestMethodException(request);
+            }
+        } catch (Throwable e) {
+            putAlertMsg(e, map);
+        }
+        return TEMPLATE;
+    }
+
+    @RequestMapping(value = "/getKvConfigList.do", method = {RequestMethod.GET, RequestMethod.POST})
+    public String getKvConfigList(ModelMap map, HttpServletRequest request,
+                                  @RequestParam(required = false) String namespace ){
+        Collection<Option> options = namesrvService.getOptionsForGetKvConfigList();
+        putPublicAttribute(map, "getKvConfigList", options, request);
+        try{
+            if (request.getMethod().equals(GET)) {
+
+            }else if (request.getMethod().equals(POST)) {
+                checkOptions(options);
+                KVTable table = namesrvService.getKvConfigList(namespace);
+                putTable(map, Table.Map2HTable(table.getTable()));
+            }else {
+                throwUnknowRequestMethodException(request);
+            }
+        }catch (Throwable e){
+            putAlertMsg(e, map);
+        }
+        return TEMPLATE;
+    }
 
     @RequestMapping(value = "/getProjectGroup.do", method = { RequestMethod.GET, RequestMethod.POST })
     public String getProjectGroup(ModelMap map, HttpServletRequest request,
@@ -110,7 +150,6 @@ public class NamesrvAction extends AbstractAction {
         }
         return TEMPLATE;
     }
-
 
     @RequestMapping(value = "/updateProjectGroup.do", method = { RequestMethod.GET, RequestMethod.POST })
     public String updateProjectGroup(ModelMap map, HttpServletRequest request,

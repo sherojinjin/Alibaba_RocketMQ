@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.rocketmq.common.protocol.body.KVTable;
+import com.alibaba.rocketmq.tools.command.namesrv.*;
 import org.apache.commons.cli.Option;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -16,12 +18,6 @@ import org.springframework.stereotype.Service;
 import com.alibaba.rocketmq.common.Table;
 import com.alibaba.rocketmq.common.namesrv.NamesrvUtil;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
-import com.alibaba.rocketmq.tools.command.namesrv.DeleteKvConfigCommand;
-import com.alibaba.rocketmq.tools.command.namesrv.DeleteProjectGroupCommand;
-import com.alibaba.rocketmq.tools.command.namesrv.GetProjectGroupCommand;
-import com.alibaba.rocketmq.tools.command.namesrv.UpdateKvConfigCommand;
-import com.alibaba.rocketmq.tools.command.namesrv.UpdateProjectGroupCommand;
-import com.alibaba.rocketmq.tools.command.namesrv.WipeWritePermSubCommand;
 import com.alibaba.rocketmq.validate.CmdTrace;
 
 
@@ -35,8 +31,56 @@ public class NamesrvService extends AbstractService {
 
     static final Logger logger = LoggerFactory.getLogger(NamesrvService.class);
 
-    static final DeleteKvConfigCommand deleteKvConfigCommand = new DeleteKvConfigCommand();
+    static final GetKvConfigCommand getKvConfigCommand = new GetKvConfigCommand();
 
+    public Collection<Option> getOptionsForGetKvConfig(){
+        return getOptions(getKvConfigCommand);
+    }
+
+    @CmdTrace(cmdClazz = GetKvConfigCommand.class)
+    public String getKvConfig(String namespace, String key) throws  Throwable {
+        Throwable t = null;
+        DefaultMQAdminExt defaultMQAdminExt = getDefaultMQAdminExt();
+        try{
+            defaultMQAdminExt.start();
+            String kvConfig = defaultMQAdminExt.getKVConfig(namespace, key);
+            return kvConfig;
+        }
+        catch (Throwable e)
+        {
+            logger.error(e.getMessage(), e);
+            t = e;
+        }
+        finally {
+            shutdownDefaultMQAdminExt(defaultMQAdminExt);
+        }
+        throw  t;
+    }
+
+    static final GetKvListByNamespaceCommand getKvListByNamespaceCommand = new GetKvListByNamespaceCommand();
+
+    public Collection<Option> getOptionsForGetKvConfigList() {
+        return getOptions(getKvListByNamespaceCommand);
+    }
+
+    @CmdTrace(cmdClazz = GetKvListByNamespaceCommand.class)
+    public KVTable getKvConfigList(String namespace) throws Throwable {
+        Throwable t = null;
+        DefaultMQAdminExt defaultMQAdminExt = getDefaultMQAdminExt();
+        try {
+            defaultMQAdminExt.start();
+            KVTable tables = defaultMQAdminExt.getKVListByNamespace(namespace);
+            return tables;
+        }catch (Throwable e){
+            logger.error(e.getMessage(), e);
+            t = e;
+        }finally {
+            shutdownDefaultMQAdminExt(defaultMQAdminExt);
+        }
+        throw  t;
+    }
+
+    static final DeleteKvConfigCommand deleteKvConfigCommand = new DeleteKvConfigCommand();
 
     public Collection<Option> getOptionsForDeleteKvConfig() {
         return getOptions(deleteKvConfigCommand);
