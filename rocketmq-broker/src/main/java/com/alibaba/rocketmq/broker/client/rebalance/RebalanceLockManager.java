@@ -137,7 +137,7 @@ public class RebalanceLockManager {
 
                     // 锁已经过期，抢占它
                     if (lockEntry.isExpired()) {
-                         lockEntry.setClientId(clientId);
+                        lockEntry.setClientId(clientId);
                         lockEntry.setLastUpdateTimestamp(System.currentTimeMillis());
                         log.warn(
                             "tryLock, message queue lock expired, I got it. Group: {} OldClientId: {} NewClientId: {} {}", //
