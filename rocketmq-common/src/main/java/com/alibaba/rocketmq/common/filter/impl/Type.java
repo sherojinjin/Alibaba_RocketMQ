@@ -8,5 +8,5 @@ public enum Type {
     OPERAND,
     OPERATOR,
     PARENTHESIS,
-    SEPAERATOR;
+    SEPARATOR
 }

@@ -33,7 +33,7 @@ public class DelayTask implements Runnable {
 
     @Override
     public void run() {
-        LOGGER.info("Start re-send messages");
+        LOGGER.info("Start re-consume messages");
         Message[] messages = localMessageStore.pop(BATCH_SIZE);
         while (messages != null && messages.length > 0) {
             //TODO:Sorting here does not make sense.

@@ -15,6 +15,8 @@
  */
 package com.alibaba.rocketmq.common;
 
+import com.alibaba.rocketmq.remoting.common.RemotingHelper;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,8 +33,6 @@ import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
-
-import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 
 
 /**
@@ -429,7 +429,7 @@ public class UtilAll {
             return true;
         }
         for (int i = 0; i < strLen; i++) {
-            if ((Character.isWhitespace(str.charAt(i)) == false)) {
+            if ((!Character.isWhitespace(str.charAt(i)))) {
                 return false;
             }
         }

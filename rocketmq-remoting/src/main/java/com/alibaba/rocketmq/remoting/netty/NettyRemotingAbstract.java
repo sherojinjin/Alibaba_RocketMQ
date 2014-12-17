@@ -162,8 +162,7 @@ public abstract class NettyRemotingAbstract {
                     try {
                         RPCHook rpcHook = NettyRemotingAbstract.this.getRPCHook();
                         if (rpcHook != null) {
-                            rpcHook
-                                .doBeforeRequest(RemotingHelper.parseChannelRemoteAddr(ctx.channel()), cmd);
+                            rpcHook.doBeforeRequest(RemotingHelper.parseChannelRemoteAddr(ctx.channel()), cmd);
                         }
 
                         final RemotingCommand response = pair.getObject1().processRequest(ctx, cmd);
@@ -322,7 +321,7 @@ public abstract class NettyRemotingAbstract {
             Entry<Integer, ResponseFuture> next = it.next();
             ResponseFuture rep = next.getValue();
 
-            if ((rep.getBeginTimestamp() + rep.getTimeoutMillis() * 2 + 1000) <= System.currentTimeMillis()) {
+            if ((rep.getBeginTimestamp() + rep.getTimeoutMillis() + 1000) <= System.currentTimeMillis()) {
                 LOGGER.info("Removing_opaque due to timeout: opaqueId = " + next.getKey());
                 it.remove();
                 try {
@@ -441,14 +440,12 @@ public abstract class NettyRemotingAbstract {
                 throw new RemotingTooMuchRequestException("invokeAsyncImpl invoke too fast");
             }
             else {
-                String info =
-                        String
-                            .format(
-                                "invokeAsyncImpl tryAcquire semaphore timeout, %dms, waiting thread nums: %d semaphoreAsyncValue: %d", //
-                                timeoutMillis,//
-                                this.semaphoreAsync.getQueueLength(),//
-                                this.semaphoreAsync.availablePermits()//
-                            );
+                String info = String.format(
+                        "invokeAsyncImpl tryAcquire semaphore timeout, %dms, waiting thread nums: %d semaphoreAsyncValue: %d", //
+                        timeoutMillis,//
+                        this.semaphoreAsync.getQueueLength(),//
+                        this.semaphoreAsync.availablePermits()//
+                );
                 LOGGER.warn(info);
                 LOGGER.warn(request.toString());
                 throw new RemotingTimeoutException(info);
@@ -470,8 +467,7 @@ public abstract class NettyRemotingAbstract {
                     public void operationComplete(ChannelFuture f) throws Exception {
                         once.release();
                         if (!f.isSuccess()) {
-                            LOGGER.warn("send a request command to channel <" + channel.remoteAddress()
-                                    + "> failed.");
+                            LOGGER.warn("send a request command to channel <" + channel.remoteAddress() + "> failed.");
                             LOGGER.warn(request.toString());
                         }
                     }
@@ -488,14 +484,12 @@ public abstract class NettyRemotingAbstract {
                 throw new RemotingTooMuchRequestException("invokeOneWayImpl invoke too fast");
             }
             else {
-                String info =
-                        String
-                            .format(
-                                "invokeOneWayImpl tryAcquire semaphore timeout, %dms, waiting thread nums: %d semaphoreAsyncValue: %d", //
-                                timeoutMillis,//
-                                this.semaphoreAsync.getQueueLength(),//
-                                this.semaphoreAsync.availablePermits()//
-                            );
+                String info = String.format(
+                        "invokeOneWayImpl tryAcquire semaphore timeout, %dms, waiting thread nums: %d semaphoreAsyncValue: %d", //
+                        timeoutMillis,//
+                        this.semaphoreAsync.getQueueLength(),//
+                        this.semaphoreAsync.availablePermits()//
+                );
                 LOGGER.warn(info);
                 LOGGER.warn(request.toString());
                 throw new RemotingTimeoutException(info);

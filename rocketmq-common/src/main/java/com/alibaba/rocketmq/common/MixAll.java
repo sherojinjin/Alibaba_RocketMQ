@@ -185,7 +185,7 @@ public class MixAll {
     }
 
 
-    private static final String file2String(final File file) {
+    private static String file2String(final File file) {
         if (file.exists()) {
             char[] data = new char[(int) file.length()];
             boolean result = false;

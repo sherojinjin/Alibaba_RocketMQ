@@ -33,6 +33,7 @@ class BatchSendMessageTask implements Runnable {
             }
             try {
                 multiThreadMQProducer.getDefaultMQProducer().send(message,
+                        multiThreadMQProducer.getMessageQueueSelector(), null,
                         new SendMessageCallback(multiThreadMQProducer, sendCallback, message));
             } catch (Exception e) {
                 multiThreadMQProducer.handleSendMessageFailure(message, e);

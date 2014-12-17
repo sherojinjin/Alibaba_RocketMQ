@@ -178,6 +178,11 @@ public class RemotingUtil {
 
 
     public static String getLocalAddress() {
+        return getLocalAddress(true);
+    }
+
+
+    public static String getLocalAddress(boolean needQueryPublicIP) {
         try {
             // 遍历网卡，查找一个非回路ip地址并返回
             Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
@@ -213,7 +218,7 @@ public class RemotingUtil {
                             continue;
                         }
 
-                        if (isPrivateIPv4Address(ip)) {
+                        if (isPrivateIPv4Address(ip) && needQueryPublicIP) {
                             String publicIp = queryPublicIP(ip);
 
                             if (null != publicIp) {

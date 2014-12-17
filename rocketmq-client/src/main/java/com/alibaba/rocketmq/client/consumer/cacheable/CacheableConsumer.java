@@ -7,10 +7,9 @@ import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
+import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -55,20 +54,25 @@ public class CacheableConsumer
             .newScheduledThreadPool(corePoolSizeForWorkTasks);
 
     private static String getInstanceName() {
-        try {
-            return BASE_INSTANCE_NAME + InetAddress.getLocalHost().getHostAddress() + "_" +
-                    CONSUMER_NAME_COUNTER.incrementAndGet();
-        } catch (UnknownHostException e) {
-            return BASE_INSTANCE_NAME + "127.0.0.1_" + CONSUMER_NAME_COUNTER.incrementAndGet();
-        }
+        return BASE_INSTANCE_NAME + RemotingUtil.getLocalAddress(false) + "_" +
+                CONSUMER_NAME_COUNTER.incrementAndGet();
     }
 
+    /**
+     * Constructor with consumer group name.
+     * @param consumerGroupName consumer group name.
+     */
     public CacheableConsumer(String consumerGroupName) {
+
+        if (null == consumerGroupName || consumerGroupName.trim().isEmpty()) {
+            throw new RuntimeException("ConsumerGroupName cannot be null or empty.");
+        }
+
         this.consumerGroupName = consumerGroupName;
         this.topicHandlerMap = new ConcurrentHashMap<String, MessageHandler>();
-        defaultMQPushConsumer = new DefaultMQPushConsumer(this.consumerGroupName);
-        localMessageStore = new DefaultLocalMessageStore(this.consumerGroupName);
+        defaultMQPushConsumer = new DefaultMQPushConsumer(consumerGroupName);
         defaultMQPushConsumer.setInstanceName(getInstanceName());
+        localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
         defaultMQPushConsumer.setMessageModel(messageModel);
         defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
     }

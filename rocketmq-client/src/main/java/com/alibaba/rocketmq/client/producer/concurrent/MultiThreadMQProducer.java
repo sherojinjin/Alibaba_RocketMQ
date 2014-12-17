@@ -3,7 +3,9 @@ package com.alibaba.rocketmq.client.producer.concurrent;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
+import com.alibaba.rocketmq.client.producer.MessageQueueSelector;
 import com.alibaba.rocketmq.client.producer.SendCallback;
+import com.alibaba.rocketmq.client.producer.selector.SelectMessageQueueByDataCenter;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
@@ -48,6 +50,8 @@ public class MultiThreadMQProducer {
     private int count;
 
     private AtomicLong numberOfMessageStashedDueToLackOfSemaphoreToken = new AtomicLong(0L);
+
+    private MessageQueueSelector messageQueueSelector;
 
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
@@ -99,6 +103,8 @@ public class MultiThreadMQProducer {
         startResendFailureMessageService(configuration.getResendFailureMessageDelay());
 
         startMonitorTPS();
+        
+        messageQueueSelector = new SelectMessageQueueByDataCenter(defaultMQProducer);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -108,6 +114,7 @@ public class MultiThreadMQProducer {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                LOGGER.info("Multi-thread MQ Producer shutdown hook invoked.");
             }
         });
     }
@@ -177,14 +184,16 @@ public class MultiThreadMQProducer {
             }
 
         }, 3000, 1000, TimeUnit.MILLISECONDS);
+        LOGGER.info("Monitor TPS and adjust semaphore size service starts.");
     }
 
 
 
 
     public void startResendFailureMessageService(long interval) {
-            resendFailureMessagePoolExecutor.scheduleWithFixedDelay(
-                    new ResendMessageTask(localMessageStore, this), 3100, interval, TimeUnit.MILLISECONDS);
+        resendFailureMessagePoolExecutor.scheduleWithFixedDelay(
+                new ResendMessageTask(localMessageStore, this), 3100, interval, TimeUnit.MILLISECONDS);
+        LOGGER.info("Resend failure message service starts.");
     }
 
     public void registerCallback(SendCallback sendCallback) {
@@ -194,27 +203,14 @@ public class MultiThreadMQProducer {
     public void handleSendMessageFailure(Message msg, Throwable e) {
         LOGGER.error("Send message failed. Enter re-send logic. Exception:", e);
 
-        localMessageStore.stash(msg);
-
         //Release assigned token.
         semaphore.release();
+
+        localMessageStore.stash(msg);
     }
 
     public void send(final Message msg) {
-        if (semaphore.tryAcquire()) { //Acquire a token from semaphore.
-            sendMessagePoolExecutor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        defaultMQProducer.send(msg, new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, msg));
-                    } catch (Exception e) {
-                        handleSendMessageFailure(msg, e);
-                    }
-                }
-            });
-        } else {
-            localMessageStore.stash(msg);
-        }
+        send(new Message[] {msg});
     }
 
 
@@ -242,14 +238,17 @@ public class MultiThreadMQProducer {
             if (!hasTokens) { //No tokens pre-assigned.
                 if (semaphore.tryAcquire(messages.length)) { //Try to acquire tokens.
                     sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
+                    LOGGER.info(messages.length + " messages submitted to send.");
                 } else { //Stash all these messages if no sufficient tokens are available.
                     for (Message message : messages) {
                         localMessageStore.stash(message);
                     }
+                    LOGGER.warn(messages.length + " messages stashed.");
                 }
             } else {
                 //As these messages already got tokens, send them directly.
                 sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
+                LOGGER.info(messages.length + " messages submitted to send.");
             }
         } else {
             Message[] sendBatchArray = null;
@@ -260,12 +259,15 @@ public class MultiThreadMQProducer {
                 System.arraycopy(messages, i, sendBatchArray, 0, remain);
                 if (hasTokens) { //If messages have pre-assigned tokens, send them directly.
                     sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
+                    LOGGER.info(sendBatchArray.length + " messages submitted to send.");
                 } else if (semaphore.tryAcquire(sendBatchArray.length)) { //Try to acquire tokens and send them.
                     sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
+                    LOGGER.info(sendBatchArray.length + " messages submitted to send.");
                 } else { // Stash messages if no sufficient tokens available.
                     for (Message message : sendBatchArray) {
                         localMessageStore.stash(message);
                     }
+                    LOGGER.warn(sendBatchArray.length + " messages stashed");
                 }
             }
         }
@@ -318,10 +320,14 @@ public class MultiThreadMQProducer {
         return numberOfMessageStashedDueToLackOfSemaphoreToken;
     }
 
+    public MessageQueueSelector getMessageQueueSelector() {
+        return messageQueueSelector;
+    }
+
     /**
      * This class is to expose reducePermits(int reduction) method publicly.
      */
-    static class CustomizableSemaphore extends Semaphore {
+    public static class CustomizableSemaphore extends Semaphore {
         public CustomizableSemaphore(int permits) {
             super(permits);
         }

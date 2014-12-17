@@ -34,7 +34,7 @@ public class PolishExpr {
                     || (49 <= chValue && chValue <= 57) || 95 == chValue) {
                 // 操作数
 
-                if (Type.OPERATOR == preType || Type.SEPAERATOR == preType || Type.NULL == preType
+                if (Type.OPERATOR == preType || Type.SEPARATOR == preType || Type.NULL == preType
                         || Type.PARENTHESIS == preType) {
                     if (Type.OPERATOR == preType) {
                         segments.add(createOperator(expression.substring(wordStartIndex, wordStartIndex
@@ -66,7 +66,7 @@ public class PolishExpr {
             }
             else if (38 == chValue || 124 == chValue) {
                 // 操作符
-                if (Type.OPERAND == preType || Type.SEPAERATOR == preType || Type.PARENTHESIS == preType) {
+                if (Type.OPERAND == preType || Type.SEPARATOR == preType || Type.PARENTHESIS == preType) {
                     if (Type.OPERAND == preType) {
                         segments.add(new Operand(expression.substring(wordStartIndex, wordStartIndex
                                 + wordLen)));
@@ -91,7 +91,7 @@ public class PolishExpr {
                     wordStartIndex = -1;
                     wordLen = 0;
                 }
-                preType = Type.SEPAERATOR;
+                preType = Type.SEPARATOR;
             }
             else {
                 // 非法字符
