@@ -154,7 +154,18 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
         List<MessageQueue> dataCenterQueues = new ArrayList<MessageQueue>();
         if ("BY_LOCATION".equals(dispatchStrategy)) {
             for (MessageQueue messageQueue : mqs) {
+
+                /**
+                 * Broker name pattern: ClusterName_{DataCenterNumber}_broker{BrokerNumber}[_optional_extra_info]
+                 * Sample broker name: DefaultCluster_1_broker1
+                 */
                 String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
+                if (3 > brokerNameSegments.length) {
+                    //Round-robin all message queues as broker name is not properly named.
+                    LOGGER.warn("Issue: broker name is not properly named. Check " + messageQueue.getBrokerName());
+                    break;
+                }
+
                 if (r > locationRatio && !brokerNameSegments[1].equals(LOCAL_DATA_CENTER_ID)) {
                     dataCenterQueues.add(messageQueue);
                 } else if (r <= locationRatio && brokerNameSegments[1].equals(LOCAL_DATA_CENTER_ID)) {
