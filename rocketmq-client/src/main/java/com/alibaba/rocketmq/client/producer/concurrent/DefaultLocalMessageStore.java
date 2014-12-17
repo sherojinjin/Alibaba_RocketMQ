@@ -16,6 +16,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class DefaultLocalMessageStore implements LocalMessageStore {
 
+    private static final String DEFAULT_STORE_LOCATION = "/dianyi/data/";
+
     private static final Logger LOGGER = ClientLogger.getLog();
 
     private static final int MESSAGES_PER_FILE = 100000;
@@ -26,8 +28,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private final AtomicLong readIndex = new AtomicLong(0L);
     private final AtomicLong readOffSet = new AtomicLong(0L);
 
-    private static final String STORE_LOCATION = System.getProperty("defaultLocalMessageStoreLocation",
-            System.getProperty("user.home") + File.separator + ".localMessageStore");
+    private static String STORE_LOCATION = System.getProperty("defaultLocalMessageStoreLocation",
+            DEFAULT_STORE_LOCATION);
 
     private File localMessageStoreDirectory;
 
@@ -53,8 +55,16 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final float DISK_WARNING_WATER_LEVEL = 0.8F;
 
-    public DefaultLocalMessageStore(String producerGroup) {
-        localMessageStoreDirectory = new File(STORE_LOCATION, producerGroup);
+    public DefaultLocalMessageStore(String storeName) {
+        //For convenience of development.
+        if (DEFAULT_STORE_LOCATION.equals(STORE_LOCATION)) {
+            File defaultStoreLocation = new File(DEFAULT_STORE_LOCATION);
+            if (!defaultStoreLocation.exists()) {
+                STORE_LOCATION = System.getProperty("user.home") + File.separator + ".localMessageStore";
+            }
+        }
+
+        localMessageStoreDirectory = new File(STORE_LOCATION, storeName);
 
         if (!localMessageStoreDirectory.exists()) {
             if (!localMessageStoreDirectory.mkdirs()) {
@@ -85,6 +95,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
             }
         }, 50, 100, TimeUnit.MILLISECONDS);
+
         ready = true;
     }
 
