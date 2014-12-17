@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.alibaba.rocketmq.common.protocol.body.KVTable;
 import org.apache.commons.cli.Option;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -95,8 +94,8 @@ public class NamesrvAction extends AbstractAction {
 
             } else if (request.getMethod().equals(POST)) {
                 checkOptions(options);
-                String text = namesrvService.getKvConfig(namespace, key);
-                map.put("resultText", text);
+                Table table = namesrvService.getKvConfig(namespace, key);
+                putTable(map, table);
             } else {
                 throwUnknowRequestMethodException(request);
             }
@@ -116,8 +115,8 @@ public class NamesrvAction extends AbstractAction {
 
             }else if (request.getMethod().equals(POST)) {
                 checkOptions(options);
-                KVTable table = namesrvService.getKvConfigList(namespace);
-                putTable(map, Table.Map2HTable(table.getTable()));
+                Table table = namesrvService.getKvConfigList(namespace);
+                putTable(map,table);
             }else {
                 throwUnknowRequestMethodException(request);
             }

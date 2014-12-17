@@ -1,11 +1,7 @@
 package com.alibaba.rocketmq.service;
 
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.alibaba.rocketmq.common.protocol.body.KVTable;
 import com.alibaba.rocketmq.tools.command.namesrv.*;
@@ -38,13 +34,17 @@ public class NamesrvService extends AbstractService {
     }
 
     @CmdTrace(cmdClazz = GetKvConfigCommand.class)
-    public String getKvConfig(String namespace, String key) throws  Throwable {
+    public Table getKvConfig(String namespace, String key) throws  Throwable {
         Throwable t = null;
         DefaultMQAdminExt defaultMQAdminExt = getDefaultMQAdminExt();
         try{
             defaultMQAdminExt.start();
             String kvConfig = defaultMQAdminExt.getKVConfig(namespace, key);
-            return kvConfig;
+            Map<String, String> map = new LinkedHashMap<String, String>();
+            map.put("namespace", namespace);
+            map.put("key",key);
+            map.put("value", kvConfig);
+            return Table.Map2VTable(map);
         }
         catch (Throwable e)
         {
@@ -64,13 +64,16 @@ public class NamesrvService extends AbstractService {
     }
 
     @CmdTrace(cmdClazz = GetKvListByNamespaceCommand.class)
-    public KVTable getKvConfigList(String namespace) throws Throwable {
+    public Table getKvConfigList(String namespace) throws Throwable {
         Throwable t = null;
         DefaultMQAdminExt defaultMQAdminExt = getDefaultMQAdminExt();
         try {
             defaultMQAdminExt.start();
             KVTable tables = defaultMQAdminExt.getKVListByNamespace(namespace);
-            return tables;
+            Map<String, String> map = new LinkedHashMap<String, String>();
+            map.put(" key ", " value ");
+            map.putAll(tables.getTable());
+            return Table.Map2VTable(map);
         }catch (Throwable e){
             logger.error(e.getMessage(), e);
             t = e;
