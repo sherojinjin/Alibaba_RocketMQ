@@ -55,8 +55,8 @@ public class ExampleCacheableConsumer {
 
         cacheableConsumer.registerMessageHandler(exampleMessageHandler);
 
-        cacheableConsumer.setCorePoolSizeForDelayTasks(1); // default 2.
         cacheableConsumer.setCorePoolSizeForWorkTasks(5); // default 10.
+        cacheableConsumer.setMaximumPoolSizeForWorkTasks(20); //default 50
 
         cacheableConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
         cacheableConsumer.setMessageModel(MessageModel.CLUSTERING);
