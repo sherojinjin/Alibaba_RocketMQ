@@ -180,8 +180,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             bufferedWriter.newLine();
             bufferedWriter.flush();
         } catch (IOException e) {
-            LOGGER.error("Unable to update config file", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Unable to update config file", e);
         } finally {
             if (null != bufferedWriter) {
                 try {
@@ -191,6 +190,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
             }
         }
+        LOGGER.info("LocalMessageStore configuration file updated.");
     }
 
     /**
