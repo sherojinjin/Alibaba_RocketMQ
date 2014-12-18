@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -50,6 +51,10 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
     private List<Pair<String, Float>> dispatcherList = new ArrayList<Pair<String, Float>>();
 
     private DefaultMQProducer defaultMQProducer;
+
+    private AtomicLong warningCounter = new AtomicLong(0L);
+
+    private static final long OUTPUT_WARNING_PER_COUNT = 1000L;
 
     public SelectMessageQueueByDataCenter(DefaultMQProducer defaultMQProducer) {
         this.defaultMQProducer = defaultMQProducer;
@@ -161,8 +166,11 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                  */
                 String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
                 if (3 > brokerNameSegments.length) {
+                    warningCounter.incrementAndGet();
+                    if (1 == warningCounter.longValue() || warningCounter.longValue() % OUTPUT_WARNING_PER_COUNT == 0) {
+                        LOGGER.warn("Issue: broker name is not properly named. Check " + messageQueue.getBrokerName());
+                    }
                     //Round-robin all message queues as broker name is not properly named.
-                    LOGGER.warn("Issue: broker name is not properly named. Check " + messageQueue.getBrokerName());
                     break;
                 }
 
