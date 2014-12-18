@@ -1,25 +1,22 @@
 package com.alibaba.rocketmq.client.consumer.cacheable;
 
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
-import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.client.producer.concurrent.LocalMessageStore;
+import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
+import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 
 import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class CacheableConsumer
-{
+public class CacheableConsumer {
     private static final Logger LOGGER = ClientLogger.getLog();
 
     private String consumerGroupName;
@@ -44,15 +41,20 @@ public class CacheableConsumer
 
     private static final int CORE_POOL_SIZE_FOR_WORK_TASKS = 10;
 
+    private static final int MAXIMUM_POOL_SIZE_FOR_WORK_TASKS = 50;
+
     private int corePoolSizeForDelayTasks = CORE_POOL_SIZE_FOR_DELAY_TASKS;
 
     private int corePoolSizeForWorkTasks = CORE_POOL_SIZE_FOR_WORK_TASKS;
 
+    private int maximumPoolSizeForWorkTasks = MAXIMUM_POOL_SIZE_FOR_WORK_TASKS;
+
     private ScheduledExecutorService scheduledExecutorDelayService = Executors
             .newScheduledThreadPool(corePoolSizeForDelayTasks);
 
-    private ScheduledExecutorService scheduledExecutorWorkerService = Executors
-            .newScheduledThreadPool(corePoolSizeForWorkTasks);
+    private ThreadPoolExecutor executorWorkerService;
+
+    private FrontController frontController;
 
     private static String getInstanceName() {
         return BASE_INSTANCE_NAME + RemotingUtil.getLocalAddress(false) + "_" +
@@ -76,6 +78,16 @@ public class CacheableConsumer
         localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
         defaultMQPushConsumer.setMessageModel(messageModel);
         defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
+        executorWorkerService = new ThreadPoolExecutor(
+                corePoolSizeForWorkTasks,
+                maximumPoolSizeForWorkTasks,
+                0,
+                TimeUnit.NANOSECONDS,
+                new LinkedBlockingQueue<Runnable>(maximumPoolSizeForWorkTasks),
+                new ThreadFactoryImpl("ConsumerWorkerThread"),
+                new ThreadPoolExecutor.CallerRunsPolicy());
+
+        frontController = new FrontController(topicHandlerMap, executorWorkerService, localMessageStore);
     }
 
     public CacheableConsumer registerMessageHandler(MessageHandler messageHandler) throws MQClientException {
@@ -110,16 +122,12 @@ public class CacheableConsumer
         if (null == localMessageStore || !localMessageStore.isReady()) {
             localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
         }
-
-        MessageListenerConcurrently frontController = new FrontController(topicHandlerMap,
-                scheduledExecutorWorkerService, localMessageStore);
         defaultMQPushConsumer.registerMessageListener(frontController);
         defaultMQPushConsumer.start();
 
         startPopThread();
 
         started = true;
-
         LOGGER.debug("DefaultMQPushConsumer starts.");
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -128,15 +136,16 @@ public class CacheableConsumer
                 try {
                     shutdown();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    LOGGER.error("Exception thrown while invoking ShutdownHook", e);
                 }
             }
         });
     }
 
     private void startPopThread() {
-        scheduledExecutorDelayService.scheduleWithFixedDelay(new DelayTask(topicHandlerMap, localMessageStore), 2, 2,
-                TimeUnit.SECONDS);
+        DelayTask delayTask = new DelayTask(topicHandlerMap, localMessageStore, frontController.getMessageQueue(),
+                executorWorkerService);
+        scheduledExecutorDelayService.scheduleWithFixedDelay(delayTask, 2, 2, TimeUnit.SECONDS);
     }
 
     public boolean isStarted() {
@@ -149,6 +158,10 @@ public class CacheableConsumer
 
     public void setCorePoolSizeForWorkTasks(int corePoolSizeForWorkTasks) {
         this.corePoolSizeForWorkTasks = corePoolSizeForWorkTasks;
+    }
+
+    public void setMaximumPoolSizeForWorkTasks(int maximumPoolSizeForWorkTasks) {
+        this.maximumPoolSizeForWorkTasks = maximumPoolSizeForWorkTasks;
     }
 
     public void setMessageModel(MessageModel messageModel) {
@@ -210,8 +223,20 @@ public class CacheableConsumer
             scheduledExecutorDelayService.awaitTermination(30000, TimeUnit.MILLISECONDS);
 
             //Stop consuming messages.
-            scheduledExecutorWorkerService.shutdown();
-            scheduledExecutorWorkerService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+            executorWorkerService.shutdown();
+            executorWorkerService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+
+            frontController.stopSubmittingJob();
+
+            //Stash back all those that is not properly handled.
+            LinkedBlockingQueue<MessageExt> messageQueue = frontController.getMessageQueue();
+            if (messageQueue.size() > 0) {
+                MessageExt messageExt = messageQueue.poll();
+                while (null != messageExt) {
+                    localMessageStore.stash(messageExt);
+                    messageExt = messageQueue.poll();
+                }
+            }
             started = false;
         }
     }

@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class DelayTask implements Runnable {
 
@@ -25,10 +27,19 @@ public class DelayTask implements Runnable {
 
     private DefaultLocalMessageStore localMessageStore;
 
+    private LinkedBlockingQueue<MessageExt> messageQueue;
+
+    private final ThreadPoolExecutor executorWorkerService;
+
     public DelayTask(ConcurrentHashMap<String, MessageHandler> topicHandlerMap,
-                     DefaultLocalMessageStore localMessageStore) {
+                     DefaultLocalMessageStore localMessageStore,
+                     LinkedBlockingQueue<MessageExt> messageQueue,
+                     ThreadPoolExecutor executorWorkerService
+    ) {
         this.localMessageStore = localMessageStore;
         this.topicHandlerMap = topicHandlerMap;
+        this.executorWorkerService = executorWorkerService;
+        this.messageQueue = messageQueue;
     }
 
     @Override
@@ -36,7 +47,7 @@ public class DelayTask implements Runnable {
         LOGGER.info("Start re-consume messages");
         Message[] messages = localMessageStore.pop(BATCH_SIZE);
         while (messages != null && messages.length > 0) {
-            //TODO:Sorting here does not make sense.
+            //TODO:Sorting here does not make sense, remove it next time.
             TreeMap<String, MessageExt> messageExtMap = getMessageTree(messages);
             for (Message message : messages) {
                 if (null == message) {
@@ -51,11 +62,9 @@ public class DelayTask implements Runnable {
                         localMessageStore.stash(message);
                         continue;
                     }
-                    int result = messageHandler.handle(messageExt);
-                    if (result > 0) {
-                        message.putUserProperty(NEXT_TIME_KEY, String.valueOf(System.currentTimeMillis() + result));
-                        localMessageStore.stash(message);
-                    }
+                    ProcessMessageTask task =
+                            new ProcessMessageTask(messageExt, messageHandler, localMessageStore, messageQueue);
+                    executorWorkerService.submit(task);
                 } else {
                     localMessageStore.stash(message);
                 }
