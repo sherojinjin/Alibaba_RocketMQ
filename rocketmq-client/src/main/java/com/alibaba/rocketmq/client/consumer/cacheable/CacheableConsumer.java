@@ -5,6 +5,7 @@ import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
+import com.alibaba.rocketmq.client.producer.concurrent.LocalMessageStore;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
@@ -183,6 +184,23 @@ public class CacheableConsumer
      * @throws InterruptedException If unable to shut down within 1 minute.
      */
     public void shutdown() throws InterruptedException {
+        try {
+            stopReceiving();
+        } catch (InterruptedException e) {
+            LOGGER.error("Failed to stop", e);
+        }
+
+        try {
+            //Shut down local message store.
+            if (null != localMessageStore && localMessageStore.isReady()) {
+                localMessageStore.close();
+            }
+        } catch (InterruptedException e) {
+            LOGGER.error("Failed to stop", e);
+        }
+    }
+
+    public void stopReceiving() throws InterruptedException {
         if (started) {
             //Stop pulling messages from server.
             defaultMQPushConsumer.shutdown();
@@ -196,11 +214,17 @@ public class CacheableConsumer
             scheduledExecutorWorkerService.awaitTermination(30000, TimeUnit.MILLISECONDS);
             started = false;
         }
+    }
 
-        //Refresh local message store configuration file.
+    /**
+     * Return the associated local message store or create a new one if the existing associated one was shut down.
+     * @return Instance of {@link LocalMessageStore}.
+     */
+    public LocalMessageStore getLocalMessageStore() {
         if (null != localMessageStore && localMessageStore.isReady()) {
-            localMessageStore.close();
-            localMessageStore = null;
+            return localMessageStore;
+        } else {
+            return new DefaultLocalMessageStore(consumerGroupName);
         }
     }
 }

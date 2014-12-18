@@ -101,6 +101,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }, 50, 100, TimeUnit.MILLISECONDS);
 
         ready = true;
+
+        LOGGER.info("Local Message store starts to operate.");
     }
 
     /**
