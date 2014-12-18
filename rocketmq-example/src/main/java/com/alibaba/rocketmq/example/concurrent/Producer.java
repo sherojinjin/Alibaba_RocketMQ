@@ -2,6 +2,7 @@ package com.alibaba.rocketmq.example.concurrent;
 
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.MultiThreadMQProducer;
+import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
@@ -44,7 +45,7 @@ public class Producer {
                 .build();
                 producer.registerCallback(new ExampleSendCallback(successCount));
 
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("MessageSender")).scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 long currentSuccessSent = successCount.longValue();
