@@ -6,6 +6,8 @@ public class MultiThreadMQProducerConfiguration {
 
     private int corePoolSize = 10;
 
+    private int maximumPoolSize = 50;
+
     private int defaultTopicQueueNumber = 4;
 
     private int retryTimesBeforeSendingFailureClaimed = 3;
@@ -69,6 +71,11 @@ public class MultiThreadMQProducerConfiguration {
         return this;
     }
 
+    public MultiThreadMQProducerConfiguration configureConfigureMaximumPoolSize(int maximumPoolSize) {
+        this.maximumPoolSize = maximumPoolSize;
+        return this;
+    }
+
     public MultiThreadMQProducer build() {
         return new MultiThreadMQProducer(this);
     }
@@ -123,5 +130,9 @@ public class MultiThreadMQProducerConfiguration {
 
     public int getNumberOfMessageInitiallyHeldImMemory() {
         return numberOfMessageInitiallyHeldImMemory;
+    }
+
+    public int getMaximumPoolSize() {
+        return maximumPoolSize;
     }
 }
