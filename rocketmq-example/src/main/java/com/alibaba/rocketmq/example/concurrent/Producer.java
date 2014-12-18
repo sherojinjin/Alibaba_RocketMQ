@@ -37,7 +37,8 @@ public class Producer {
         final AtomicLong lastSent = new AtomicLong(0L);
         final MultiThreadMQProducer producer = MultiThreadMQProducer.configure()
                 .configureProducerGroup("PG_QuickStart")
-                .configureCorePoolSize(200)
+                .configureCorePoolSize(10)
+                .configureMaximumPoolSize(50)
                 .configureConcurrentSendBatchSize(100)
                 .configureRetryTimesBeforeSendingFailureClaimed(3)
                 .configureSendMessageTimeOutInMilliSeconds(3000)
