@@ -119,7 +119,7 @@ public class MultiThreadMQProducer {
                 try {
                     shutdown();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    LOGGER.error("ShutdownHook error.", e);
                 }
                 LOGGER.info("Multi-thread MQ Producer shutdown hook invoked.");
             }

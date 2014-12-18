@@ -148,9 +148,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     }
                 }
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                LOGGER.error("Load configuration error", e);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("Load configuration error", e);
             } finally {
                 if (null != inputStream) {
                     try {
@@ -292,13 +292,13 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
             updateConfig();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("Flush messages error", e);
             throw new RuntimeException("Lock exception", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Flush messages error", e);
             throw new RuntimeException("IO Error", e);
         } finally {
-            LOGGER.info("Local message store flushing completes.");
+            LOGGER.info("Local message store flushes completely.");
             lock.unlock();
         }
     }
@@ -384,14 +384,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
             return messages;
         } catch (InterruptedException e) {
-            LOGGER.error("Pop message error, caused by {}", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Pop message error", e);
         } catch (FileNotFoundException e) {
-            LOGGER.error("Pop message error, caused by {}", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Pop message error", e);
         } catch (IOException e) {
-            LOGGER.error("Pop message error, caused by {}", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Pop message error", e);
         } finally {
             lock.unlock();
         }
