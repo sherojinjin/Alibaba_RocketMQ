@@ -55,11 +55,11 @@ public class FrontController implements MessageListenerConcurrently {
                 } else {
                     localMessageStore.stash(message);
                 }
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 LOGGER.error("Failed to put message into message queue", e);
+                return ConsumeConcurrentlyStatus.RECONSUME_LATER;
             }
         }
-
 
         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
     }
@@ -84,7 +84,7 @@ public class FrontController implements MessageListenerConcurrently {
                     ProcessMessageTask task =
                             new ProcessMessageTask(message, messageHandler, localMessageStore, messageQueue);
                     executorWorkerService.submit(task);
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     LOGGER.error("Error while submitting ProcessMessageTask", e);
                 }
             }

@@ -65,7 +65,7 @@ public class ResendMessageTask implements Runnable {
                 }
                 messages = localMessageStore.pop(popSize);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LOGGER.error("ResendMessageTask got an exception!", e);
         }
 

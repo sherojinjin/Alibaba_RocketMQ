@@ -1,10 +1,14 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
+import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.common.message.Message;
+import org.slf4j.Logger;
 
 public class SendMessageCallback implements SendCallback {
+
+    private static final Logger LOGGER = ClientLogger.getLog();
 
     private SendCallback hook;
 
@@ -28,7 +32,11 @@ public class SendMessageCallback implements SendCallback {
 
         //Execute user callback.
         if (null != hook) {
-            hook.onSuccess(sendResult);
+            try {
+                hook.onSuccess(sendResult);
+            } catch (Exception e) {
+                LOGGER.error("Error while invoke user callback", e);
+            }
         }
     }
 
@@ -37,7 +45,12 @@ public class SendMessageCallback implements SendCallback {
         //Stash the message and log the exception.
         multiThreadMQProducer.handleSendMessageFailure(message, e);
         if (null != hook) {
-            hook.onException(e);
+            try {
+                hook.onException(e);
+            } catch (Exception ex) {
+                LOGGER.error("Error while invoke user callback", ex);
+            }
+
         }
     }
 }
