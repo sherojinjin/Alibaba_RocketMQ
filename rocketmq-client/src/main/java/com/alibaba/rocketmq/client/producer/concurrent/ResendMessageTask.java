@@ -37,7 +37,7 @@ public class ResendMessageTask implements Runnable {
             int popSize = Math.min(multiThreadMQProducer.getSemaphore().availablePermits(),
                     BATCH_FETCH_MESSAGE_FROM_STORE_SIZE);
 
-            if (popSize == 0) {
+            if (popSize <= 0) {
                 LOGGER.info("No permits available in semaphore. Yield and wait for next round.");
                 return;
             }
@@ -59,7 +59,7 @@ public class ResendMessageTask implements Runnable {
                 //Prepare for next loop step.
                 popSize = Math.min(multiThreadMQProducer.getSemaphore().availablePermits(),
                         BATCH_FETCH_MESSAGE_FROM_STORE_SIZE);
-                if (popSize == 0) {
+                if (popSize <= 0) {
                     LOGGER.info("No permits available in semaphore. Break looping.");
                     break;
                 }
