@@ -423,6 +423,10 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }
 
         ready = false;
-        LOGGER.info("Default local message store shutdown complete");
+        LOGGER.info("Default local message store shuts down completely");
+    }
+
+    public boolean isReady() {
+        return ready;
     }
 }

@@ -105,6 +105,11 @@ public class CacheableConsumer
             throw new RuntimeException("Please at least configure one message handler to subscribe one topic");
         }
 
+        //In case this consumer was shutdown previously.
+        if (null == localMessageStore || !localMessageStore.isReady()) {
+            localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
+        }
+
         MessageListenerConcurrently frontController = new FrontController(topicHandlerMap,
                 scheduledExecutorWorkerService, localMessageStore);
         defaultMQPushConsumer.registerMessageListener(frontController);
@@ -178,18 +183,24 @@ public class CacheableConsumer
      * @throws InterruptedException If unable to shut down within 1 minute.
      */
     public void shutdown() throws InterruptedException {
-        //Stop pulling messages from server.
-        defaultMQPushConsumer.shutdown();
+        if (started) {
+            //Stop pulling messages from server.
+            defaultMQPushConsumer.shutdown();
 
-        //Stop popping messages from local message store.
-        scheduledExecutorDelayService.shutdown();
-        scheduledExecutorDelayService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+            //Stop popping messages from local message store.
+            scheduledExecutorDelayService.shutdown();
+            scheduledExecutorDelayService.awaitTermination(30000, TimeUnit.MILLISECONDS);
 
-        //Stop consuming messages.
-        scheduledExecutorWorkerService.shutdown();
-        scheduledExecutorWorkerService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+            //Stop consuming messages.
+            scheduledExecutorWorkerService.shutdown();
+            scheduledExecutorWorkerService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+            started = false;
+        }
 
         //Refresh local message store configuration file.
-        localMessageStore.close();
+        if (null != localMessageStore && localMessageStore.isReady()) {
+            localMessageStore.close();
+            localMessageStore = null;
+        }
     }
 }
