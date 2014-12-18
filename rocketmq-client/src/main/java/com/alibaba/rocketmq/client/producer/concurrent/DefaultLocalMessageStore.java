@@ -51,9 +51,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final int MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE = 1000;
 
-    private static final float DISK_HIGH_WATER_LEVEL = 0.9F;
+    private static final float DISK_HIGH_WATER_LEVEL = 0.75F;
 
-    private static final float DISK_WARNING_WATER_LEVEL = 0.8F;
+    private static final float DISK_WARNING_WATER_LEVEL = 0.65F;
 
     public DefaultLocalMessageStore(String storeName) {
         //For convenience of development.
