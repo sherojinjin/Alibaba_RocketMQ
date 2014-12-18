@@ -29,7 +29,7 @@ public class MultiThreadMQProducer {
 
     private SendCallback sendCallback;
 
-    private final LocalMessageStore localMessageStore;
+    private LocalMessageStore localMessageStore;
 
     private volatile boolean started;
 
@@ -56,10 +56,6 @@ public class MultiThreadMQProducer {
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
             throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
-        }
-
-        if (!configuration.isReadyToBuild()) {
-            throw new IllegalArgumentException(configuration.reportMissingConfiguration());
         }
 
         this.concurrentSendBatchSize = configuration.getConcurrentSendBatchSize();
@@ -101,11 +97,7 @@ public class MultiThreadMQProducer {
             }
         }
 
-        if (null == configuration.getLocalMessageStore()) {
-            localMessageStore = new DefaultLocalMessageStore(configuration.getProducerGroup());
-        } else {
-            localMessageStore = configuration.getLocalMessageStore();
-        }
+        localMessageStore = new DefaultLocalMessageStore(configuration.getProducerGroup());
 
         startResendFailureMessageService(configuration.getResendFailureMessageDelay());
 
@@ -193,9 +185,6 @@ public class MultiThreadMQProducer {
         }, 3000, 1000, TimeUnit.MILLISECONDS);
         LOGGER.info("Monitor TPS and adjust semaphore size service starts.");
     }
-
-
-
 
     public void startResendFailureMessageService(long interval) {
         resendFailureMessagePoolExecutor.scheduleWithFixedDelay(
@@ -308,7 +297,10 @@ public class MultiThreadMQProducer {
         getDefaultMQProducer().shutdown();
 
         //Refresh local message store configuration file.
-        localMessageStore.close();
+        if (null != localMessageStore && localMessageStore.isReady()) {
+            localMessageStore.close();
+            localMessageStore = null;
+        }
     }
 
     public CustomizableSemaphore getSemaphore() {

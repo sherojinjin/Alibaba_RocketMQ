@@ -18,8 +18,6 @@ public class MultiThreadMQProducerConfiguration {
 
     private int resendFailureMessageDelay = 5000;
 
-    private LocalMessageStore localMessageStore;
-
     public static final int MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 20000;
 
     public static final int MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 1000;
@@ -61,11 +59,6 @@ public class MultiThreadMQProducerConfiguration {
         return this;
     }
 
-    public MultiThreadMQProducerConfiguration configureLocalMessageStore(LocalMessageStore localMessageStore) {
-        this.localMessageStore = localMessageStore;
-        return this;
-    }
-
     public MultiThreadMQProducerConfiguration configureNumberOfMessageInitiallyHeldImMemory(int numberOfMessageInitiallyHeldImMemory) {
         this.numberOfMessageInitiallyHeldImMemory = numberOfMessageInitiallyHeldImMemory;
         return this;
@@ -77,14 +70,18 @@ public class MultiThreadMQProducerConfiguration {
     }
 
     public MultiThreadMQProducer build() {
+        if (!isReadyToBuild()) {
+            throw new RuntimeException(reportMissingConfiguration());
+        }
+
         return new MultiThreadMQProducer(this);
     }
 
-    public boolean isReadyToBuild() {
+    private boolean isReadyToBuild() {
         return null != producerGroup;
     }
 
-    public String reportMissingConfiguration() {
+    private String reportMissingConfiguration() {
         StringBuilder stringBuilder = null;
 
         if (null == producerGroup) {
@@ -122,10 +119,6 @@ public class MultiThreadMQProducerConfiguration {
 
     public int getResendFailureMessageDelay() {
         return resendFailureMessageDelay;
-    }
-
-    public LocalMessageStore getLocalMessageStore() {
-        return localMessageStore;
     }
 
     public int getNumberOfMessageInitiallyHeldImMemory() {
