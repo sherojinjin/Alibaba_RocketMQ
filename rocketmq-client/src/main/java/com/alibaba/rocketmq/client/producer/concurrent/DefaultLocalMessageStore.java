@@ -55,7 +55,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final float DISK_WARNING_WATER_LEVEL = 0.65F;
 
-    private volatile long lastFlushTime = System.currentTimeMillis();
+    private volatile long lastFlushTime = -1;
+
+    private volatile long lastWarnTime = -1;
 
     public DefaultLocalMessageStore(String storeName) {
         //For convenience of development.
@@ -229,15 +231,24 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         if (!skipAvailableDiskSpaceCheck) {
             float usableDiskSpaceRatio = getUsableDiskSpacePercent();
             if ( usableDiskSpaceRatio < 1 - DISK_HIGH_WATER_LEVEL) {
-                LOGGER.error("No sufficient disk space! Cannot to flush!");
                 long current = System.currentTimeMillis();
-                if (current - lastFlushTime > 50000) {
+
+                if (current - lastWarnTime > 2000 || -1 == lastWarnTime) {
+                    LOGGER.error("No sufficient disk space! Cannot to flush!");
+                    lastWarnTime = current;
+                }
+
+                if (current - lastFlushTime > 2000 || -1 == lastFlushTime) {
                     updateConfig();
                     lastFlushTime = current;
                 }
                 return;
             } else if (usableDiskSpaceRatio < 1 - DISK_WARNING_WATER_LEVEL) {
-                LOGGER.warn("Usable disk space now is only: " + usableDiskSpaceRatio + "%!");
+                long current = System.currentTimeMillis();
+                if (current - lastWarnTime > 5000 || -1 == lastWarnTime) {
+                    LOGGER.warn("Usable disk space now is only: " + usableDiskSpaceRatio + "%!");
+                    lastWarnTime = current;
+                }
             }
         }
 
