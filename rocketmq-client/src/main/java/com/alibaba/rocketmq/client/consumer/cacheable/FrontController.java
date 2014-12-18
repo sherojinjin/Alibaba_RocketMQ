@@ -50,7 +50,11 @@ public class FrontController implements MessageListenerConcurrently {
                                                     ConsumeConcurrentlyContext context) {
         for (MessageExt message : messages) {
             try {
-                messageQueue.put(message);
+                if (messageQueue.remainingCapacity() > 0) {
+                    messageQueue.put(message);
+                } else {
+                    localMessageStore.stash(message);
+                }
             } catch (InterruptedException e) {
                 LOGGER.error("Failed to put message into message queue", e);
             }

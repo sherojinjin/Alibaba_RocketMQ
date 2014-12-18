@@ -37,20 +37,16 @@ public class CacheableConsumer {
 
     private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
 
-    private static final int CORE_POOL_SIZE_FOR_DELAY_TASKS = 2;
-
     private static final int CORE_POOL_SIZE_FOR_WORK_TASKS = 10;
 
     private static final int MAXIMUM_POOL_SIZE_FOR_WORK_TASKS = 50;
-
-    private int corePoolSizeForDelayTasks = CORE_POOL_SIZE_FOR_DELAY_TASKS;
 
     private int corePoolSizeForWorkTasks = CORE_POOL_SIZE_FOR_WORK_TASKS;
 
     private int maximumPoolSizeForWorkTasks = MAXIMUM_POOL_SIZE_FOR_WORK_TASKS;
 
     private ScheduledExecutorService scheduledExecutorDelayService = Executors
-            .newScheduledThreadPool(corePoolSizeForDelayTasks);
+            .newSingleThreadScheduledExecutor();
 
     private ThreadPoolExecutor executorWorkerService;
 
@@ -152,10 +148,6 @@ public class CacheableConsumer {
         return started;
     }
 
-    public void setCorePoolSizeForDelayTasks(int corePoolSizeForDelayTasks) {
-        this.corePoolSizeForDelayTasks = corePoolSizeForDelayTasks;
-    }
-
     public void setCorePoolSizeForWorkTasks(int corePoolSizeForWorkTasks) {
         this.corePoolSizeForWorkTasks = corePoolSizeForWorkTasks;
     }
@@ -196,7 +188,7 @@ public class CacheableConsumer {
      * This method shuts down this client properly.
      * @throws InterruptedException If unable to shut down within 1 minute.
      */
-    public void shutdown() throws InterruptedException {
+    private void shutdown() throws InterruptedException {
         try {
             stopReceiving();
         } catch (InterruptedException e) {
@@ -213,7 +205,7 @@ public class CacheableConsumer {
         }
     }
 
-    public void stopReceiving() throws InterruptedException {
+    private void stopReceiving() throws InterruptedException {
         if (started) {
             //Stop pulling messages from server.
             defaultMQPushConsumer.shutdown();
@@ -245,7 +237,7 @@ public class CacheableConsumer {
      * Return the associated local message store or create a new one if the existing associated one was shut down.
      * @return Instance of {@link LocalMessageStore}.
      */
-    public LocalMessageStore getLocalMessageStore() {
+    private LocalMessageStore getLocalMessageStore() {
         if (null != localMessageStore && localMessageStore.isReady()) {
             return localMessageStore;
         } else {
