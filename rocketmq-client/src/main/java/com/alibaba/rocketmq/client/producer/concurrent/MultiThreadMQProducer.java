@@ -64,8 +64,15 @@ public class MultiThreadMQProducer {
 
         this.concurrentSendBatchSize = configuration.getConcurrentSendBatchSize();
 
-        sendMessagePoolExecutor = new ScheduledThreadPoolExecutor(configuration.getCorePoolSize(),
-                new ThreadPoolExecutor.CallerRunsPolicy());
+        sendMessagePoolExecutor = new ThreadPoolExecutor(
+                configuration.getCorePoolSize(), //corePoolSize
+                configuration.getMaximumPoolSize(), //maximumPoolSize
+                0, //KeepAliveTime
+                TimeUnit.NANOSECONDS, //TimeUnit
+                new LinkedBlockingQueue<Runnable>(configuration.getMaximumPoolSize()), //BlockingQueue
+                new ThreadFactoryImpl("SendMessageServiceThreadFactory"), //ThreadFactory
+                new ThreadPoolExecutor.CallerRunsPolicy() //Abort policy
+        );
 
         resendFailureMessagePoolExecutor = Executors
                 .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
