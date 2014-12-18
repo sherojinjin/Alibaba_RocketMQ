@@ -70,7 +70,7 @@ public class MultiThreadMQProducer {
                 0, //KeepAliveTime
                 TimeUnit.NANOSECONDS, //TimeUnit
                 new LinkedBlockingQueue<Runnable>(configuration.getMaximumPoolSize()), //BlockingQueue
-                new ThreadFactoryImpl("SendMessageServiceThreadFactory"), //ThreadFactory
+                new ThreadFactoryImpl("SendMessageServiceThread"), //ThreadFactory
                 new ThreadPoolExecutor.CallerRunsPolicy() //Abort policy
         );
 
