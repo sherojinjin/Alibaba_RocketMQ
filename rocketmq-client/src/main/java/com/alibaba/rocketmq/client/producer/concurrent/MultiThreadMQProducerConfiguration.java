@@ -71,7 +71,7 @@ public class MultiThreadMQProducerConfiguration {
         return this;
     }
 
-    public MultiThreadMQProducerConfiguration configureConfigureMaximumPoolSize(int maximumPoolSize) {
+    public MultiThreadMQProducerConfiguration configureMaximumPoolSize(int maximumPoolSize) {
         this.maximumPoolSize = maximumPoolSize;
         return this;
     }
