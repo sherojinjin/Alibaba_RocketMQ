@@ -43,9 +43,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>(50000);
 
-    private ScheduledExecutorService flushConfigAtFixedRateExecutorService;
+    private ScheduledExecutorService flushConfigPeriodicallyByTimeExecutorService;
 
-    private ScheduledExecutorService flushConfigAtFixedDirtyMessageNumberExecutorService;
+    private ScheduledExecutorService flushConfigPeriodicallyByMessageNumberExecutorService;
 
     private volatile boolean ready = false;
 
@@ -54,6 +54,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private static final float DISK_HIGH_WATER_LEVEL = 0.75F;
 
     private static final float DISK_WARNING_WATER_LEVEL = 0.65F;
+
+    private volatile long lastFlushTime = System.currentTimeMillis();
 
     public DefaultLocalMessageStore(String storeName) {
         //For convenience of development.
@@ -74,20 +76,20 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
         loadConfig();
 
-        flushConfigAtFixedRateExecutorService = Executors
-                .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("LocalMessageStoreFlushServiceFixedRate"));
+        flushConfigPeriodicallyByTimeExecutorService = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryImpl("LocalMessageStoreFlushConfigServicePeriodicallyByTime"));
 
-        flushConfigAtFixedRateExecutorService.scheduleAtFixedRate(new Runnable() {
+        flushConfigPeriodicallyByTimeExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 flush();
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
-        flushConfigAtFixedDirtyMessageNumberExecutorService = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryImpl("LocalMessageStoreFlushServiceFixedDirtyMessageNumber"));
+        flushConfigPeriodicallyByMessageNumberExecutorService = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryImpl("LocalMessageStoreFlushConfigServicePeriodicallyByMessageNumber"));
 
-        flushConfigAtFixedDirtyMessageNumberExecutorService.scheduleWithFixedDelay(new Runnable() {
+        flushConfigPeriodicallyByMessageNumberExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 if (messageQueue.size() > MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE) {
@@ -228,6 +230,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             float usableDiskSpaceRatio = getUsableDiskSpacePercent();
             if ( usableDiskSpaceRatio < 1 - DISK_HIGH_WATER_LEVEL) {
                 LOGGER.error("No sufficient disk space! Cannot to flush!");
+                long current = System.currentTimeMillis();
+                if (current - lastFlushTime > 50000) {
+                    updateConfig();
+                    lastFlushTime = current;
+                }
                 return;
             } else if (usableDiskSpaceRatio < 1 - DISK_WARNING_WATER_LEVEL) {
                 LOGGER.warn("Usable disk space now is only: " + usableDiskSpaceRatio + "%!");
@@ -400,11 +407,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     public void close() throws InterruptedException {
         if (ready) {
             flush(true);
-            flushConfigAtFixedRateExecutorService.shutdown();
-            flushConfigAtFixedDirtyMessageNumberExecutorService.shutdown();
+            flushConfigPeriodicallyByTimeExecutorService.shutdown();
+            flushConfigPeriodicallyByMessageNumberExecutorService.shutdown();
 
-            flushConfigAtFixedRateExecutorService.awaitTermination(30, TimeUnit.SECONDS);
-            flushConfigAtFixedDirtyMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+            flushConfigPeriodicallyByTimeExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+            flushConfigPeriodicallyByMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         }
 
         ready = false;
