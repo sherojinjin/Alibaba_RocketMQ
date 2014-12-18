@@ -177,7 +177,7 @@ public class CacheableConsumer
      * This method shuts down this client properly.
      * @throws InterruptedException If unable to shut down within 1 minute.
      */
-    private void shutdown() throws InterruptedException {
+    public void shutdown() throws InterruptedException {
         //Stop pulling messages from server.
         defaultMQPushConsumer.shutdown();
 
