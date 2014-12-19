@@ -123,8 +123,10 @@ public class MultiThreadMQProducer {
             @Override
             public void run() {
                 try {
+                    LOGGER.info("Monitoring TPS and adjusting semaphore capacity service starts.");
                     float tps = (successSendingCounter.longValue() - lastSuccessfulSendingCount) * 1000.0F
                             / (System.currentTimeMillis() - lastStatsTimeStamp);
+                    LOGGER.info("Current TPS: " + tps);
                     count++;
 
                     if (tps > officialTps + TPS_TOL || tps < officialTps - TPS_TOL) {
@@ -141,10 +143,13 @@ public class MultiThreadMQProducer {
 
                 } catch (Exception e) {
                     LOGGER.error("Monitor TPS error", e);
+                } finally {
+                    LOGGER.info("Monitoring TPS and adjusting semaphore capacity service completes.");
                 }
             }
 
             private void adjustThrottle(float tps) {
+                LOGGER.info("Begin to adjust throttle. Current semaphore capacity is: " + semaphoreCapacity);
                 int updatedSemaphoreCapacity = 0;
                 if (tps > officialTps) {
                     if (accumulativeTPSDelta > TPS_TOL) { //Update due to accumulative TPS delta surpass TPS_TOL
@@ -188,7 +193,7 @@ public class MultiThreadMQProducer {
             }
 
         }, 3000, 1000, TimeUnit.MILLISECONDS);
-        LOGGER.info("Monitor TPS and adjust semaphore size service starts.");
+
     }
 
     public void startResendFailureMessageService(long interval) {
