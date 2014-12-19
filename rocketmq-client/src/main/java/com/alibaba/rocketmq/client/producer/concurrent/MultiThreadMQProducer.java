@@ -29,7 +29,7 @@ public class MultiThreadMQProducer {
 
     private SendCallback sendCallback;
 
-    private final LocalMessageStore localMessageStore;
+    private LocalMessageStore localMessageStore;
 
     private volatile boolean started;
 
@@ -58,10 +58,6 @@ public class MultiThreadMQProducer {
             throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
         }
 
-        if (!configuration.isReadyToBuild()) {
-            throw new IllegalArgumentException(configuration.reportMissingConfiguration());
-        }
-
         this.concurrentSendBatchSize = configuration.getConcurrentSendBatchSize();
 
         sendMessagePoolExecutor = new ThreadPoolExecutor(
@@ -70,7 +66,7 @@ public class MultiThreadMQProducer {
                 0, //KeepAliveTime
                 TimeUnit.NANOSECONDS, //TimeUnit
                 new LinkedBlockingQueue<Runnable>(configuration.getMaximumPoolSize()), //BlockingQueue
-                new ThreadFactoryImpl("SendMessageServiceThreadFactory"), //ThreadFactory
+                new ThreadFactoryImpl("SendMessageServiceThread"), //ThreadFactory
                 new ThreadPoolExecutor.CallerRunsPolicy() //Abort policy
         );
 
@@ -101,11 +97,7 @@ public class MultiThreadMQProducer {
             }
         }
 
-        if (null == configuration.getLocalMessageStore()) {
-            localMessageStore = new DefaultLocalMessageStore(configuration.getProducerGroup());
-        } else {
-            localMessageStore = configuration.getLocalMessageStore();
-        }
+        localMessageStore = new DefaultLocalMessageStore(configuration.getProducerGroup());
 
         startResendFailureMessageService(configuration.getResendFailureMessageDelay());
 
@@ -119,7 +111,7 @@ public class MultiThreadMQProducer {
                 try {
                     shutdown();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    LOGGER.error("ShutdownHook error.", e);
                 }
                 LOGGER.info("Multi-thread MQ Producer shutdown hook invoked.");
             }
@@ -127,27 +119,38 @@ public class MultiThreadMQProducer {
     }
 
     private void startMonitorTPS() {
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("TPSMonitorService"))
+                .scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                float tps = (successSendingCounter.longValue() - lastSuccessfulSendingCount) * 1000.0F
-                        / (System.currentTimeMillis() - lastStatsTimeStamp);
-                count++;
+                try {
+                    LOGGER.info("Monitoring TPS and adjusting semaphore capacity service starts.");
+                    float tps = (successSendingCounter.longValue() - lastSuccessfulSendingCount) * 1000.0F
+                            / (System.currentTimeMillis() - lastStatsTimeStamp);
+                    LOGGER.info("Current TPS: " + tps);
+                    count++;
 
-                if (tps > officialTps + TPS_TOL || tps < officialTps - TPS_TOL) {
-                    adjustThrottle(tps);
-                } else {
-                    accumulativeTPSDelta += tps - officialTps;
-                    if (Math.abs(accumulativeTPSDelta) > TPS_TOL) {
+                    if (tps > officialTps + TPS_TOL || tps < officialTps - TPS_TOL) {
                         adjustThrottle(tps);
+                    } else {
+                        accumulativeTPSDelta += tps - officialTps;
+                        if (Math.abs(accumulativeTPSDelta) > TPS_TOL) {
+                            adjustThrottle(tps);
+                        }
                     }
-                }
 
-                lastStatsTimeStamp = System.currentTimeMillis();
-                lastSuccessfulSendingCount = successSendingCounter.longValue();
+                    lastStatsTimeStamp = System.currentTimeMillis();
+                    lastSuccessfulSendingCount = successSendingCounter.longValue();
+
+                } catch (Exception e) {
+                    LOGGER.error("Monitor TPS error", e);
+                } finally {
+                    LOGGER.info("Monitoring TPS and adjusting semaphore capacity service completes.");
+                }
             }
 
             private void adjustThrottle(float tps) {
+                LOGGER.info("Begin to adjust throttle. Current semaphore capacity is: " + semaphoreCapacity);
                 int updatedSemaphoreCapacity = 0;
                 if (tps > officialTps) {
                     if (accumulativeTPSDelta > TPS_TOL) { //Update due to accumulative TPS delta surpass TPS_TOL
@@ -191,11 +194,8 @@ public class MultiThreadMQProducer {
             }
 
         }, 3000, 1000, TimeUnit.MILLISECONDS);
-        LOGGER.info("Monitor TPS and adjust semaphore size service starts.");
+
     }
-
-
-
 
     public void startResendFailureMessageService(long interval) {
         resendFailureMessagePoolExecutor.scheduleWithFixedDelay(
@@ -308,7 +308,10 @@ public class MultiThreadMQProducer {
         getDefaultMQProducer().shutdown();
 
         //Refresh local message store configuration file.
-        localMessageStore.close();
+        if (null != localMessageStore && localMessageStore.isReady()) {
+            localMessageStore.close();
+            localMessageStore = null;
+        }
     }
 
     public CustomizableSemaphore getSemaphore() {

@@ -27,42 +27,47 @@ public class ResendMessageTask implements Runnable {
 
     @Override
     public void run() {
-        LOGGER.info("Start to re-send");
-        if (localMessageStore.getNumberOfMessageStashed() == 0) {
-            LOGGER.info("No stashed messages to re-send");
-            return;
-        }
-
-        int popSize = Math.min(multiThreadMQProducer.getSemaphore().availablePermits(),
-                BATCH_FETCH_MESSAGE_FROM_STORE_SIZE);
-
-        if (popSize == 0) {
-            LOGGER.info("No permits available in semaphore. Yield and wait for next round.");
-            return;
-        }
-
-        Message[] messages = localMessageStore.pop(popSize);
-        if (null == messages || messages.length == 0) {
-            LOGGER.info("No stashed messages to re-send");
-            return;
-        }
-
-        while (null != messages && messages.length > 0) {
-            //Acquire tokens from semaphore.
-            multiThreadMQProducer.getSemaphore().acquireUninterruptibly(messages.length);
-            //Send messages with tokens.
-            multiThreadMQProducer.send(messages, true);
-
-            LOGGER.info(messages.length + " stashed messages re-sending completes: scheduled job submitted.");
-
-            //Prepare for next loop step.
-            popSize = Math.min(multiThreadMQProducer.getSemaphore().availablePermits(),
-                    BATCH_FETCH_MESSAGE_FROM_STORE_SIZE);
-            if (popSize == 0) {
-                LOGGER.info("No permits available in semaphore. Break looping.");
-                break;
+        try {
+            LOGGER.info("Start to re-send");
+            if (localMessageStore.getNumberOfMessageStashed() == 0) {
+                LOGGER.info("No stashed messages to re-send");
+                return;
             }
-            messages = localMessageStore.pop(popSize);
+
+            int popSize = Math.min(multiThreadMQProducer.getSemaphore().availablePermits(),
+                    BATCH_FETCH_MESSAGE_FROM_STORE_SIZE);
+
+            if (popSize <= 0) {
+                LOGGER.info("No permits available in semaphore. Yield and wait for next round.");
+                return;
+            }
+
+            Message[] messages = localMessageStore.pop(popSize);
+            if (null == messages || messages.length == 0) {
+                LOGGER.info("No stashed messages to re-send");
+                return;
+            }
+
+            while (null != messages && messages.length > 0) {
+                //Acquire tokens from semaphore.
+                multiThreadMQProducer.getSemaphore().acquireUninterruptibly(messages.length);
+                //Send messages with tokens.
+                multiThreadMQProducer.send(messages, true);
+
+                LOGGER.info(messages.length + " stashed messages re-sending completes: scheduled job submitted.");
+
+                //Prepare for next loop step.
+                popSize = Math.min(multiThreadMQProducer.getSemaphore().availablePermits(),
+                        BATCH_FETCH_MESSAGE_FROM_STORE_SIZE);
+                if (popSize <= 0) {
+                    LOGGER.info("No permits available in semaphore. Break looping.");
+                    break;
+                }
+                messages = localMessageStore.pop(popSize);
+            }
+        } catch (Exception e) {
+            LOGGER.error("ResendMessageTask got an exception!", e);
         }
+
     }
 }

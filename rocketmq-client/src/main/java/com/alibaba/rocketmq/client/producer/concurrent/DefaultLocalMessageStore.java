@@ -43,17 +43,21 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>(50000);
 
-    private ScheduledExecutorService flushConfigAtFixedRateExecutorService;
+    private ScheduledExecutorService flushConfigPeriodicallyByTimeExecutorService;
 
-    private ScheduledExecutorService flushConfigAtFixedDirtyMessageNumberExecutorService;
+    private ScheduledExecutorService flushConfigPeriodicallyByMessageNumberExecutorService;
 
     private volatile boolean ready = false;
 
     private static final int MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE = 1000;
 
-    private static final float DISK_HIGH_WATER_LEVEL = 0.9F;
+    private static final float DISK_HIGH_WATER_LEVEL = 0.75F;
 
-    private static final float DISK_WARNING_WATER_LEVEL = 0.8F;
+    private static final float DISK_WARNING_WATER_LEVEL = 0.65F;
+
+    private volatile long lastFlushTime = -1;
+
+    private volatile long lastWarnTime = -1;
 
     public DefaultLocalMessageStore(String storeName) {
         //For convenience of development.
@@ -74,20 +78,20 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
         loadConfig();
 
-        flushConfigAtFixedRateExecutorService = Executors
-                .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("LocalMessageStoreFlushServiceFixedRate"));
+        flushConfigPeriodicallyByTimeExecutorService = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryImpl("LocalMessageStoreFlushConfigServicePeriodicallyByTime"));
 
-        flushConfigAtFixedRateExecutorService.scheduleAtFixedRate(new Runnable() {
+        flushConfigPeriodicallyByTimeExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 flush();
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
-        flushConfigAtFixedDirtyMessageNumberExecutorService = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryImpl("LocalMessageStoreFlushServiceFixedDirtyMessageNumber"));
+        flushConfigPeriodicallyByMessageNumberExecutorService = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryImpl("LocalMessageStoreFlushConfigServicePeriodicallyByMessageNumber"));
 
-        flushConfigAtFixedDirtyMessageNumberExecutorService.scheduleWithFixedDelay(new Runnable() {
+        flushConfigPeriodicallyByMessageNumberExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 if (messageQueue.size() > MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE) {
@@ -97,6 +101,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         }, 50, 100, TimeUnit.MILLISECONDS);
 
         ready = true;
+
+        LOGGER.info("Local Message store starts to operate.");
     }
 
     /**
@@ -146,9 +152,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     }
                 }
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                LOGGER.error("Load configuration error", e);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("Load configuration error", e);
             } finally {
                 if (null != inputStream) {
                     try {
@@ -178,8 +184,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             bufferedWriter.newLine();
             bufferedWriter.flush();
         } catch (IOException e) {
-            LOGGER.error("Unable to update config file", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Unable to update config file", e);
         } finally {
             if (null != bufferedWriter) {
                 try {
@@ -189,6 +194,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
             }
         }
+        LOGGER.info("LocalMessageStore configuration file updated.");
     }
 
     /**
@@ -227,10 +233,24 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         if (!skipAvailableDiskSpaceCheck) {
             float usableDiskSpaceRatio = getUsableDiskSpacePercent();
             if ( usableDiskSpaceRatio < 1 - DISK_HIGH_WATER_LEVEL) {
-                LOGGER.error("No sufficient disk space! Cannot to flush!");
+                long current = System.currentTimeMillis();
+
+                if (current - lastWarnTime > 2000 || -1 == lastWarnTime) {
+                    LOGGER.error("No sufficient disk space! Cannot to flush!");
+                    lastWarnTime = current;
+                }
+
+                if (current - lastFlushTime > 2000 || -1 == lastFlushTime) {
+                    updateConfig();
+                    lastFlushTime = current;
+                }
                 return;
             } else if (usableDiskSpaceRatio < 1 - DISK_WARNING_WATER_LEVEL) {
-                LOGGER.warn("Usable disk space now is only: " + usableDiskSpaceRatio + "%!");
+                long current = System.currentTimeMillis();
+                if (current - lastWarnTime > 5000 || -1 == lastWarnTime) {
+                    LOGGER.warn("Usable disk space now is only: " + usableDiskSpaceRatio + "%!");
+                    lastWarnTime = current;
+                }
             }
         }
 
@@ -285,13 +305,13 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
             updateConfig();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("Flush messages error", e);
             throw new RuntimeException("Lock exception", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Flush messages error", e);
             throw new RuntimeException("IO Error", e);
         } finally {
-            LOGGER.info("Local message store flushing completes.");
+            LOGGER.info("Local message store flushes completely.");
             lock.unlock();
         }
     }
@@ -377,14 +397,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
             return messages;
         } catch (InterruptedException e) {
-            LOGGER.error("Pop message error, caused by {}", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Pop message error", e);
         } catch (FileNotFoundException e) {
-            LOGGER.error("Pop message error, caused by {}", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Pop message error", e);
         } catch (IOException e) {
-            LOGGER.error("Pop message error, caused by {}", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Pop message error", e);
         } finally {
             lock.unlock();
         }
@@ -400,14 +417,18 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     public void close() throws InterruptedException {
         if (ready) {
             flush(true);
-            flushConfigAtFixedRateExecutorService.shutdown();
-            flushConfigAtFixedDirtyMessageNumberExecutorService.shutdown();
+            flushConfigPeriodicallyByTimeExecutorService.shutdown();
+            flushConfigPeriodicallyByMessageNumberExecutorService.shutdown();
 
-            flushConfigAtFixedRateExecutorService.awaitTermination(30, TimeUnit.SECONDS);
-            flushConfigAtFixedDirtyMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+            flushConfigPeriodicallyByTimeExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+            flushConfigPeriodicallyByMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         }
 
         ready = false;
-        LOGGER.info("Default local message store shutdown complete");
+        LOGGER.info("Default local message store shuts down completely");
+    }
+
+    public boolean isReady() {
+        return ready;
     }
 }

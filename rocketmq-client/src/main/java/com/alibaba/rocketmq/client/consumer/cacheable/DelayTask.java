@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class DelayTask implements Runnable {
 
@@ -25,42 +27,59 @@ public class DelayTask implements Runnable {
 
     private DefaultLocalMessageStore localMessageStore;
 
+    private LinkedBlockingQueue<MessageExt> messageQueue;
+
+    private final ThreadPoolExecutor executorWorkerService;
+
     public DelayTask(ConcurrentHashMap<String, MessageHandler> topicHandlerMap,
-                     DefaultLocalMessageStore localMessageStore) {
+                     DefaultLocalMessageStore localMessageStore,
+                     LinkedBlockingQueue<MessageExt> messageQueue,
+                     ThreadPoolExecutor executorWorkerService
+    ) {
         this.localMessageStore = localMessageStore;
         this.topicHandlerMap = topicHandlerMap;
+        this.executorWorkerService = executorWorkerService;
+        this.messageQueue = messageQueue;
     }
 
     @Override
     public void run() {
-        LOGGER.info("Start re-consume messages");
-        Message[] messages = localMessageStore.pop(BATCH_SIZE);
-        while (messages != null && messages.length > 0) {
-            //TODO:Sorting here does not make sense.
-            TreeMap<String, MessageExt> messageExtMap = getMessageTree(messages);
-            for (Message message : messages) {
-                if (null == message) {
-                    continue;
-                }
-                MessageExt messageExt = messageExtMap.get(message.getProperty(MESSAGE_ID_KEY));
-                if (Long.parseLong(message.getProperty(NEXT_TIME_KEY)) - System.currentTimeMillis() < TOL) {
-                    MessageHandler messageHandler = topicHandlerMap.get(messageExt.getTopic());
-                    if (null == messageHandler) {
-                        //On restart, fewer message handler may be registered so some messages stored locally may not
-                        // get processed. We should warn this.
-                        localMessageStore.stash(message);
+        try {
+            LOGGER.info("Start re-consume messages");
+
+            if (messageQueue.remainingCapacity() == 0) {
+                LOGGER.info("Message queue is full. Won't fetch message from local message store.");
+                return;
+            }
+
+            Message[] messages = localMessageStore.pop(BATCH_SIZE);
+            while (messages != null && messages.length > 0) {
+                //TODO:Sorting here does not make sense, remove it next time.
+                TreeMap<String, MessageExt> messageExtMap = getMessageTree(messages);
+                for (Message message : messages) {
+                    if (null == message) {
                         continue;
                     }
-                    int result = messageHandler.handle(messageExt);
-                    if (result > 0) {
-                        message.putUserProperty(NEXT_TIME_KEY, String.valueOf(System.currentTimeMillis() + result));
+                    MessageExt messageExt = messageExtMap.get(message.getProperty(MESSAGE_ID_KEY));
+                    if (Long.parseLong(message.getProperty(NEXT_TIME_KEY)) - System.currentTimeMillis() < TOL) {
+                        MessageHandler messageHandler = topicHandlerMap.get(messageExt.getTopic());
+                        if (null == messageHandler) {
+                            // On restart, fewer message handler may be registered so some messages stored locally
+                            // may not get processed. We should warn this.
+                            localMessageStore.stash(message);
+                            continue;
+                        }
+                        ProcessMessageTask task =
+                                new ProcessMessageTask(messageExt, messageHandler, localMessageStore, messageQueue);
+                        executorWorkerService.submit(task);
+                    } else {
                         localMessageStore.stash(message);
                     }
-                } else {
-                    localMessageStore.stash(message);
                 }
+                messages = localMessageStore.pop(BATCH_SIZE);
             }
-            messages = localMessageStore.pop(BATCH_SIZE);
+        } catch (Exception e) {
+            LOGGER.error("DelayTask error", e);
         }
     }
 

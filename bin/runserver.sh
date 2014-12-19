@@ -27,7 +27,7 @@ JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${HOME}/rmq_srv_gc.log -XX:+PrintGCDet
 JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -XX:-HeapDumpOnOutOfMemoryError"
 JAVA_OPT="${JAVA_OPT} -Djava.ext.dirs=${BASE_DIR}/lib"
-JAVA_OPT="${JAVA_OPT} -Drocketmq.namesrv.domain=rocketmq.api"
+JAVA_OPT="${JAVA_OPT} -Drocketmq.namesrv.domain=config.graphene.cool-update.com"
 JAVA_OPT="${JAVA_OPT} -Denable_ssl=true"
 JAVA_OPT="${JAVA_OPT} -Duse_elastic_ip=true"
 #JAVA_OPT="${JAVA_OPT} -Xdebug -Xrunjdwp:transport=dt_socket,address=9555,server=y,suspend=n"
