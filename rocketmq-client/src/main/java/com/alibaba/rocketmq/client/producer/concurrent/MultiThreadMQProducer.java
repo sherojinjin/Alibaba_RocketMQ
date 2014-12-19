@@ -119,7 +119,8 @@ public class MultiThreadMQProducer {
     }
 
     private void startMonitorTPS() {
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("TPSMonitorService"))
+                .scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 try {
