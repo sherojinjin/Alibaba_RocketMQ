@@ -18,13 +18,15 @@ import java.util.Arrays;
 
 public class SslHelper {
 
-    private static final String DEFAULT_KEY_STORE_PASSWORD = "changeit";
+    private static final String DEFAULT_SERVER_PASSWORD = "VVYZZ9NLVdy849XIy/tM3Q==";
 
-    private static final String DEFAULT_KEY_PASSWORD = "changeit";
+    private static final String DEFAULT_CLIENT_PASSWORD = "VVYZZ9NLVdy849XIy/tM3Q==";
 
     private static final String INITIAL_VECTOR = "0102030405060708";
 
     private static final String CIPHER = "AES/CBC/PKCS5Padding";
+
+    private static final String SECRET = "R0ck1tMQ@NDPMediaP1ssw0rd";
 
     public static SSLContext getSSLContext(SslRole role) throws SSLContextCreationException {
         try {
@@ -38,22 +40,26 @@ public class SslHelper {
 
             switch (role) {
                 case SERVER:
-                    keyStore.load(classLoader.getResourceAsStream("server.ks"),
-                            System.getProperty("RocketMQServerKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
-                    trustKeyStore.load(classLoader.getResourceAsStream("server.ks"),
-                            System.getProperty("RocketMQServerTrustKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
-                    keyManagerFactory.init(keyStore,
-                            System.getProperty("RocketMQServerKeyPassword", DEFAULT_KEY_PASSWORD).toCharArray());
+                    String cipherText = System.getProperty("RocketMQServerPassword");
+                    if (null == cipherText) {
+                        cipherText = DEFAULT_SERVER_PASSWORD;
+                    }
+                    char[] clearText = decrypt(SECRET, cipherText);
+                    keyStore.load(classLoader.getResourceAsStream("server.ks"), clearText);
+                    trustKeyStore.load(classLoader.getResourceAsStream("server.ks"), clearText);
+                    keyManagerFactory.init(keyStore, clearText);
                     trustManagerFactory.init(trustKeyStore);
                     break;
 
                 case CLIENT:
-                    keyStore.load(classLoader.getResourceAsStream("client.ks"),
-                            System.getProperty("RocketMQClientKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
-                    trustKeyStore.load(classLoader.getResourceAsStream("client.ks"),
-                            System.getProperty("RocketMQClientTrustKeyStorePassword", DEFAULT_KEY_STORE_PASSWORD).toCharArray());
-                    keyManagerFactory.init(keyStore,
-                            System.getProperty("RocketMQClientKeyPassword", DEFAULT_KEY_PASSWORD).toCharArray());
+                    cipherText = System.getProperty("RocketMQClientPassword");
+                    if (null == cipherText) {
+                        cipherText = DEFAULT_CLIENT_PASSWORD;
+                    }
+                    clearText = decrypt(SECRET, cipherText);
+                    keyStore.load(classLoader.getResourceAsStream("client.ks"), clearText);
+                    trustKeyStore.load(classLoader.getResourceAsStream("client.ks"), clearText);
+                    keyManagerFactory.init(keyStore, clearText);
                     trustManagerFactory.init(trustKeyStore);
                     break;
             }
@@ -75,6 +81,9 @@ public class SslHelper {
             e.printStackTrace();
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         } catch (UnrecoverableKeyException e) {
+            e.printStackTrace();
+            throw new SSLContextCreationException("Error while creating SSLContext", e);
+        } catch (Exception e) {
             e.printStackTrace();
             throw new SSLContextCreationException("Error while creating SSLContext", e);
         }
@@ -116,6 +125,13 @@ public class SslHelper {
         MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
         byte[] key = sha1.digest(secret.getBytes());
         return new SecretKeySpec(Arrays.copyOf(key, 16), "AES");
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        System.out.println(encrypt(SECRET, "changeit"));
+
+        System.out.println("ClearText：" + new String(decrypt(SECRET, System.getProperty("RocketMQKeyStoreCredential"))));
     }
 }
 
