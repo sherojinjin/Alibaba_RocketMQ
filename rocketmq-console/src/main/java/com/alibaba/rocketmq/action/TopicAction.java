@@ -54,12 +54,11 @@ public class TopicAction extends AbstractAction {
         return TEMPLATE;
     }
 
-
     @RequestMapping(value = "/stats.do", method = RequestMethod.GET)
-    public String stats(ModelMap map, @RequestParam String topic) {
+    public String stats(ModelMap map, @RequestParam String topic){
         putPublicAttribute(map, "stats");
         try {
-            Table table = topicService.stats(topic);
+            Table table = topicService.stats(topic.replace("%25", "%"));
             putTable(map, table);
         }
         catch (Throwable t) {
@@ -83,7 +82,7 @@ public class TopicAction extends AbstractAction {
     public String route(ModelMap map, @RequestParam String topic) {
         putPublicAttribute(map, "route");
         try {
-            TopicRouteData topicRouteData = topicService.route(topic);
+            TopicRouteData topicRouteData = topicService.route(topic.replace("%25", "%"));
             map.put("topicRouteData", topicRouteData);
         }
         catch (Throwable t) {
@@ -104,7 +103,7 @@ public class TopicAction extends AbstractAction {
             }
             else if (request.getMethod().equals(POST)) {
                 checkOptions(options);
-                topicService.delete(topic, clusterName);
+                topicService.delete(topic.replace("%25", "%"), clusterName);
                 putAlertTrue(map);
             }
             else {
@@ -132,7 +131,7 @@ public class TopicAction extends AbstractAction {
             }
             else if (request.getMethod().equals(POST)) {
                 checkOptions(options);
-                topicService.update(topic, readQueueNums, writeQueueNums, perm, brokerAddr, clusterName);
+                topicService.update(topic.replace("%25", "%"), readQueueNums, writeQueueNums, perm, brokerAddr, clusterName);
                 putAlertTrue(map);
             }
             else {
