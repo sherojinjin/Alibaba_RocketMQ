@@ -122,21 +122,26 @@ public class MultiThreadMQProducer {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                float tps = (successSendingCounter.longValue() - lastSuccessfulSendingCount) * 1000.0F
-                        / (System.currentTimeMillis() - lastStatsTimeStamp);
-                count++;
+                try {
+                    float tps = (successSendingCounter.longValue() - lastSuccessfulSendingCount) * 1000.0F
+                            / (System.currentTimeMillis() - lastStatsTimeStamp);
+                    count++;
 
-                if (tps > officialTps + TPS_TOL || tps < officialTps - TPS_TOL) {
-                    adjustThrottle(tps);
-                } else {
-                    accumulativeTPSDelta += tps - officialTps;
-                    if (Math.abs(accumulativeTPSDelta) > TPS_TOL) {
+                    if (tps > officialTps + TPS_TOL || tps < officialTps - TPS_TOL) {
                         adjustThrottle(tps);
+                    } else {
+                        accumulativeTPSDelta += tps - officialTps;
+                        if (Math.abs(accumulativeTPSDelta) > TPS_TOL) {
+                            adjustThrottle(tps);
+                        }
                     }
-                }
 
-                lastStatsTimeStamp = System.currentTimeMillis();
-                lastSuccessfulSendingCount = successSendingCounter.longValue();
+                    lastStatsTimeStamp = System.currentTimeMillis();
+                    lastSuccessfulSendingCount = successSendingCounter.longValue();
+
+                } catch (Exception e) {
+                    LOGGER.error("Monitor TPS error", e);
+                }
             }
 
             private void adjustThrottle(float tps) {
