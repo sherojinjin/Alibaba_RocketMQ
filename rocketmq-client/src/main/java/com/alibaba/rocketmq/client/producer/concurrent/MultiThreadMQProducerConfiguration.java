@@ -20,7 +20,7 @@ public class MultiThreadMQProducerConfiguration {
 
     public static final int MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 20000;
 
-    public static final int MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 1000;
+    public static final int MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 3000;
 
     private int numberOfMessageInitiallyHeldImMemory = MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY;
 
