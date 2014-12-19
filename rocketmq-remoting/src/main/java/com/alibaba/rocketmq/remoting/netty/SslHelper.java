@@ -126,13 +126,6 @@ public class SslHelper {
         byte[] key = sha1.digest(secret.getBytes());
         return new SecretKeySpec(Arrays.copyOf(key, 16), "AES");
     }
-
-
-    public static void main(String[] args) throws Exception {
-        System.out.println(encrypt(SECRET, "changeit"));
-
-        System.out.println("ClearText：" + new String(decrypt(SECRET, System.getProperty("RocketMQKeyStoreCredential"))));
-    }
 }
 
 enum SslRole {
