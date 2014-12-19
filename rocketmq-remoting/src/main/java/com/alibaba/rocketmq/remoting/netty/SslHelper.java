@@ -14,6 +14,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 
 public class SslHelper {
 
@@ -93,46 +94,28 @@ public class SslHelper {
         return engine;
     }
 
-    public static String encrypt(String strKey, String strIn) throws Exception {
-        SecretKeySpec secretKeySpec = getKey(strKey);
+    public static String encrypt(String secret, String clearText) throws Exception {
+        SecretKeySpec secretKeySpec = getKey(secret);
         Cipher cipher = Cipher.getInstance(CIPHER);
         IvParameterSpec iv = new IvParameterSpec(INITIAL_VECTOR.getBytes());
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, iv);
-        byte[] encrypted = cipher.doFinal(strIn.getBytes());
+        byte[] encrypted = cipher.doFinal(clearText.getBytes());
         return new BASE64Encoder().encode(encrypted);
     }
 
-    public static String decrypt(String strKey, String strIn) throws Exception {
-        SecretKeySpec secretKeySpec = getKey(strKey);
+    public static char[] decrypt(String secret, String cipherText) throws Exception {
+        SecretKeySpec secretKeySpec = getKey(secret);
         Cipher cipher = Cipher.getInstance(CIPHER);
         IvParameterSpec iv = new IvParameterSpec(INITIAL_VECTOR.getBytes());
         cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv);
-        byte[] encrypted1 = new BASE64Decoder().decodeBuffer(strIn);
-
-        byte[] original = cipher.doFinal(encrypted1);
-        String originalString = new String(original);
-        return originalString;
+        byte[] encodeCipherText = new BASE64Decoder().decodeBuffer(cipherText);
+        return new String(cipher.doFinal(encodeCipherText)).toCharArray();
     }
 
-    private static SecretKeySpec getKey(String strKey) throws Exception {
-        byte[] tmpArray = strKey.getBytes();
-        byte[] array = new byte[16]; // 创建一个空的16位字节数组（默认值为0）
-
-        System.arraycopy(tmpArray, 0, array, 0, tmpArray.length > 16 ? 16 : tmpArray.length);
-        return new SecretKeySpec(array, "AES");
-    }
-
-    public static void main(String[] args) throws Exception {
-        String Code = "中文ABc123";
-        String key = "1q2w3e4r";
-        String codE;
-
-        codE = encrypt(key, Code);
-
-        System.out.println("原文：" + Code);
-        System.out.println("密钥：" + key);
-        System.out.println("密文：" + codE);
-        System.out.println("解密：" + decrypt(key, codE));
+    private static SecretKeySpec getKey(String secret) throws Exception {
+        MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+        byte[] key = sha1.digest(secret.getBytes());
+        return new SecretKeySpec(Arrays.copyOf(key, 16), "AES");
     }
 }
 
