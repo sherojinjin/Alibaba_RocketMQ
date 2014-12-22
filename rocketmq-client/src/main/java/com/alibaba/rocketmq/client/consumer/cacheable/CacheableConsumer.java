@@ -130,7 +130,9 @@ public class CacheableConsumer {
             @Override
             public void run() {
                 try {
+                    LOGGER.info("Begin to shutdown CacheableConsumer");
                     shutdown();
+                    LOGGER.info("CacheableConsumer shuts down successfully.");
                 } catch (InterruptedException e) {
                     LOGGER.error("Exception thrown while invoking ShutdownHook", e);
                 }
@@ -222,6 +224,7 @@ public class CacheableConsumer {
 
             //Stash back all those that is not properly handled.
             LinkedBlockingQueue<MessageExt> messageQueue = frontController.getMessageQueue();
+            LOGGER.info(messageQueue.size() + " messages to save into local message store due to system shutdown.");
             if (messageQueue.size() > 0) {
                 MessageExt messageExt = messageQueue.poll();
                 while (null != messageExt) {
@@ -229,6 +232,7 @@ public class CacheableConsumer {
                     messageExt = messageQueue.poll();
                 }
             }
+            LOGGER.info("Local message saving completes.");
             started = false;
         }
     }
