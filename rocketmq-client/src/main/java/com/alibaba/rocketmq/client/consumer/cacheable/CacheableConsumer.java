@@ -4,7 +4,6 @@ import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
-import com.alibaba.rocketmq.client.producer.concurrent.LocalMessageStore;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.message.MessageExt;
@@ -45,8 +44,7 @@ public class CacheableConsumer {
 
     private int maximumPoolSizeForWorkTasks = MAXIMUM_POOL_SIZE_FOR_WORK_TASKS;
 
-    private ScheduledExecutorService scheduledExecutorDelayService = Executors
-            .newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService scheduledExecutorDelayService = Executors.newSingleThreadScheduledExecutor();
 
     private ThreadPoolExecutor executorWorkerService;
 
@@ -114,18 +112,19 @@ public class CacheableConsumer {
             throw new RuntimeException("Please at least configure one message handler to subscribe one topic");
         }
 
-        //In case this consumer was shutdown previously.
-        if (null == localMessageStore || !localMessageStore.isReady()) {
-            localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
-        }
         defaultMQPushConsumer.registerMessageListener(frontController);
         defaultMQPushConsumer.start();
 
         startPopThread();
 
         started = true;
-        LOGGER.debug("DefaultMQPushConsumer starts.");
 
+        addShutdownHook();
+
+        LOGGER.debug("DefaultMQPushConsumer starts.");
+    }
+
+    private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
@@ -141,8 +140,7 @@ public class CacheableConsumer {
     }
 
     private void startPopThread() {
-        DelayTask delayTask = new DelayTask(topicHandlerMap, localMessageStore, frontController.getMessageQueue(),
-                executorWorkerService);
+        DelayTask delayTask = new DelayTask(topicHandlerMap, localMessageStore, frontController.getMessageQueue());
         scheduledExecutorDelayService.scheduleWithFixedDelay(delayTask, 2, 2, TimeUnit.SECONDS);
     }
 
@@ -209,7 +207,7 @@ public class CacheableConsumer {
 
     private void stopReceiving() throws InterruptedException {
         if (started) {
-            //Stop pulling messages from server.
+            //Stop pulling messages from broker server.
             defaultMQPushConsumer.shutdown();
 
             //Stop popping messages from local message store.
@@ -234,18 +232,6 @@ public class CacheableConsumer {
             }
             LOGGER.info("Local message saving completes.");
             started = false;
-        }
-    }
-
-    /**
-     * Return the associated local message store or create a new one if the existing associated one was shut down.
-     * @return Instance of {@link LocalMessageStore}.
-     */
-    private LocalMessageStore getLocalMessageStore() {
-        if (null != localMessageStore && localMessageStore.isReady()) {
-            return localMessageStore;
-        } else {
-            return new DefaultLocalMessageStore(consumerGroupName);
         }
     }
 }

@@ -72,6 +72,9 @@ public class FrontController implements MessageListenerConcurrently {
         jobSubmitter.stop();
     }
 
+    /**
+     * This thread wraps messages from message queue into ProcessMessageTask items and submit them into
+     */
     class JobSubmitter implements Runnable {
         private boolean running = true;
 
@@ -79,7 +82,7 @@ public class FrontController implements MessageListenerConcurrently {
         public void run() {
             while (running) {
                 try {
-                    MessageExt message = messageQueue.take();
+                    MessageExt message = messageQueue.take(); //Block if there is no message in the queue.
                     final MessageHandler messageHandler = topicHandlerMap.get(message.getTopic());
                     ProcessMessageTask task =
                             new ProcessMessageTask(message, messageHandler, localMessageStore, messageQueue);

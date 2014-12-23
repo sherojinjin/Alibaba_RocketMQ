@@ -6,10 +6,9 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class DelayTask implements Runnable {
 
@@ -29,16 +28,12 @@ public class DelayTask implements Runnable {
 
     private LinkedBlockingQueue<MessageExt> messageQueue;
 
-    private final ThreadPoolExecutor executorWorkerService;
-
     public DelayTask(ConcurrentHashMap<String, MessageHandler> topicHandlerMap,
                      DefaultLocalMessageStore localMessageStore,
-                     LinkedBlockingQueue<MessageExt> messageQueue,
-                     ThreadPoolExecutor executorWorkerService
+                     LinkedBlockingQueue<MessageExt> messageQueue
     ) {
         this.localMessageStore = localMessageStore;
         this.topicHandlerMap = topicHandlerMap;
-        this.executorWorkerService = executorWorkerService;
         this.messageQueue = messageQueue;
     }
 
@@ -52,16 +47,18 @@ public class DelayTask implements Runnable {
                 return;
             }
 
+            boolean isMessageQueueFull = false;
             Message[] messages = localMessageStore.pop(BATCH_SIZE);
             while (messages != null && messages.length > 0) {
                 //TODO:Sorting here does not make sense, remove it next time.
                 TreeMap<String, MessageExt> messageExtMap = getMessageTree(messages);
+                long current = System.currentTimeMillis();
                 for (Message message : messages) {
                     if (null == message) {
                         continue;
                     }
                     MessageExt messageExt = messageExtMap.get(message.getProperty(MESSAGE_ID_KEY));
-                    if (Long.parseLong(message.getProperty(NEXT_TIME_KEY)) - System.currentTimeMillis() < TOL) {
+                    if (Long.parseLong(message.getProperty(NEXT_TIME_KEY)) - current < TOL) { //It's time to process.
                         MessageHandler messageHandler = topicHandlerMap.get(messageExt.getTopic());
                         if (null == messageHandler) {
                             // On restart, fewer message handler may be registered so some messages stored locally
@@ -69,14 +66,30 @@ public class DelayTask implements Runnable {
                             localMessageStore.stash(message);
                             continue;
                         }
-                        ProcessMessageTask task =
-                                new ProcessMessageTask(messageExt, messageHandler, localMessageStore, messageQueue);
-                        executorWorkerService.submit(task);
+
+                        if (messageQueue.remainingCapacity() > 0) {
+                            //JobSubmitter will wrap the message into ProcessMessageTask and executorWorkerService will
+                            //deliver this message to business client.
+                            messageQueue.put(messageExt);
+                        } else {
+                            //Mark the messageQueue full and stash the message.
+                            isMessageQueueFull = true;
+                            localMessageStore.stash(message);
+                        }
+
                     } else {
+                        //It's too early to process, stash the message again and wait for next round.
                         localMessageStore.stash(message);
                     }
                 }
-                messages = localMessageStore.pop(BATCH_SIZE);
+
+                if (!isMessageQueueFull) {
+                    //Pop more messages from local message store.
+                    messages = localMessageStore.pop(BATCH_SIZE);
+                } else {
+                    //As messageQueue is full, we need to break the loop of popping message from local message store.
+                    break;
+                }
             }
         } catch (Exception e) {
             LOGGER.error("DelayTask error", e);
