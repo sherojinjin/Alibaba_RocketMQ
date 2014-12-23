@@ -36,16 +36,25 @@ public class ProcessMessageTask implements Runnable {
     @Override
     public void run() {
         try {
+            long start = System.currentTimeMillis();
+            LOGGER.info("Request business client to process message[msgId=" + message.getMsgId() + "]. CurrentTimeInMilliseconds:" + start);
             int result = messageHandler.handle(message);
+            long end = System.currentTimeMillis();
+            LOGGER.info("Business processing completes. CurrentTimeInMilliseconds:" + System.currentTimeMillis() + ". Cost: " + (end - start) + " milliseconds");
+
             //Remove the message from in-progress queue.
             if (null != messageQueue && messageQueue.contains(message)) {
                 messageQueue.remove(message);
+                LOGGER.info("Now " + messageQueue.size() + " messages in queue.");
             }
 
             if (result > 0) {
                 Message me = TranslateMsg.getMessageFromMessageExt(message);
                 me.putUserProperty(NEXT_TIME_KEY, String.valueOf(System.currentTimeMillis() + result));
+                LOGGER.info("Stashing message[msgId=" + message.getMsgId() + "] for later retry in " + result
+                        + " milliseconds.");
                 localMessageStore.stash(me);
+                LOGGER.info("Message stashed.");
             }
         } catch (Exception e) {
             LOGGER.error("ProcessMessageTask error", e);
