@@ -102,7 +102,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
         case RequestCode.GET_MIN_OFFSET:
             return this.getMinOffset(ctx, request);
         case RequestCode.GET_EARLIEST_MSG_STORETIME:
-            return this.getEarliestMsgStoretime(ctx, request);
+            return this.getEarliestMsgStoreTime(ctx, request);
 
             // 获取Broker运行时信息
         case RequestCode.GET_BROKER_RUNTIME_INFO:
@@ -831,7 +831,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
     }
 
 
-    private RemotingCommand getEarliestMsgStoretime(ChannelHandlerContext ctx, RemotingCommand request)
+    private RemotingCommand getEarliestMsgStoreTime(ChannelHandlerContext ctx, RemotingCommand request)
             throws RemotingCommandException {
         final RemotingCommand response =
                 RemotingCommand.createResponseCommand(GetEarliestMsgStoretimeResponseHeader.class);
