@@ -17,11 +17,9 @@ public class MultiThreadMQProducer {
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
-    private int concurrentSendBatchSize = 100;
-
     private static final int TPS_TOL = 100;
 
-    private final ThreadPoolExecutor sendMessagePoolExecutor;
+    private static final int MAX_NUMBER_OF_MESSAGE_IN_QUEUE = 50000;
 
     private final ScheduledExecutorService resendFailureMessagePoolExecutor;
 
@@ -49,31 +47,21 @@ public class MultiThreadMQProducer {
 
     private int count;
 
-    private AtomicLong numberOfMessageStashedDueToLackOfSemaphoreToken = new AtomicLong(0L);
-
     private MessageQueueSelector messageQueueSelector;
+
+    private LinkedBlockingQueue<Message> messageQueue;
+
+    private MessageSender messageSender;
 
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
         if (null == configuration) {
             throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
         }
 
-        this.concurrentSendBatchSize = configuration.getConcurrentSendBatchSize();
-
-        sendMessagePoolExecutor = new ThreadPoolExecutor(
-                configuration.getCorePoolSize(), //corePoolSize
-                configuration.getMaximumPoolSize(), //maximumPoolSize
-                0, //KeepAliveTime
-                TimeUnit.NANOSECONDS, //TimeUnit
-                new LinkedBlockingQueue<Runnable>(configuration.getMaximumPoolSize()), //BlockingQueue
-                new ThreadFactoryImpl("SendMessageServiceThread"), //ThreadFactory
-                new ThreadPoolExecutor.CallerRunsPolicy() //Abort policy
-        );
-
         resendFailureMessagePoolExecutor = Executors
                 .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
 
-        semaphoreCapacity = configuration.getNumberOfMessageInitiallyHeldImMemory();
+        semaphoreCapacity = configuration.getInitialNumberOfMessagePermits();
 
         semaphore = new CustomizableSemaphore(semaphoreCapacity, true);
 
@@ -102,10 +90,18 @@ public class MultiThreadMQProducer {
         startResendFailureMessageService(configuration.getResendFailureMessageDelay());
 
         startMonitorTPS();
-        
+
         messageQueueSelector = new SelectMessageQueueByDataCenter(defaultMQProducer);
 
+        messageQueue = new LinkedBlockingQueue<Message>(MAX_NUMBER_OF_MESSAGE_IN_QUEUE);
+
         addShutdownHook();
+
+        messageSender = new MessageSender();
+
+        Thread messageSendingThread = new Thread(messageSender);
+        messageSendingThread.setName("MessageSendingService");
+        messageSendingThread.start();
     }
 
     private void addShutdownHook() {
@@ -125,79 +121,84 @@ public class MultiThreadMQProducer {
     private void startMonitorTPS() {
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("TPSMonitorService"))
                 .scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    LOGGER.info("Monitoring TPS and adjusting semaphore capacity service starts.");
-                    float tps = (successSendingCounter.longValue() - lastSuccessfulSendingCount) * 1000.0F
-                            / (System.currentTimeMillis() - lastStatsTimeStamp);
-                    LOGGER.info("Current TPS: " + tps);
-                    count++;
+                    @Override
+                    public void run() {
+                        try {
+                            LOGGER.info("Monitoring TPS and adjusting semaphore capacity service starts.");
+                            float tps = (successSendingCounter.longValue() - lastSuccessfulSendingCount) * 1000.0F
+                                    / (System.currentTimeMillis() - lastStatsTimeStamp);
 
-                    if (tps > officialTps + TPS_TOL || tps < officialTps - TPS_TOL) {
-                        adjustThrottle(tps);
-                    } else {
-                        accumulativeTPSDelta += tps - officialTps;
-                        if (Math.abs(accumulativeTPSDelta) > TPS_TOL) {
-                            adjustThrottle(tps);
+                            LOGGER.info("Current TPS: " + tps +
+                                    "; Number of message pending to send is: " + messageQueue.size() +
+                                    "; Number of message stashed to local message store is: " + localMessageStore.getNumberOfMessageStashed() +
+                                    "; Number of message already sent is: " + successSendingCounter.longValue());
+
+                            count++;
+
+                            if (tps > officialTps + TPS_TOL || tps < officialTps - TPS_TOL) {
+                                adjustThrottle(tps);
+                            } else {
+                                accumulativeTPSDelta += tps - officialTps;
+                                if (Math.abs(accumulativeTPSDelta) > TPS_TOL) {
+                                    adjustThrottle(tps);
+                                }
+                            }
+
+                            lastStatsTimeStamp = System.currentTimeMillis();
+                            lastSuccessfulSendingCount = successSendingCounter.longValue();
+
+                        } catch (Exception e) {
+                            LOGGER.error("Monitor TPS error", e);
+                        } finally {
+                            LOGGER.info("Monitoring TPS and adjusting semaphore capacity service completes.");
                         }
                     }
 
-                    lastStatsTimeStamp = System.currentTimeMillis();
-                    lastSuccessfulSendingCount = successSendingCounter.longValue();
+                    private void adjustThrottle(float tps) {
+                        LOGGER.info("Begin to adjust throttle. Current semaphore capacity is: " + semaphoreCapacity);
+                        int updatedSemaphoreCapacity = 0;
+                        if (tps > officialTps) {
+                            if (accumulativeTPSDelta > TPS_TOL) { //Update due to accumulative TPS delta surpass TPS_TOL
+                                updatedSemaphoreCapacity = Math.min(semaphoreCapacity + (int) accumulativeTPSDelta / count,
+                                        MultiThreadMQProducerConfiguration.MAXIMUM_NUMBER_OF_MESSAGE_PERMITS);
+                            } else { //Update due to a specific second-average TPS > officialTPS + TPS_TOL
+                                updatedSemaphoreCapacity = Math.min(semaphoreCapacity + (int) (tps - officialTps) + 1,
+                                        MultiThreadMQProducerConfiguration.MAXIMUM_NUMBER_OF_MESSAGE_PERMITS);
+                            }
 
-                } catch (Exception e) {
-                    LOGGER.error("Monitor TPS error", e);
-                } finally {
-                    LOGGER.info("Monitoring TPS and adjusting semaphore capacity service completes.");
-                }
-            }
+                            if (updatedSemaphoreCapacity > semaphoreCapacity) {
+                                semaphore.release(updatedSemaphoreCapacity - semaphoreCapacity);
+                                semaphoreCapacity = updatedSemaphoreCapacity;
+                            }
+                        } else {
+                            if (-1 * accumulativeTPSDelta > TPS_TOL) { //Update due to accumulative TPS delta surpass TPS_TOL
+                                updatedSemaphoreCapacity = Math.max(semaphoreCapacity + (int) accumulativeTPSDelta / count,
+                                        MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_PERMITS);
+                            } else { //Update due to a specific second-average TPS < officialTPS - TPS_TOL
+                                updatedSemaphoreCapacity = Math.max(semaphoreCapacity + (int) (tps - officialTps) - 1,
+                                        MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_PERMITS);
+                            }
 
-            private void adjustThrottle(float tps) {
-                LOGGER.info("Begin to adjust throttle. Current semaphore capacity is: " + semaphoreCapacity);
-                int updatedSemaphoreCapacity = 0;
-                if (tps > officialTps) {
-                    if (accumulativeTPSDelta > TPS_TOL) { //Update due to accumulative TPS delta surpass TPS_TOL
-                        updatedSemaphoreCapacity = Math.min(semaphoreCapacity + (int)accumulativeTPSDelta / count,
-                                MultiThreadMQProducerConfiguration.MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
-                    } else { //Update due to a specific second-average TPS > officialTPS + TPS_TOL
-                        updatedSemaphoreCapacity = Math.min(semaphoreCapacity + (int)(tps - officialTps) + 1,
-                                MultiThreadMQProducerConfiguration.MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
+                            if (updatedSemaphoreCapacity < semaphoreCapacity) {
+                                int delta = semaphoreCapacity - updatedSemaphoreCapacity;
+                                semaphore.reducePermits(delta);
+                                semaphoreCapacity = updatedSemaphoreCapacity;
+                            }
+                        }
+
+                        //Update official TPS.
+                        officialTps = tps;
+
+                        //reset accumulative TPS delta.
+                        accumulativeTPSDelta = 0.0F;
+
+                        //reset count.
+                        count = 0;
+
+                        LOGGER.info("Semaphore capacity adjusted to:" + semaphoreCapacity);
                     }
 
-                    if (updatedSemaphoreCapacity > semaphoreCapacity) {
-                        semaphore.release(updatedSemaphoreCapacity - semaphoreCapacity);
-                        semaphoreCapacity = updatedSemaphoreCapacity;
-                    }
-                } else {
-                    if (-1 * accumulativeTPSDelta > TPS_TOL) { //Update due to accumulative TPS delta surpass TPS_TOL
-                        updatedSemaphoreCapacity = Math.max(semaphoreCapacity + (int)accumulativeTPSDelta / count,
-                                MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
-                    } else { //Update due to a specific second-average TPS < officialTPS - TPS_TOL
-                        updatedSemaphoreCapacity = Math.max(semaphoreCapacity + (int)(tps - officialTps) - 1,
-                                MultiThreadMQProducerConfiguration.MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY);
-                    }
-
-                    if (updatedSemaphoreCapacity < semaphoreCapacity) {
-                        int delta = semaphoreCapacity - updatedSemaphoreCapacity;
-                        semaphore.reducePermits(delta);
-                        semaphoreCapacity = updatedSemaphoreCapacity;
-                    }
-                }
-
-                //Update official TPS.
-                officialTps = tps;
-
-                //reset accumulative TPS delta.
-                accumulativeTPSDelta = 0.0F;
-
-                //reset count.
-                count = 0;
-
-                LOGGER.info("Semaphore capacity adjusted to:" + semaphoreCapacity);
-            }
-
-        }, 3000, 1000, TimeUnit.MILLISECONDS);
+                }, 3000, 1000, TimeUnit.MILLISECONDS);
 
     }
 
@@ -221,14 +222,9 @@ public class MultiThreadMQProducer {
     }
 
     public void send(final Message msg) {
-        send(new Message[] {msg});
+        send(new Message[] { msg });
     }
 
-
-    /**
-     * This method is assumed to be called by client user. Tokens will be assigned later on.
-     * @param messages Messages to send.
-     */
     public void send(final Message[] messages) {
         send(messages, false);
     }
@@ -237,7 +233,7 @@ public class MultiThreadMQProducer {
      * This method would send message with or without token from semaphore. Ultimate client user is not supposed to use
      * this method unless you know what you are doing.
      *
-     * @param messages Messages to send.
+     * @param messages  Messages to send.
      * @param hasTokens If these messages have already been assigned with tokens: true for yes; false for no.
      */
     protected void send(final Message[] messages, boolean hasTokens) {
@@ -245,40 +241,42 @@ public class MultiThreadMQProducer {
             return;
         }
 
-        if (messages.length <= concurrentSendBatchSize) {
-            if (!hasTokens) { //No tokens pre-assigned.
-                if (semaphore.tryAcquire(messages.length)) { //Try to acquire tokens.
-                    sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
-                    LOGGER.info(messages.length + " messages submitted to send.");
-                } else { //Stash all these messages if no sufficient tokens are available.
-                    for (Message message : messages) {
+        if (hasTokens) {
+            for (Message message : messages) {
+                try {
+                    if (messageQueue.remainingCapacity() > 0) {
+                        if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
+                            semaphore.release();
+                            localMessageStore.stash(message);
+                        }
+                    } else {
+                        semaphore.release();
                         localMessageStore.stash(message);
                     }
-                    LOGGER.warn(messages.length + " messages stashed.");
+                } catch (InterruptedException e) {
+                    handleSendMessageFailure(message, e);
                 }
-            } else {
-                //As these messages already got tokens, send them directly.
-                sendMessagePoolExecutor.submit(new BatchSendMessageTask(messages, sendCallback, this));
-                LOGGER.info(messages.length + " messages submitted to send.");
             }
         } else {
-            Message[] sendBatchArray = null;
-            int remain = 0;
-            for (int i = 0; i < messages.length; i += remain) {
-                remain = Math.min(concurrentSendBatchSize, messages.length - i);
-                sendBatchArray = new Message[remain];
-                System.arraycopy(messages, i, sendBatchArray, 0, remain);
-                if (hasTokens) { //If messages have pre-assigned tokens, send them directly.
-                    sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
-                    LOGGER.info(sendBatchArray.length + " messages submitted to send.");
-                } else if (semaphore.tryAcquire(sendBatchArray.length)) { //Try to acquire tokens and send them.
-                    sendMessagePoolExecutor.submit(new BatchSendMessageTask(sendBatchArray, sendCallback, this));
-                    LOGGER.info(sendBatchArray.length + " messages submitted to send.");
-                } else { // Stash messages if no sufficient tokens available.
-                    for (Message message : sendBatchArray) {
-                        localMessageStore.stash(message);
+            if (semaphore.tryAcquire(messages.length)) {
+                for (Message message : messages) {
+                    try {
+                        if (messageQueue.remainingCapacity() > 0) {
+                            if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
+                                semaphore.release();
+                                localMessageStore.stash(message);
+                            }
+                        } else {
+                            semaphore.release();
+                            localMessageStore.stash(message);
+                        }
+                    } catch (InterruptedException e) {
+                        handleSendMessageFailure(message, e);
                     }
-                    LOGGER.warn(sendBatchArray.length + " messages stashed");
+                }
+            } else {
+                for (Message message : messages) {
+                    localMessageStore.stash(message);
                 }
             }
         }
@@ -288,12 +286,9 @@ public class MultiThreadMQProducer {
         return new MultiThreadMQProducerConfiguration();
     }
 
-    public DefaultMQProducer getDefaultMQProducer() {
-        return defaultMQProducer;
-    }
-
     /**
      * This method properly shutdown this producer client.
+     *
      * @throws InterruptedException if unable to shutdown within 1 minute.
      */
     public void shutdown() throws InterruptedException {
@@ -304,12 +299,18 @@ public class MultiThreadMQProducer {
         resendFailureMessagePoolExecutor.shutdown();
         resendFailureMessagePoolExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
 
-        //Stop threads which send message to broker.
-        sendMessagePoolExecutor.shutdown();
-        sendMessagePoolExecutor.awaitTermination(30000, TimeUnit.MILLISECONDS);
+        messageSender.stop();
 
         //Stop defaultMQProducer.
-        getDefaultMQProducer().shutdown();
+        defaultMQProducer.shutdown();
+
+        Message message = null;
+        while (messageQueue.size() > 0) {
+            message = messageQueue.poll();
+            if (null != message) {
+                localMessageStore.stash(message);
+            }
+        }
 
         //Refresh local message store configuration file.
         if (null != localMessageStore && localMessageStore.isReady()) {
@@ -322,20 +323,8 @@ public class MultiThreadMQProducer {
         return semaphore;
     }
 
-    public LocalMessageStore getLocalMessageStore() {
-        return localMessageStore;
-    }
-
     public AtomicLong getSuccessSendingCounter() {
         return successSendingCounter;
-    }
-
-    public AtomicLong getNumberOfMessageStashedDueToLackOfSemaphoreToken() {
-        return numberOfMessageStashedDueToLackOfSemaphoreToken;
-    }
-
-    public MessageQueueSelector getMessageQueueSelector() {
-        return messageQueueSelector;
     }
 
     /**
@@ -352,11 +341,37 @@ public class MultiThreadMQProducer {
 
         /**
          * Override to expose this method publicly.
+         *
          * @param reduction amount of permits to reduce.
          */
         @Override
         public void reducePermits(int reduction) {
             super.reducePermits(reduction);
+        }
+    }
+
+
+    class MessageSender implements Runnable {
+        private boolean running = true;
+
+        @Override
+        public void run() {
+            while (running) {
+                Message message = null;
+                try {
+                    message = messageQueue.take();
+                    defaultMQProducer.send(message, messageQueueSelector, null,
+                            new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, message));
+                } catch (Exception e) {
+                    if (null != message) {
+                        handleSendMessageFailure(message, e);
+                    }
+                }
+            }
+        }
+
+        public void stop() {
+            running = false;
         }
     }
 }

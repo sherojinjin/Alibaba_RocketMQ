@@ -4,33 +4,22 @@ public class MultiThreadMQProducerConfiguration {
 
     private String producerGroup;
 
-    private int corePoolSize = 10;
-
-    private int maximumPoolSize = 50;
-
-    private int defaultTopicQueueNumber = 4;
+    private int defaultTopicQueueNumber = 16;
 
     private int retryTimesBeforeSendingFailureClaimed = 3;
 
     private int sendMessageTimeOutInMilliSeconds = 3000;
 
-    private int concurrentSendBatchSize = 10;
-
     private int resendFailureMessageDelay = 5000;
 
-    public static final int MAXIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 20000;
+    public static final int MAXIMUM_NUMBER_OF_MESSAGE_PERMITS = 20000;
 
-    public static final int MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY = 3000;
+    public static final int MINIMUM_NUMBER_OF_MESSAGE_PERMITS = 3000;
 
-    private int numberOfMessageInitiallyHeldImMemory = MINIMUM_NUMBER_OF_MESSAGE_IN_MEMORY;
+    private int initialNumberOfMessagePermits = MINIMUM_NUMBER_OF_MESSAGE_PERMITS;
 
     public MultiThreadMQProducerConfiguration configureProducerGroup(String producerGroup) {
         this.producerGroup = producerGroup;
-        return this;
-    }
-
-    public MultiThreadMQProducerConfiguration configureCorePoolSize(int corePoolSize) {
-        this.corePoolSize = corePoolSize;
         return this;
     }
 
@@ -49,23 +38,13 @@ public class MultiThreadMQProducerConfiguration {
         return this;
     }
 
-    public MultiThreadMQProducerConfiguration configureConcurrentSendBatchSize(int concurrentSendBatchSize) {
-        this.concurrentSendBatchSize = concurrentSendBatchSize;
-        return this;
-    }
-
     public MultiThreadMQProducerConfiguration configureResendFailureMessageDelay(int resendFailureMessageDelay) {
         this.resendFailureMessageDelay = resendFailureMessageDelay;
         return this;
     }
 
-    public MultiThreadMQProducerConfiguration configureNumberOfMessageInitiallyHeldImMemory(int numberOfMessageInitiallyHeldImMemory) {
-        this.numberOfMessageInitiallyHeldImMemory = numberOfMessageInitiallyHeldImMemory;
-        return this;
-    }
-
-    public MultiThreadMQProducerConfiguration configureMaximumPoolSize(int maximumPoolSize) {
-        this.maximumPoolSize = maximumPoolSize;
+    public MultiThreadMQProducerConfiguration configureInitialNumberOfMessagePermits(int initialNumberOfMessagePermits) {
+        this.initialNumberOfMessagePermits = initialNumberOfMessagePermits;
         return this;
     }
 
@@ -97,10 +76,6 @@ public class MultiThreadMQProducerConfiguration {
         return producerGroup;
     }
 
-    public int getCorePoolSize() {
-        return corePoolSize;
-    }
-
     public int getDefaultTopicQueueNumber() {
         return defaultTopicQueueNumber;
     }
@@ -113,19 +88,11 @@ public class MultiThreadMQProducerConfiguration {
         return sendMessageTimeOutInMilliSeconds;
     }
 
-    public int getConcurrentSendBatchSize() {
-        return concurrentSendBatchSize;
-    }
-
     public int getResendFailureMessageDelay() {
         return resendFailureMessageDelay;
     }
 
-    public int getNumberOfMessageInitiallyHeldImMemory() {
-        return numberOfMessageInitiallyHeldImMemory;
-    }
-
-    public int getMaximumPoolSize() {
-        return maximumPoolSize;
+    public int getInitialNumberOfMessagePermits() {
+        return initialNumberOfMessagePermits;
     }
 }
