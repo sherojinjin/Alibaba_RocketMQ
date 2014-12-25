@@ -36,9 +36,7 @@ public class FrontController implements MessageListenerConcurrently {
         this.executorWorkerService = executorWorkerService;
         this.localMessageStore = localMessageStore;
         messageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
-
         jobSubmitter = new JobSubmitter();
-
         Thread jobSubmitterThread = new Thread(jobSubmitter);
         jobSubmitterThread.setName("JobSubmitter");
         jobSubmitterThread.start();

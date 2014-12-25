@@ -36,12 +36,7 @@ public class ProcessMessageTask implements Runnable {
     @Override
     public void run() {
         try {
-            long start = System.currentTimeMillis();
-            LOGGER.info("Request business client to process message[msgId=" + message.getMsgId() + "]. CurrentTimeInMilliseconds:" + start);
             int result = messageHandler.handle(message);
-            long end = System.currentTimeMillis();
-            LOGGER.info("Business processing completes. CurrentTimeInMilliseconds:" + System.currentTimeMillis() + ". Cost: " + (end - start) + " milliseconds");
-
             //Remove the message from in-progress queue.
             if (null != messageQueue && messageQueue.contains(message)) {
                 messageQueue.remove(message);
