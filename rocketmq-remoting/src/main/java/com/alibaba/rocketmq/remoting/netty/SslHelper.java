@@ -1,6 +1,9 @@
 package com.alibaba.rocketmq.remoting.netty;
 
+import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 import com.alibaba.rocketmq.remoting.exception.SSLContextCreationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -17,6 +20,8 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 
 public class SslHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RemotingHelper.RemotingLogName);
 
     private static final String DEFAULT_SERVER_PASSWORD = "VVYZZ9NLVdy849XIy/tM3Q==";
 
@@ -73,8 +78,11 @@ public class SslHelper {
                                         customServerKeyStore.getCanonicalPath());
                             }
                             serverKeyStoreInputStream = new FileInputStream(customServerKeyStore);
+                            LOGGER.info("Production environment, using server key store:"
+                                    + customServerKeyStore.getCanonicalPath());
                         } else {
                             serverKeyStoreInputStream = classLoader.getResourceAsStream(SERVER_KEY_STORE_FILE_NAME);
+                            LOGGER.info("Development environment, using built-in server key store.");
                         }
 
                         byteArrayOutputStream = new ByteArrayOutputStream();
@@ -107,8 +115,11 @@ public class SslHelper {
                                         + customClientKeyStore.getCanonicalPath());
                             }
                             clientKeyStoreInputStream = new FileInputStream(customClientKeyStore);
+                            LOGGER.info("Production environment, using client key store: "
+                                    + customClientKeyStore.getCanonicalPath());
                         } else {
                             clientKeyStoreInputStream = classLoader.getResourceAsStream(CLIENT_KEY_STORE_FILE_NAME);
+                            LOGGER.info("Development environment, using built-in client key store.");
                         }
 
                         byteArrayOutputStream = new ByteArrayOutputStream();
