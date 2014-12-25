@@ -11,7 +11,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.IOException;
+import java.io.*;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
@@ -28,6 +28,12 @@ public class SslHelper {
 
     private static final String SECRET = "R0ck1tMQ@NDPMediaP1ssw0rd";
 
+    private static final String DEFAULT_KEY_STORE_PATH = "/dianyi/conf/RocketMQ/SSL/";
+
+    private static final String SERVER_KEY_STORE_FILE_NAME = "server.ks";
+
+    private static final String CLIENT_KEY_STORE_FILE_NAME = "client.ks";
+
     public static SSLContext getSSLContext(SslRole role) throws SSLContextCreationException {
         try {
             SSLContext sslContext = SSLContext.getInstance("SSL");
@@ -36,29 +42,81 @@ public class SslHelper {
             KeyStore keyStore = KeyStore.getInstance("JKS");
             KeyStore trustKeyStore = KeyStore.getInstance("JKS");
 
-            ClassLoader classLoader = SslHelper.class.getClassLoader();
+            String keyStoreLocation = System.getProperty("RocketMQ_KeyStore_Dir", DEFAULT_KEY_STORE_PATH);
+            File keyStoreDir = new File(keyStoreLocation);
+            boolean customKeyStoreDirExists = keyStoreDir.exists();
+            boolean customServerKeyStoreExists = false;
+            boolean customClientKeyStoreExists = false;
 
+            File customServerKeyStore = null;
+            File customClientKeyStore = null;
+
+            if (customKeyStoreDirExists) {
+                customServerKeyStore = new File(keyStoreDir, SERVER_KEY_STORE_FILE_NAME);
+                customServerKeyStoreExists = customServerKeyStore.exists();
+
+                customClientKeyStore = new File(keyStoreDir, CLIENT_KEY_STORE_FILE_NAME);
+                customClientKeyStoreExists = customClientKeyStore.exists();
+            }
+
+            ClassLoader classLoader = SslHelper.class.getClassLoader();
             switch (role) {
                 case SERVER:
-                    String cipherText = System.getProperty("RocketMQServerPassword");
-                    if (null == cipherText) {
-                        cipherText = DEFAULT_SERVER_PASSWORD;
-                    }
+                    String cipherText = System.getProperty("RocketMQServerPassword", DEFAULT_SERVER_PASSWORD);
                     char[] clearText = decrypt(SECRET, cipherText);
-                    keyStore.load(classLoader.getResourceAsStream("server.ks"), clearText);
-                    trustKeyStore.load(classLoader.getResourceAsStream("server.ks"), clearText);
+                    InputStream serverKeyStoreInputStream = null;
+                    ByteArrayOutputStream byteArrayOutputStream = null;
+                    try {
+                        if (customServerKeyStoreExists) {
+                            serverKeyStoreInputStream = new FileInputStream(customServerKeyStore);
+                        } else {
+                            serverKeyStoreInputStream = classLoader.getResourceAsStream(SERVER_KEY_STORE_FILE_NAME);
+                        }
+
+                        byteArrayOutputStream = new ByteArrayOutputStream();
+                        byte[] buffer = new byte[1024];
+                        int len = 0;
+                        while ((len = serverKeyStoreInputStream.read(buffer)) != -1) {
+                            byteArrayOutputStream.write(buffer, 0, len);
+                        }
+                    } finally {
+                        if (null != serverKeyStoreInputStream) {
+                            serverKeyStoreInputStream.close();
+                        }
+                    }
+                    keyStore.load(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), clearText);
+                    trustKeyStore.load(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), clearText);
                     keyManagerFactory.init(keyStore, clearText);
                     trustManagerFactory.init(trustKeyStore);
                     break;
 
                 case CLIENT:
-                    cipherText = System.getProperty("RocketMQClientPassword");
-                    if (null == cipherText) {
-                        cipherText = DEFAULT_CLIENT_PASSWORD;
-                    }
+                    cipherText = System.getProperty("RocketMQClientPassword", DEFAULT_CLIENT_PASSWORD);
                     clearText = decrypt(SECRET, cipherText);
-                    keyStore.load(classLoader.getResourceAsStream("client.ks"), clearText);
-                    trustKeyStore.load(classLoader.getResourceAsStream("client.ks"), clearText);
+
+                    InputStream clientKeyStoreInputStream = null;
+                    byteArrayOutputStream = null;
+                    try {
+                        if (customClientKeyStoreExists) {
+                            clientKeyStoreInputStream = new FileInputStream(customClientKeyStore);
+                        } else {
+                            clientKeyStoreInputStream = classLoader.getResourceAsStream(CLIENT_KEY_STORE_FILE_NAME);
+                        }
+
+                        byteArrayOutputStream = new ByteArrayOutputStream();
+                        byte[] buffer = new byte[1024];
+                        int len = 0;
+                        while ((len = clientKeyStoreInputStream.read(buffer)) != -1) {
+                            byteArrayOutputStream.write(buffer, 0, len);
+                        }
+                    } finally {
+                        if (null != clientKeyStoreInputStream) {
+                            clientKeyStoreInputStream.close();
+                        }
+                    }
+
+                    keyStore.load(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), clearText);
+                    trustKeyStore.load(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), clearText);
                     keyManagerFactory.init(keyStore, clearText);
                     trustManagerFactory.init(trustKeyStore);
                     break;
