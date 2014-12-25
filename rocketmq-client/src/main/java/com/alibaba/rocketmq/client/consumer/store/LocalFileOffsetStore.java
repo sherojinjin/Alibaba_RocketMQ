@@ -40,9 +40,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 2013-7-24
  */
 public class LocalFileOffsetStore implements OffsetStore {
-    public final static String LocalOffsetStoreDir = System.getProperty(
-        "rocketmq.client.localOffsetStoreDir", //
-        System.getProperty("user.home") + File.separator + ".rocketmq_offsets");
+
+    private static final String DEFAULT_STORE_LOCATION = "/dianyi/data/";
+
+    public static String localOffsetStoreDir = System.getProperty("rocketmq.client.localOffsetStoreDir",
+            DEFAULT_STORE_LOCATION);
+
     private final static Logger log = ClientLogger.getLog();
     private final MQClientInstance mQClientFactory;
     private final String groupName;
@@ -52,9 +55,22 @@ public class LocalFileOffsetStore implements OffsetStore {
 
 
     public LocalFileOffsetStore(MQClientInstance mQClientFactory, String groupName) {
+
         this.mQClientFactory = mQClientFactory;
         this.groupName = groupName;
-        this.storePath = LocalOffsetStoreDir + File.separator + //
+
+        if (DEFAULT_STORE_LOCATION.equals(localOffsetStoreDir)) {
+            File localOffsetStoreDirFile = new File(localOffsetStoreDir);
+            if (!localOffsetStoreDirFile.exists()) {
+                //local development environment.
+                localOffsetStoreDir = System.getProperty("user.home") + File.separator + ".rocketmq_offsets";
+            } else {
+                //production environment.
+                localOffsetStoreDir += ".rocketmq_offsets";
+            }
+        }
+
+        this.storePath = localOffsetStoreDir + File.separator + //
                 this.mQClientFactory.getClientId() + File.separator + //
                 this.groupName + File.separator + //
                 "offsets.json";
