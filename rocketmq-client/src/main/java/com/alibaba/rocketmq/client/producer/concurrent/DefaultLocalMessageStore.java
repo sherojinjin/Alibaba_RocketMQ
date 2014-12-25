@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.message.StashableMessage;
 import org.slf4j.Logger;
 
 import java.io.*;
@@ -43,7 +44,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private ReentrantLock lock = new ReentrantLock();
 
-    private LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>(50000);
+    private LinkedBlockingQueue<StashableMessage> messageQueue = new LinkedBlockingQueue<StashableMessage>(50000);
 
     private ScheduledExecutorService flushConfigPeriodicallyByTimeExecutorService;
 
@@ -216,9 +217,10 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
         try {
             //Block if no space available.
-            messageQueue.put(message);
+            messageQueue.put(message.buildStashableMessage());
         } catch (InterruptedException e) {
             LOGGER.error("Unable to stash message locally.", e);
+            LOGGER.error("We are risking of losing message:[" + JSON.toJSONString(message) + "]");
         }
     }
 
@@ -333,7 +335,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     }
 
     @Override
-    public Message[] pop(int n) {
+    public StashableMessage[] pop(int n) {
         if (n < 0) {
             throw new IllegalArgumentException("n should be positive");
         }
@@ -348,7 +350,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
 
             int messageToRead = Math.min(getNumberOfMessageStashed(), n);
-            Message[] messages = new Message[messageToRead];
+            StashableMessage[] messages = new StashableMessage[messageToRead];
 
             if (messageToRead == 0) {
                 return messages;
@@ -356,8 +358,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
             int messageRead = 0;
 
-            //First to retrieve messages from message queue, beginning from head side, which is held in memory.
-            Message message = messageQueue.poll();
+            //First retrieve messages from message queue, beginning from head side, which is held in memory.
+            StashableMessage message = messageQueue.poll();
             while (null != message) {
                 messages[messageRead++] = message;
                 if (messageRead == messageToRead) { //We've already got all messages we want to pop.
@@ -387,7 +389,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 long messageSize = readRandomAccessFile.readLong();
                 byte[] data = new byte[(int) messageSize];
                 readRandomAccessFile.read(data);
-                messages[messageRead++] = JSON.parseObject(data, Message.class);
+                messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
                 readIndex.incrementAndGet();
                 readOffSet.set(readRandomAccessFile.getFilePointer());
 

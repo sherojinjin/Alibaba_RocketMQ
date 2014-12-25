@@ -19,18 +19,8 @@ import com.alibaba.rocketmq.common.TopicFilterType;
 import com.alibaba.rocketmq.common.sysflag.MessageSysFlag;
 
 import java.io.Serializable;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
 
-
-/**
- * 消息扩展属性，在服务器上产生此对象
- * 
- * @author shijia.wxr<vintage.wang@gmail.com>
- * @since 2013-7-18
- */
-public class MessageExt extends Message implements Serializable{
+public class StashableMessage extends Message implements Serializable{
     private static final long serialVersionUID = 5720810158625748049L;
 
     // 队列ID <PUT>
@@ -43,12 +33,8 @@ public class MessageExt extends Message implements Serializable{
     private int sysFlag;
     // 消息在客户端创建时间戳 <PUT>
     private long bornTimestamp;
-    // 消息来自哪里 <PUT>
-    private SocketAddress bornHost;
     // 消息在服务器存储时间戳
     private long storeTimestamp;
-    // 消息存储在哪个服务器 <PUT>
-    private SocketAddress storeHost;
     // 消息ID
     private String msgId;
     // 消息对应的Commit Log Offset
@@ -60,72 +46,46 @@ public class MessageExt extends Message implements Serializable{
 
     private long preparedTransactionOffset;
 
-
-    public MessageExt() {
+    public StashableMessage() {
     }
-
-
-    public MessageExt(int queueId, long bornTimestamp, SocketAddress bornHost, long storeTimestamp,
-            SocketAddress storeHost, String msgId) {
-        this.queueId = queueId;
-        this.bornTimestamp = bornTimestamp;
-        this.bornHost = bornHost;
-        this.storeTimestamp = storeTimestamp;
-        this.storeHost = storeHost;
-        this.msgId = msgId;
-    }
-
 
     @Override
     public StashableMessage buildStashableMessage() {
-        StashableMessage stashableMessage = super.buildStashableMessage();
-        stashableMessage.setQueueId(queueId);
-        stashableMessage.setStoreSize(storeSize);
-        stashableMessage.setQueueOffset(queueOffset);
-        stashableMessage.setSysFlag(sysFlag);
-        stashableMessage.setBornTimestamp(bornTimestamp);
-        stashableMessage.setStoreTimestamp(storeTimestamp);
-        stashableMessage.setMsgId(msgId);
-        stashableMessage.setCommitLogOffset(commitLogOffset);
-        stashableMessage.setBodyCRC(bodyCRC);
-        stashableMessage.setReconsumeTimes(reconsumeTimes);
-        stashableMessage.setPreparedTransactionOffset(preparedTransactionOffset);
-        return stashableMessage;
+        return this;
     }
 
-    /**
-     * SocketAddress ----> ByteBuffer 转化成8个字节
-     */
-    public static ByteBuffer SocketAddress2ByteBuffer(SocketAddress socketAddress) {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-        InetSocketAddress inetSocketAddress = (InetSocketAddress) socketAddress;
-        byteBuffer.put(inetSocketAddress.getAddress().getAddress());
-        byteBuffer.putInt(inetSocketAddress.getPort());
-        byteBuffer.flip();
-        return byteBuffer;
+    public StashableMessage(int queueId, long bornTimestamp, long storeTimestamp, String msgId) {
+        this.queueId = queueId;
+        this.bornTimestamp = bornTimestamp;
+        this.storeTimestamp = storeTimestamp;
+        this.msgId = msgId;
     }
 
+    public MessageExt buildMessageExt() {
+        MessageExt messageExt = new MessageExt();
+        messageExt.setTopic(getTopic());
+        messageExt.setBody(getBody());
+        messageExt.setFlag(getFlag());
+        messageExt.setProperties(getProperties());
 
-    /**
-     * 获取bornHost字节形式，8个字节 HOST + PORT
-     */
-    public ByteBuffer getBornHostBytes() {
-        return SocketAddress2ByteBuffer(this.bornHost);
+        messageExt.setQueueId(queueId);
+        messageExt.setStoreSize(storeSize);
+        messageExt.setQueueOffset(queueOffset);
+        messageExt.setSysFlag(sysFlag);
+        messageExt.setBornTimestamp(bornTimestamp);
+        messageExt.setStoreTimestamp(storeTimestamp);
+        messageExt.setMsgId(msgId);
+        messageExt.setCommitLogOffset(commitLogOffset);
+        messageExt.setBodyCRC(bodyCRC);
+        messageExt.setReconsumeTimes(reconsumeTimes);
+        messageExt.setPreparedTransactionOffset(preparedTransactionOffset);
+
+        return messageExt;
     }
-
-
-    /**
-     * 获取storehost字节形式，8个字节 HOST + PORT
-     */
-    public ByteBuffer getStoreHostBytes() {
-        return SocketAddress2ByteBuffer(this.storeHost);
-    }
-
 
     public int getQueueId() {
         return queueId;
     }
-
 
     public void setQueueId(int queueId) {
         this.queueId = queueId;
@@ -141,37 +101,6 @@ public class MessageExt extends Message implements Serializable{
         this.bornTimestamp = bornTimestamp;
     }
 
-
-    public SocketAddress getBornHost() {
-        return bornHost;
-    }
-
-
-    public String getBornHostString() {
-        if (this.bornHost != null) {
-            InetSocketAddress inetSocketAddress = (InetSocketAddress) this.bornHost;
-            return inetSocketAddress.getAddress().getHostAddress();
-        }
-
-        return null;
-    }
-
-
-    public String getBornHostNameString() {
-        if (this.bornHost != null) {
-            InetSocketAddress inetSocketAddress = (InetSocketAddress) this.bornHost;
-            return inetSocketAddress.getAddress().getHostName();
-        }
-
-        return null;
-    }
-
-
-    public void setBornHost(SocketAddress bornHost) {
-        this.bornHost = bornHost;
-    }
-
-
     public long getStoreTimestamp() {
         return storeTimestamp;
     }
@@ -179,16 +108,6 @@ public class MessageExt extends Message implements Serializable{
 
     public void setStoreTimestamp(long storeTimestamp) {
         this.storeTimestamp = storeTimestamp;
-    }
-
-
-    public SocketAddress getStoreHost() {
-        return storeHost;
-    }
-
-
-    public void setStoreHost(SocketAddress storeHost) {
-        this.storeHost = storeHost;
     }
 
 
@@ -284,8 +203,8 @@ public class MessageExt extends Message implements Serializable{
     @Override
     public String toString() {
         return "MessageExt [queueId=" + queueId + ", storeSize=" + storeSize + ", queueOffset=" + queueOffset
-                + ", sysFlag=" + sysFlag + ", bornTimestamp=" + bornTimestamp + ", bornHost=" + bornHost
-                + ", storeTimestamp=" + storeTimestamp + ", storeHost=" + storeHost + ", msgId=" + msgId
+                + ", sysFlag=" + sysFlag + ", bornTimestamp=" + bornTimestamp
+                + ", storeTimestamp=" + storeTimestamp + ", msgId=" + msgId
                 + ", commitLogOffset=" + commitLogOffset + ", bodyCRC=" + bodyCRC + ", reconsumeTimes="
                 + reconsumeTimes + ", preparedTransactionOffset=" + preparedTransactionOffset
                 + ", toString()=" + super.toString() + "]";

@@ -28,6 +28,7 @@ import java.util.Map;
  * @since 2013-7-18
  */
 public class Message implements Serializable {
+
     private static final long serialVersionUID = 8445773977080406428L;
 
     /**
@@ -81,6 +82,14 @@ public class Message implements Serializable {
         this.setWaitStoreMsgOK(waitStoreMsgOK);
     }
 
+    public StashableMessage buildStashableMessage() {
+        StashableMessage stashableMessage = new StashableMessage();
+        stashableMessage.setTopic(topic);
+        setBody(body);
+        setFlag(flag);
+        setProperties(properties);
+        return stashableMessage;
+    }
 
     void clearProperty(final String name) {
         if (null != this.properties) {
