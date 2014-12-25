@@ -7,6 +7,7 @@ import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ExampleCacheableConsumer {
@@ -14,6 +15,7 @@ public class ExampleCacheableConsumer {
     private static final AtomicLong COUNTER = new AtomicLong();
 
     static class ExampleMessageHandler extends MessageHandler {
+        Random random = new Random();
         private long lastTimeStamp;
 
         private long lastConsumptionNumber;
@@ -37,6 +39,10 @@ public class ExampleCacheableConsumer {
                 lastConsumptionNumber = COUNTER.longValue();
                 lastTimeStamp = System.currentTimeMillis();
             }
+            if (random.nextFloat() < 0.2) {
+                return 5000;
+            }
+
             return 0;
         }
     }
