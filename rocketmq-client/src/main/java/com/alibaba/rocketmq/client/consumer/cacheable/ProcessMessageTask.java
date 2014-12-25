@@ -49,7 +49,7 @@ public class ProcessMessageTask implements Runnable {
             }
 
             if (result > 0) {
-                StashableMessage stashableMessage = new StashableMessage(message);
+                StashableMessage stashableMessage = message.buildStashableMessage();
                 stashableMessage.putUserProperty(NEXT_TIME_KEY, String.valueOf(System.currentTimeMillis() + result));
                 LOGGER.info("Stashing message[msgId=" + message.getMsgId() + "] for later retry in " + result
                         + " milliseconds.");
