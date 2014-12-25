@@ -68,6 +68,10 @@ public class SslHelper {
                     ByteArrayOutputStream byteArrayOutputStream = null;
                     try {
                         if (customServerKeyStoreExists) {
+                            if (!customServerKeyStore.canRead()) {
+                                throw new IOException("No permission to read:" +
+                                        customServerKeyStore.getCanonicalPath());
+                            }
                             serverKeyStoreInputStream = new FileInputStream(customServerKeyStore);
                         } else {
                             serverKeyStoreInputStream = classLoader.getResourceAsStream(SERVER_KEY_STORE_FILE_NAME);
@@ -98,6 +102,10 @@ public class SslHelper {
                     byteArrayOutputStream = null;
                     try {
                         if (customClientKeyStoreExists) {
+                            if (!customClientKeyStore.canRead()) {
+                                throw new IOException("No permission to read: "
+                                        + customClientKeyStore.getCanonicalPath());
+                            }
                             clientKeyStoreInputStream = new FileInputStream(customClientKeyStore);
                         } else {
                             clientKeyStoreInputStream = classLoader.getResourceAsStream(CLIENT_KEY_STORE_FILE_NAME);
