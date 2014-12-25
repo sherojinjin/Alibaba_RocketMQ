@@ -52,7 +52,10 @@ public class DelayTask implements Runnable {
                     if (null == message) {
                         continue;
                     }
-                    if (Long.parseLong(message.getProperty(NEXT_TIME_KEY)) - current < TOL) { //It's time to process.
+
+                    //It's time to process.
+                    if (null == message.getProperty(NEXT_TIME_KEY)
+                            || Long.parseLong(message.getProperty(NEXT_TIME_KEY)) - current < TOL) {
                         MessageHandler messageHandler = topicHandlerMap.get(message.getTopic());
                         if (null == messageHandler) {
                             // On restart, fewer message handler may be registered so some messages stored locally
