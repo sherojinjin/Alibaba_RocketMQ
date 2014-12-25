@@ -10,7 +10,7 @@ public class MultiThreadMQProducerConfiguration {
 
     private int sendMessageTimeOutInMilliSeconds = 3000;
 
-    private int resendFailureMessageDelay = 5000;
+    private int resendFailureMessageDelay = 2000;
 
     public static final int MAXIMUM_NUMBER_OF_MESSAGE_PERMITS = 20000;
 
