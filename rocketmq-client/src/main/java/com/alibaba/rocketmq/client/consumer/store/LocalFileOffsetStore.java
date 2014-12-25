@@ -69,7 +69,8 @@ public class LocalFileOffsetStore implements OffsetStore {
             } else {
                 //production environment.
                 localOffsetStoreDir = localOffsetStoreDir.endsWith(File.separator)
-                        ? localOffsetStoreDir + OFFSET_FOLDER_NAME : localOffsetStoreDir + File.separator + OFFSET_FOLDER_NAME;
+                        ? localOffsetStoreDir + OFFSET_FOLDER_NAME
+                        : localOffsetStoreDir + File.separator + OFFSET_FOLDER_NAME;
             }
         }
 
