@@ -46,6 +46,8 @@ public class LocalFileOffsetStore implements OffsetStore {
     public static String localOffsetStoreDir = System.getProperty("rocketmq.client.localOffsetStoreDir",
             DEFAULT_STORE_LOCATION);
 
+    private static final String OFFSET_FOLDER_NAME = ".rocketmq_offsets";
+
     private final static Logger log = ClientLogger.getLog();
     private final MQClientInstance mQClientFactory;
     private final String groupName;
@@ -63,10 +65,11 @@ public class LocalFileOffsetStore implements OffsetStore {
             File localOffsetStoreDirFile = new File(localOffsetStoreDir);
             if (!localOffsetStoreDirFile.exists()) {
                 //local development environment.
-                localOffsetStoreDir = System.getProperty("user.home") + File.separator + ".rocketmq_offsets";
+                localOffsetStoreDir = System.getProperty("user.home") + File.separator + OFFSET_FOLDER_NAME;
             } else {
                 //production environment.
-                localOffsetStoreDir += ".rocketmq_offsets";
+                localOffsetStoreDir = localOffsetStoreDir.endsWith(File.separator)
+                        ? localOffsetStoreDir + OFFSET_FOLDER_NAME : localOffsetStoreDir + File.separator + OFFSET_FOLDER_NAME;
             }
         }
 

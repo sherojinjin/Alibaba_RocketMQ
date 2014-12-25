@@ -18,6 +18,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final String DEFAULT_STORE_LOCATION = "/dianyi/data/";
 
+    private static final String LOCAL_MESSAGE_STORE_FOLDER_NAME = ".localMessageStore";
+
     private static final Logger LOGGER = ClientLogger.getLog();
 
     private static final int MESSAGES_PER_FILE = 100000;
@@ -28,7 +30,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private final AtomicLong readIndex = new AtomicLong(0L);
     private final AtomicLong readOffSet = new AtomicLong(0L);
 
-    private static String STORE_LOCATION = System.getProperty("defaultLocalMessageStoreLocation",
+    private String storeLocation = System.getProperty("defaultLocalMessageStoreLocation",
             DEFAULT_STORE_LOCATION);
 
     private File localMessageStoreDirectory;
@@ -61,14 +63,18 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     public DefaultLocalMessageStore(String storeName) {
         //For convenience of development.
-        if (DEFAULT_STORE_LOCATION.equals(STORE_LOCATION)) {
+        if (DEFAULT_STORE_LOCATION.equals(storeLocation)) {
             File defaultStoreLocation = new File(DEFAULT_STORE_LOCATION);
             if (!defaultStoreLocation.exists()) {
-                STORE_LOCATION = System.getProperty("user.home") + File.separator + ".localMessageStore";
+                storeLocation = System.getProperty("user.home") + File.separator + LOCAL_MESSAGE_STORE_FOLDER_NAME;
+            } else {
+                storeLocation = storeLocation.endsWith(File.separator)
+                        ? storeLocation + LOCAL_MESSAGE_STORE_FOLDER_NAME
+                        : storeLocation + File.separator + LOCAL_MESSAGE_STORE_FOLDER_NAME;
             }
         }
 
-        localMessageStoreDirectory = new File(STORE_LOCATION, storeName);
+        localMessageStoreDirectory = new File(storeLocation, storeName);
 
         if (!localMessageStoreDirectory.exists()) {
             if (!localMessageStoreDirectory.mkdirs()) {
