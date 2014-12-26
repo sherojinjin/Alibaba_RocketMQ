@@ -7,6 +7,7 @@ import com.alibaba.rocketmq.common.message.StashableMessage;
 import org.slf4j.Logger;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ProcessMessageTask implements Runnable {
 
@@ -22,6 +23,10 @@ public class ProcessMessageTask implements Runnable {
 
     private LinkedBlockingQueue<MessageExt> messageQueue;
 
+    private static final AtomicLong LOG_COUNTER = new AtomicLong(0L);
+
+    private static final long LOG_PERFORMANCE_INTERVAL = 1000L;
+
     public ProcessMessageTask(MessageExt message, //Message to process.
                               MessageHandler messageHandler, //Message handler.
                               DefaultLocalMessageStore localMessageStore, //Local message store.
@@ -36,7 +41,20 @@ public class ProcessMessageTask implements Runnable {
     @Override
     public void run() {
         try {
+
+            boolean logPerformance = LOG_COUNTER.incrementAndGet() % LOG_PERFORMANCE_INTERVAL == 0;
+
+            long start = 0L;
+            if (logPerformance) {
+                start = System.currentTimeMillis();
+            }
+
             int result = messageHandler.handle(message);
+
+            if (logPerformance) {
+                LOGGER.info("Business processing takes " + (System.currentTimeMillis() - start) + " ms");
+            }
+
             //Remove the message from in-progress queue.
             if (null != messageQueue && messageQueue.contains(message)) {
                 messageQueue.remove(message);
