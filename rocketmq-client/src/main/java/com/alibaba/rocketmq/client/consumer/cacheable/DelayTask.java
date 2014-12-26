@@ -53,7 +53,13 @@ public class DelayTask implements Runnable {
                         continue;
                     }
 
-                    //It's time to process.
+                    /**
+                     * It's time to process.
+                     *
+                     * Stashed messages generally have two sources:
+                     * 1) The message was stashed because there was no space in message queue then.
+                     * 2) Stashed because business client prefers to process later on.
+                     */
                     if (null == message.getProperty(NEXT_TIME_KEY)
                             || Long.parseLong(message.getProperty(NEXT_TIME_KEY)) - current < TOL) {
                         MessageHandler messageHandler = topicHandlerMap.get(message.getTopic());
