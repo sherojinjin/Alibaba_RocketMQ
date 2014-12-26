@@ -398,7 +398,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 readRandomAccessFile.read(data);
                 messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
                 readIndex.incrementAndGet();
-                readOffSet.set(readRandomAccessFile.getFilePointer());
+                readOffSet.addAndGet(4 + 4 + messageSize); //message_size_int + magic_code_int + messageSize.
 
                 if (readIndex.longValue() % MESSAGES_PER_FILE == 0 && currentReadFile.exists()) {
                     readRandomAccessFile.close();
@@ -417,6 +417,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             LOGGER.error("Pop message error", e);
         } catch (IOException e) {
             LOGGER.error("Pop message error", e);
+            LOGGER.error("readIndex:" + readIndex.longValue() + ", writeIndex:" + writeIndex.longValue()
+                    + "readOffset:" + readOffSet.longValue() + ", writeOffset:" + writeOffSet.longValue());
         } finally {
             lock.unlock();
         }
