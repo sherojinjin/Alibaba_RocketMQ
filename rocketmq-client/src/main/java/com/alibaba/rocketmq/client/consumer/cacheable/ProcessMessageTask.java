@@ -65,7 +65,7 @@ public class ProcessMessageTask implements Runnable {
                 StashableMessage stashableMessage = message.buildStashableMessage();
                 stashableMessage.putUserProperty(NEXT_TIME_KEY, String.valueOf(System.currentTimeMillis() + result));
                 LOGGER.info("Stashing message[msgId=" + message.getMsgId() + "] for later retry in " + result
-                        + " milliseconds.");
+                        + " ms.");
                 localMessageStore.stash(stashableMessage);
                 LOGGER.info("Message stashed.");
             }
