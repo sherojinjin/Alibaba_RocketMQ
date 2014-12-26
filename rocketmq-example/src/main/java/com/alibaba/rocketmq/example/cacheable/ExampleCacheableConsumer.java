@@ -39,7 +39,7 @@ public class ExampleCacheableConsumer {
                 lastConsumptionNumber = COUNTER.longValue();
                 lastTimeStamp = System.currentTimeMillis();
             }
-            if (random.nextFloat() < 0.2) {
+            if (random.nextFloat() < 0.5) {
                 return 5000;
             }
 

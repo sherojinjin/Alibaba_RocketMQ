@@ -31,6 +31,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private final AtomicLong readIndex = new AtomicLong(0L);
     private final AtomicLong readOffSet = new AtomicLong(0L);
 
+    private static final int MAGIC_CODE = 0xAABBCCDD ^ 1880681586 + 8;
+
     private String storeLocation = System.getProperty("defaultLocalMessageStoreLocation",
             DEFAULT_STORE_LOCATION);
 
@@ -298,7 +300,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 byte[] msgData = JSON.toJSONString(message).getBytes();
-                randomAccessFile.writeLong(msgData.length);
+                randomAccessFile.writeInt(msgData.length);
+                randomAccessFile.writeInt(MAGIC_CODE);
                 randomAccessFile.write(msgData);
                 writeOffSet.set(randomAccessFile.getFilePointer());
 
@@ -386,8 +389,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     }
                 }
 
-                long messageSize = readRandomAccessFile.readLong();
-                byte[] data = new byte[(int) messageSize];
+                int messageSize = readRandomAccessFile.readInt();
+                int magicCode = readRandomAccessFile.readInt();
+                if (magicCode != MAGIC_CODE) {
+                    LOGGER.error("Data inconsistent!");
+                }
+                byte[] data = new byte[messageSize];
                 readRandomAccessFile.read(data);
                 messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
                 readIndex.incrementAndGet();
