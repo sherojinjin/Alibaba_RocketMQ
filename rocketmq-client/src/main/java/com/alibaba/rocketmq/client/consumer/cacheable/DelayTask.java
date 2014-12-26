@@ -60,8 +60,8 @@ public class DelayTask implements Runnable {
                      * 1) The message was stashed because there was no space in message queue then.
                      * 2) Stashed because business client prefers to process later on.
                      */
-                    if (null == message.getProperty(NEXT_TIME_KEY)
-                            || Long.parseLong(message.getProperty(NEXT_TIME_KEY)) - current < TOL) {
+                    if (null == message.getProperty(NEXT_TIME_KEY) //Scenario 1)
+                            || Long.parseLong(message.getProperty(NEXT_TIME_KEY)) - current < TOL) { //Scenario 2)
                         MessageHandler messageHandler = topicHandlerMap.get(message.getTopic());
                         if (null == messageHandler) {
                             // On restart, fewer message handler may be registered so some messages stored locally
