@@ -3,7 +3,6 @@ package com.alibaba.rocketmq.client.consumer.cacheable;
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.rebalance.AllocateMessageQueueByDataCenter;
 import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.client.impl.MQClientAPIImpl;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
@@ -70,10 +69,7 @@ public class CacheableConsumer {
         this.consumerGroupName = consumerGroupName;
         this.topicHandlerMap = new ConcurrentHashMap<String, MessageHandler>();
         defaultMQPushConsumer = new DefaultMQPushConsumer(consumerGroupName);
-
-        MQClientAPIImpl clientAPI = defaultMQPushConsumer.getDefaultMQPushConsumerImpl().getmQClientFactory()
-                .getMQClientAPIImpl();
-        defaultMQPushConsumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueByDataCenter(clientAPI));
+        defaultMQPushConsumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueByDataCenter(defaultMQPushConsumer));
         defaultMQPushConsumer.setInstanceName(getInstanceName());
         localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
         defaultMQPushConsumer.setMessageModel(messageModel);

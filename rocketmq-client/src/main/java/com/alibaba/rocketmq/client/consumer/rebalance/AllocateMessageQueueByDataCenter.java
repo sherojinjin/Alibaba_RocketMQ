@@ -16,8 +16,8 @@
 package com.alibaba.rocketmq.client.consumer.rebalance;
 
 import com.alibaba.rocketmq.client.consumer.AllocateMessageQueueStrategy;
+import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.client.impl.MQClientAPIImpl;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.common.Pair;
 import com.alibaba.rocketmq.common.constant.NSConfigKey;
@@ -43,10 +43,10 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
-    private MQClientAPIImpl mqClientAPI;
+    private DefaultMQPushConsumer defaultMQPushConsumer;
 
-    public AllocateMessageQueueByDataCenter(MQClientAPIImpl mqClientAPI) {
-        this.mqClientAPI = mqClientAPI;
+    public AllocateMessageQueueByDataCenter(DefaultMQPushConsumer defaultMQPushConsumer) {
+        this.defaultMQPushConsumer = defaultMQPushConsumer;
     }
 
     /**
@@ -108,7 +108,8 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
         String suspendConsumerIPRanges = null;
         List<Pair<Long, Long>> ranges = null;
         try {
-            KVTable kvTable = mqClientAPI.getKVListByNamespace("DC_SELECTOR", 3000);
+            KVTable kvTable = defaultMQPushConsumer.getDefaultMQPushConsumerImpl().getmQClientFactory()
+                    .getMQClientAPIImpl().getKVListByNamespace("DC_SELECTOR", 3000);
 
             HashMap<String, String> configMap = kvTable.getTable();
             suspendConsumerIPRanges = configMap.get(NSConfigKey.DC_SUSPEND_CONSUMER_BY_IP_RANGE.getKey());
