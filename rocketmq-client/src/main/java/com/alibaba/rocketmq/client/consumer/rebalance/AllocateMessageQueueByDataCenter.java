@@ -66,7 +66,7 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
      * <p>
      *     Prerequisite:
      *     <ul>
-     *         <li>Broker names conform pattern of {@link Helper#BROKER_NAME_REGEX}</li>
+     *         <li>Broker names conform to pattern of {@link Helper#BROKER_NAME_REGEX}</li>
      *         <li>Consumers use IPv4 address, whose second integer represents data center the very consumer reside in.
      *         </li>
      *     </ul>
@@ -289,7 +289,7 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
      *     </ul>
      * </p>
      *
-     * @param range ranges of IP address, conforming the rules described above.
+     * @param range ranges of IP address, conforming to the rules described above.
      * @return Numerical representation of the ranges list.
      */
     private List<Pair<Long, Long>> buildIPRanges(String range) {
