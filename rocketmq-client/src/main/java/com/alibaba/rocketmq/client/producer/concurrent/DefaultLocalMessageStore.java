@@ -155,7 +155,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 if (null != lastWrittenFileName) {
-                    randomAccessFile = new RandomAccessFile(lastWrittenFileName, "rw");
+                    randomAccessFile = new RandomAccessFile(lastWrittenFileName, "rwd");
                     if (writeOffSet.longValue() > 0) {
                         randomAccessFile.seek(writeOffSet.longValue());
                     }
@@ -289,14 +289,14 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         randomAccessFile.close();
                     }
                     File dataFile = messageStoreNameFileMapping.get(currentWriteIndex);
-                    randomAccessFile = new RandomAccessFile(dataFile, "rw");
+                    randomAccessFile = new RandomAccessFile(dataFile, "rwd");
                 }
 
                 if (null == randomAccessFile) {
                     File currentWritingDataFile = messageStoreNameFileMapping
                             .get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
 
-                    randomAccessFile = new RandomAccessFile(currentWritingDataFile, "rw");
+                    randomAccessFile = new RandomAccessFile(currentWritingDataFile, "rwd");
                 }
 
                 byte[] msgData = JSON.toJSONString(message).getBytes();
@@ -382,7 +382,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         throw new RuntimeException("Data file corrupted");
                     }
 
-                    readRandomAccessFile = new RandomAccessFile(currentReadFile, "rw");
+                    readRandomAccessFile = new RandomAccessFile(currentReadFile, "rwd");
 
                     if (readOffSet.longValue() > 0) {
                         readRandomAccessFile.seek(readOffSet.longValue());
