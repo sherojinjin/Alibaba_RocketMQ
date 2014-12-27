@@ -267,6 +267,8 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
                 for (MessageQueue messageQueue : row.getValue()) {
                     stringBuilder.append(messageQueue.getBrokerName()).append(":").append(messageQueue.getQueueId())
                             .append(", ");
+                }
+                if (stringBuilder.length() > 2) {
                     LOGGER.info(row.getKey() + " --> " + stringBuilder.substring(0, stringBuilder.length() - 2));
                 }
             }
