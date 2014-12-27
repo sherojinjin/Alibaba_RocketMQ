@@ -270,6 +270,7 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
                     LOGGER.info(row.getKey() + " --> " + stringBuilder.substring(0, stringBuilder.length() - 2));
                 }
             }
+            LOGGER.info("Allocation End.");
         }
         return null == result.get(currentConsumerID) ? new ArrayList<MessageQueue>()
                 : result.get(currentConsumerID);
