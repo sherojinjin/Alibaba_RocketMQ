@@ -395,7 +395,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     LOGGER.error("Data inconsistent!");
                 }
                 byte[] data = new byte[messageSize];
-                readRandomAccessFile.read(data);
+
+                int byteRead = 0;
+                while (byteRead < messageSize) {
+                   byteRead += readRandomAccessFile.read(data, byteRead, messageSize - byteRead);
+                }
+
                 messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
                 readIndex.incrementAndGet();
                 readOffSet.addAndGet(4 + 4 + messageSize); //message_size_int + magic_code_int + messageSize.
