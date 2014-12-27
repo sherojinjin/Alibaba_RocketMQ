@@ -49,11 +49,49 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
         this.mqClientAPI = mqClientAPI;
     }
 
+    /**
+     * Name of this allocation algorithm.
+     * @return Algorithm name.
+     */
     @Override
     public String getName() {
         return "DATA_CENTER";
     }
 
+    /**
+     * <p>
+     *    This method allocates message queue by data center.
+     * </p>
+     *
+     * <p>
+     *     Prerequisite:
+     *     <ul>
+     *         <li>Broker names conform pattern of {@link Helper#BROKER_NAME_REGEX}</li>
+     *         <li>Consumers use IPv4 address, whose second integer represents data center the very consumer reside in.
+     *         </li>
+     *     </ul>
+     * </p>
+     *
+     * <p>
+     *     Algorithm specification:
+     *     <ul>
+     *         <li>Filter out all suspended clients.</li>
+     *         <li>For those DCs which have consumer and broker in, message queues are allocated averagely per DC.</li>
+     *         <li>For those DCs which have brokers only, their message queues are allocated to all active consumers
+     *         averagely. Note, under allocated consumers from previous step may allocate more message queues in this
+     *         step, improving load balance.</li>
+     *         <li>For those DCs which have consumers only, all their opportunities of allocation lie in the previous
+     *         step. They indeed have risks of starvation</li>
+     *     </ul>
+     * </p>
+     *
+     * @param consumerGroup Consumer group.
+     * @param currentConsumerID concurrent consumer client ID, in form of IP@instance_name
+     * @param mqAll
+     *            当前Topic的所有队列集合，无重复数据，且有序
+     * @param allConsumerIDs All consumer IDs.
+     * @return message queues allocated to current consumer client.
+     */
     @Override
     public List<MessageQueue> allocate(String consumerGroup, String currentConsumerID, List<MessageQueue> mqAll,
             List<String> allConsumerIDs) {
@@ -251,7 +289,7 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
      *     </ul>
      * </p>
      *
-     * @param range ranges of IP address in conform of the described rules above.
+     * @param range ranges of IP address, conforming the rules described above.
      * @return Numerical representation of the ranges list.
      */
     private List<Pair<Long, Long>> buildIPRanges(String range) {
