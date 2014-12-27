@@ -57,14 +57,14 @@ public class Producer {
             Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {
-                    Message[] messages = buildMessages(RANDOM.nextInt(1200));
+                    Message[] messages = buildMessages(RANDOM.nextInt(600));
                     producer.send(messages);
                     adder.incrementAndGet();
                     if (adder.longValue() % 10 == 0) {
                         LOGGER.info(messages.length + " messages from client are required to send.");
                     }
                 }
-            }, 3000, 100, TimeUnit.MILLISECONDS);
+            }, 3000, 1000, TimeUnit.MILLISECONDS);
         } else {
             long start = System.currentTimeMillis();
             Message[] messages = buildMessages(count);

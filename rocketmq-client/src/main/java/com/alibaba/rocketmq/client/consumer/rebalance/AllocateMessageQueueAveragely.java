@@ -15,14 +15,13 @@
  */
 package com.alibaba.rocketmq.client.consumer.rebalance;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-
 import com.alibaba.rocketmq.client.consumer.AllocateMessageQueueStrategy;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.common.message.MessageQueue;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -45,15 +44,8 @@ public class AllocateMessageQueueAveragely implements AllocateMessageQueueStrate
     @Override
     public List<MessageQueue> allocate(String consumerGroup, String currentCID, List<MessageQueue> mqAll,
             List<String> cidAll) {
-        if (currentCID == null || currentCID.length() < 1) {
-            throw new IllegalArgumentException("currentCID is empty");
-        }
-        if (mqAll == null || mqAll.isEmpty()) {
-            throw new IllegalArgumentException("mqAll is null or mqAll empty");
-        }
-        if (cidAll == null || cidAll.isEmpty()) {
-            throw new IllegalArgumentException("cidAll is null or cidAll empty");
-        }
+
+        Helper.checkRebalanceParameters(consumerGroup, currentCID, mqAll, cidAll);
 
         List<MessageQueue> result = new ArrayList<MessageQueue>();
         if (!cidAll.contains(currentCID)) { // 不存在此ConsumerId ,直接返回

@@ -267,9 +267,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
             this.makeSureStateOK();
             Set<MessageQueue> mqs = new HashSet<MessageQueue>();
             Set<MessageQueue> allocateMq = this.rebalanceImpl.getProcessQueueTable().keySet();
-            if (allocateMq != null) {
-                mqs.addAll(allocateMq);
-            }
+            mqs.addAll(allocateMq);
 
             this.offsetStore.persistAll(mqs);
         }
