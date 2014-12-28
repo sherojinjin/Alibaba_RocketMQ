@@ -15,16 +15,6 @@
  */
 package com.alibaba.rocketmq.client.impl.consumer;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-
 import com.alibaba.rocketmq.client.QueryResult;
 import com.alibaba.rocketmq.client.Validators;
 import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
@@ -46,11 +36,7 @@ import com.alibaba.rocketmq.common.ServiceState;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.filter.FilterAPI;
 import com.alibaba.rocketmq.common.help.FAQUrl;
-import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.common.message.MessageAccessor;
-import com.alibaba.rocketmq.common.message.MessageConst;
-import com.alibaba.rocketmq.common.message.MessageExt;
-import com.alibaba.rocketmq.common.message.MessageQueue;
+import com.alibaba.rocketmq.common.message.*;
 import com.alibaba.rocketmq.common.protocol.body.ConsumerRunningInfo;
 import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
@@ -59,6 +45,10 @@ import com.alibaba.rocketmq.common.sysflag.PullSysFlag;
 import com.alibaba.rocketmq.remoting.RPCHook;
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
+import org.slf4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -189,12 +179,11 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
                     SubscriptionData ms = null;
                     try {
                         ms = FilterAPI.buildSubscriptionData(this.groupName(), t, SubscriptionData.SUB_ALL);
-                    }
-                    catch (Exception e) {
+                        ms.setSubVersion(0L);
+                        result.add(ms);
+                    } catch (Exception e) {
                         log.error("parse subscription error", e);
                     }
-                    ms.setSubVersion(0L);
-                    result.add(ms);
                 }
             }
         }
@@ -217,12 +206,9 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
             this.makeSureStateOK();
             Set<MessageQueue> mqs = new HashSet<MessageQueue>();
             Set<MessageQueue> allocateMq = this.rebalanceImpl.getProcessQueueTable().keySet();
-            if (allocateMq != null) {
-                mqs.addAll(allocateMq);
-            }
+            mqs.addAll(allocateMq);
             this.offsetStore.persistAll(mqs);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("group: " + this.defaultMQPullConsumer.getConsumerGroup()
                     + " persistConsumerOffset exception", e);
         }
@@ -337,8 +323,7 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
                         FilterAPI.buildSubscriptionData(this.defaultMQPullConsumer.getConsumerGroup(),//
                             topic, SubscriptionData.SUB_ALL);
                 this.rebalanceImpl.subscriptionInner.putIfAbsent(topic, subscriptionData);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
             }
         }
     }
