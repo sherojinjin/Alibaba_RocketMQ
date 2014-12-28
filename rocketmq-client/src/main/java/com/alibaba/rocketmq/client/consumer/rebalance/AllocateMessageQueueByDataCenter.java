@@ -76,12 +76,12 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
      *     Algorithm specification:
      *     <ul>
      *         <li>Filter out all suspended clients.</li>
-     *         <li>For those DCs which have consumer and broker in, message queues are allocated averagely per DC.</li>
+     *         <li>For those DCs which have both consumers and brokers in, message queues are allocated averagely per DC.</li>
      *         <li>For those DCs which have brokers only, their message queues are allocated to all active consumers
      *         averagely. Note, under allocated consumers from previous step may allocate more message queues in this
      *         step, improving load balance.</li>
      *         <li>For those DCs which have consumers only, all their opportunities of allocation lie in the previous
-     *         step. They indeed have risks of starvation</li>
+     *         step. They indeed have risks of starvation.</li>
      *     </ul>
      * </p>
      *
