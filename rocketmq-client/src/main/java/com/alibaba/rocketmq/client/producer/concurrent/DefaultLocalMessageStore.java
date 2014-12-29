@@ -313,6 +313,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
                 if(++numberOfMessageToCommit % UPDATE_CONFIG_PER_FLUSHING_NUMBER_OF_MESSAGE == 0) {
                     updateConfig();
+                    randomAccessFile.getFD().sync();
                 }
 
                 //Prepare for next round.
@@ -320,6 +321,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
 
             updateConfig();
+            randomAccessFile.getFD().sync();
         } catch (InterruptedException e) {
             LOGGER.error("Flush messages error", e);
         } catch (IOException e) {
