@@ -430,7 +430,15 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     }
                 }
             }
-            return messages;
+
+            if (messageRead < messageToRead) {
+                StashableMessage[] result = new StashableMessage[messageRead];
+                System.arraycopy(messages, 0, result, 0, messageRead);
+                return result;
+            } else {
+                return messages;
+            }
+
         } catch (InterruptedException e) {
             LOGGER.error("Pop message error", e);
         } catch (FileNotFoundException e) {
