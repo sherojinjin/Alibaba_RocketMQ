@@ -56,6 +56,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final int MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE = 1000;
 
+    private static final int UPDATE_CONFIG_PER_FLUSHING_NUMBER_OF_MESSAGE = 500;
+
     private static final float DISK_HIGH_WATER_LEVEL = 0.75F;
 
     private static final float DISK_WARNING_WATER_LEVEL = 0.65F;
@@ -63,6 +65,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private volatile long lastFlushTime = -1;
 
     private volatile long lastWarnTime = -1;
+
+    private static final String ACCESS_FILE_MODE = "rws";
 
     public DefaultLocalMessageStore(String storeName) {
         //For convenience of development.
@@ -155,7 +159,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 if (null != lastWrittenFileName) {
-                    randomAccessFile = new RandomAccessFile(lastWrittenFileName, "rwd");
+                    randomAccessFile = new RandomAccessFile(lastWrittenFileName, ACCESS_FILE_MODE);
                     if (writeOffSet.longValue() > 0) {
                         randomAccessFile.seek(writeOffSet.longValue());
                     }
@@ -272,9 +276,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             int numberOfMessageToCommit = 0;
 
             while (null != message) {
-                writeIndex.incrementAndGet();
-                long currentWriteIndex = writeIndex.longValue();
-
+                long currentWriteIndex = writeIndex.longValue() + 1;
                 if (1 == currentWriteIndex ||
                         (currentWriteIndex - 1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
                     //we need to create a new file.
@@ -289,38 +291,41 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         randomAccessFile.close();
                     }
                     File dataFile = messageStoreNameFileMapping.get(currentWriteIndex);
-                    randomAccessFile = new RandomAccessFile(dataFile, "rwd");
+                    randomAccessFile = new RandomAccessFile(dataFile, ACCESS_FILE_MODE);
                 }
 
                 if (null == randomAccessFile) {
                     File currentWritingDataFile = messageStoreNameFileMapping
                             .get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
 
-                    randomAccessFile = new RandomAccessFile(currentWritingDataFile, "rwd");
+                    randomAccessFile = new RandomAccessFile(currentWritingDataFile, ACCESS_FILE_MODE);
                 }
 
                 byte[] msgData = JSON.toJSONString(message).getBytes();
                 randomAccessFile.writeInt(msgData.length);
                 randomAccessFile.writeInt(MAGIC_CODE);
                 randomAccessFile.write(msgData);
-                writeOffSet.set(randomAccessFile.getFilePointer());
-
+                writeOffSet.addAndGet(4 + 4 + msgData.length);
+                writeIndex.incrementAndGet();
                 if (writeIndex.longValue() % MESSAGES_PER_FILE == 0) {
                     writeOffSet.set(0L);
                 }
 
-                if(++numberOfMessageToCommit % MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE == 0) {
+                if(++numberOfMessageToCommit % UPDATE_CONFIG_PER_FLUSHING_NUMBER_OF_MESSAGE == 0) {
                     updateConfig();
                 }
+
+                //Prepare for next round.
                 message = messageQueue.poll();
             }
+
             updateConfig();
         } catch (InterruptedException e) {
             LOGGER.error("Flush messages error", e);
-            throw new RuntimeException("Lock exception", e);
         } catch (IOException e) {
             LOGGER.error("Flush messages error", e);
-            throw new RuntimeException("IO Error", e);
+        } catch (Exception e) {
+            LOGGER.error("Flush messages error", e);
         } finally {
             LOGGER.info("Local message store flushes completely.");
             lock.unlock();
@@ -382,18 +387,29 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         throw new RuntimeException("Data file corrupted");
                     }
 
-                    readRandomAccessFile = new RandomAccessFile(currentReadFile, "rwd");
+                    readRandomAccessFile = new RandomAccessFile(currentReadFile, ACCESS_FILE_MODE);
 
                     if (readOffSet.longValue() > 0) {
                         readRandomAccessFile.seek(readOffSet.longValue());
                     }
                 }
 
+                if(readOffSet.longValue() + 4 + 4 > readRandomAccessFile.length()) {
+                    break;
+                }
+
                 int messageSize = readRandomAccessFile.readInt();
+
+
                 int magicCode = readRandomAccessFile.readInt();
                 if (magicCode != MAGIC_CODE) {
                     LOGGER.error("Data inconsistent!");
                 }
+
+                if(readOffSet.longValue() + 4 + 4 + messageSize > readRandomAccessFile.length()) {
+                    break;
+                }
+
                 byte[] data = new byte[messageSize];
 
                 randomAccessFile.readFully(data);
@@ -420,8 +436,16 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         } catch (IOException e) {
             LOGGER.error("Pop message error", e);
             LOGGER.error("readIndex:" + readIndex.longValue() + ", writeIndex:" + writeIndex.longValue()
-                    + "readOffset:" + readOffSet.longValue() + ", writeOffset:" + writeOffSet.longValue());
+                    + ", readOffset:" + readOffSet.longValue() + ", writeOffset:" + writeOffSet.longValue());
         } finally {
+            if (null != randomAccessFile) {
+                try {
+                    randomAccessFile.close();
+                } catch (IOException e) {
+                    //Ingore.
+                }
+            }
+
             lock.unlock();
         }
         return null;
