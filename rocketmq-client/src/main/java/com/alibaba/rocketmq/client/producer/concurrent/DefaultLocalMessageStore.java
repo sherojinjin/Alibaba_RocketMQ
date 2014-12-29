@@ -412,7 +412,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
                 byte[] data = new byte[messageSize];
 
-                randomAccessFile.readFully(data);
+                readRandomAccessFile.readFully(data);
 
                 messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
                 readIndex.incrementAndGet();
