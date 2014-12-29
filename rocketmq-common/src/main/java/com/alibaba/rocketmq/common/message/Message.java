@@ -85,9 +85,9 @@ public class Message implements Serializable {
     public StashableMessage buildStashableMessage() {
         StashableMessage stashableMessage = new StashableMessage();
         stashableMessage.setTopic(topic);
-        setBody(body);
-        setFlag(flag);
-        setProperties(properties);
+        stashableMessage.setBody(body);
+        stashableMessage.setFlag(flag);
+        stashableMessage.setProperties(properties);
         return stashableMessage;
     }
 

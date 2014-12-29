@@ -1,6 +1,7 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
 import com.alibaba.rocketmq.common.message.Message;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -20,10 +21,11 @@ public class DefaultLocalMessageStoreTest {
             defaultLocalMessageStore.stash(new Message("Topic", "Data".getBytes()));
         }
 
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(1000);
-        }
 
+        Message[] messages = defaultLocalMessageStore.pop(1);
+
+        Assert.assertEquals(messages[0].getTopic(), "Topic");
+        Assert.assertArrayEquals(messages[0].getBody(), "Data".getBytes());
     }
 
 
