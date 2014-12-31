@@ -25,6 +25,8 @@
         <jaxrs:serviceBeans>
             <ref bean="nameServerAddressBean" />
             <ref bean="ipMappingBean" />
+            <ref bean="consumerBean" />
+            <ref bean="producerBean" />
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider">
@@ -51,6 +53,14 @@
         <property name="fileManager" ref="fileManager" />
     </bean>
 
+    <bean id="consumerManager" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerManagerImpl">
+
+    </bean>
+
+    <bean id="producerManager" class="com.ndpmedia.rocketmq.producer.impl.ProducerManagerImpl">
+
+    </bean>
+
     <bean id="nameServerAddressBean" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerAddressServiceImpl">
         <property name="nameServerManager" ref="nameServerManager" />
     </bean>
@@ -59,4 +69,11 @@
         <property name="ipMappingManager" ref="ipMappingManager" />
     </bean>
 
+    <bean id="consumerBean" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerServiceImpl">
+        <property name="consumerManager" ref="consumerManager" />
+    </bean>
+
+    <bean id="producerBean" class="com.ndpmedia.rocketmq.producer.impl.ProducerServiceImpl">
+        <property name="producerManager" ref="producerManager" />
+    </bean>
 </beans>
