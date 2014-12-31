@@ -6,7 +6,7 @@ import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
 import java.util.List;
 
 /**
- * Created by Administrator on 2014/12/30.
+ * the interface of consumer manager.
  */
 public interface ConsumerManager
 {

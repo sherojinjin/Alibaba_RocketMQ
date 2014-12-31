@@ -3,7 +3,7 @@ package com.ndpmedia.rocketmq.consumer.model;
 import com.alibaba.rocketmq.remoting.protocol.LanguageCode;
 
 /**
- * Created by Administrator on 2014/12/30.
+ * consumer bean.
  */
 public class Consumer
 {
@@ -49,5 +49,15 @@ public class Consumer
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+    @Override
+    public String toString() {
+        return "Consumer{" +
+                "clientId='" + clientId + '\'' +
+                ", clientAddr='" + clientAddr + '\'' +
+                ", language=" + language +
+                ", version=" + version +
+                '}';
     }
 }

@@ -7,10 +7,6 @@ import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
 
 import java.util.List;
 
-/**
- * Created by Administrator on 2014/12/30.
- */
-
 public class ConsumerServiceImpl implements ConsumerService
 {
     private ConsumerManager consumerManager;

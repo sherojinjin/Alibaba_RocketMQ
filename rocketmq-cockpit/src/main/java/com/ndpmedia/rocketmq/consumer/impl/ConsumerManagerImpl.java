@@ -18,10 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-/**
- * Created by Administrator on 2014/12/30.
- */
-
 @Service("consumerManager")
 public class ConsumerManagerImpl implements ConsumerManager
 {
@@ -131,7 +127,7 @@ public class ConsumerManagerImpl implements ConsumerManager
                         continue;
                     }
 
-                    progressList.add(new ConsumerProgress(mq, diff));
+                    progressList.add(new ConsumerProgress(mq, offsetWrapper, diff));
                     System.out.printf("%-32s  %-32s  %-4d  %-20d  %-20d  %d\n",//
                             UtilAll.frontStringAtLeast(mq.getTopic(), 32),//
                             UtilAll.frontStringAtLeast(mq.getBrokerName(), 32),//

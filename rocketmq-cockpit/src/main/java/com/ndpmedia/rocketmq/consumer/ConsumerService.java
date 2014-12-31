@@ -8,7 +8,8 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 /**
- * Created by Administrator on 2014/12/30.
+ * consumer service.
+ * the API interface.
  */
 
 @Produces(MediaType.APPLICATION_JSON)
