@@ -121,12 +121,12 @@ public class ConsumerManagerImpl implements ConsumerManager
                     long diff = offsetWrapper.getBrokerOffset() - offsetWrapper.getConsumerOffset();
                     diffTotal += diff;
 
-                    if (null != topic && topic.equals(UtilAll.frontStringAtLeast(mq.getTopic(), 32)))
+                    if (null != topic && !topic.equals(mq.getTopic()))
                     {
                         continue;
                     }
 
-                    if (null != broker && broker.equals(UtilAll.frontStringAtLeast(mq.getBrokerName(), 32)))
+                    if (null != broker && !broker.equals(mq.getBrokerName()))
                     {
                         continue;
                     }
