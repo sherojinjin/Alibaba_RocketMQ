@@ -3,26 +3,16 @@
  */
 package com.alibaba.rocketmq.remoting;
 
-import static org.junit.Assert.assertTrue;
+import com.alibaba.rocketmq.remoting.annotation.CFNullable;
+import com.alibaba.rocketmq.remoting.exception.*;
+import com.alibaba.rocketmq.remoting.netty.*;
+import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
 import io.netty.channel.ChannelHandlerContext;
+import org.junit.Test;
 
 import java.util.concurrent.Executors;
 
-import org.junit.Test;
-
-import com.alibaba.rocketmq.remoting.annotation.CFNullable;
-import com.alibaba.rocketmq.remoting.exception.RemotingCommandException;
-import com.alibaba.rocketmq.remoting.exception.RemotingConnectException;
-import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
-import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
-import com.alibaba.rocketmq.remoting.exception.RemotingTooMuchRequestException;
-import com.alibaba.rocketmq.remoting.netty.NettyClientConfig;
-import com.alibaba.rocketmq.remoting.netty.NettyRemotingClient;
-import com.alibaba.rocketmq.remoting.netty.NettyRemotingServer;
-import com.alibaba.rocketmq.remoting.netty.NettyRequestProcessor;
-import com.alibaba.rocketmq.remoting.netty.NettyServerConfig;
-import com.alibaba.rocketmq.remoting.netty.ResponseFuture;
-import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -47,7 +37,7 @@ public class NettyRPCTest {
             @Override
             public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) {
                 System.out.println("processRequest=" + request + " " + (i++));
-                request.setRemark("hello, I am respponse " + ctx.channel().remoteAddress());
+                request.setRemark("hello, I am response " + ctx.channel().remoteAddress());
                 return request;
             }
         }, Executors.newCachedThreadPool());
@@ -87,7 +77,7 @@ public class NettyRPCTest {
         for (int i = 0; i < 100; i++) {
             RemotingCommand request = RemotingCommand.createRequestCommand(0, null);
             request.setRemark(String.valueOf(i));
-            client.invokeOneway("localhost:8888", request, 1000 * 3);
+            client.invokeOneWay("localhost:8888", request, 1000 * 3);
         }
 
         client.shutdown();

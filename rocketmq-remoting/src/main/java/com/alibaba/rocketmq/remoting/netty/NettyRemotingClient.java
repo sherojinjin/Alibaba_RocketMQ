@@ -674,7 +674,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
 
     @Override
-    public void invokeOneway(String addr, RemotingCommand request, long timeoutMillis)
+    public void invokeOneWay(String addr, RemotingCommand request, long timeoutMillis)
             throws InterruptedException, RemotingConnectException, RemotingTooMuchRequestException,
             RemotingTimeoutException, RemotingSendRequestException {
         final Channel channel = this.getAndCreateChannel(addr);
@@ -686,7 +686,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                 this.invokeOneWayImpl(channel, request, timeoutMillis);
             }
             catch (RemotingSendRequestException e) {
-                log.warn("invokeOneway: send request exception, so close the channel[{}]", addr);
+                log.warn("invokeOneWay: send request exception, so close the channel[{}]", addr);
                 this.closeChannel(addr, channel);
                 throw e;
             }
@@ -767,7 +767,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
 
     @Override
-    public boolean isChannelWriteable(String addr) {
+    public boolean isChannelWritable(String addr) {
         ChannelWrapper cw = this.channelTables.get(addr);
         if (cw != null && cw.isOK()) {
             return cw.isWritable();

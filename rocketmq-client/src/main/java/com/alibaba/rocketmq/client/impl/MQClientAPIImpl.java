@@ -292,7 +292,7 @@ public class MQClientAPIImpl {
 
         switch (communicationMode) {
         case ONE_WAY:
-            this.remotingClient.invokeOneway(addr, request, timeoutMillis);
+            this.remotingClient.invokeOneWay(addr, request, timeoutMillis);
             return null;
         case ASYNC:
             this.sendMessageAsync(addr, brokerName, msg, timeoutMillis, request, sendCallback);
@@ -841,7 +841,7 @@ public class MQClientAPIImpl {
         RemotingCommand request =
                 RemotingCommand.createRequestCommand(RequestCode.UPDATE_CONSUMER_OFFSET, requestHeader);
 
-        this.remotingClient.invokeOneway(addr, request, timeoutMillis);
+        this.remotingClient.invokeOneWay(addr, request, timeoutMillis);
     }
 
 
@@ -949,7 +949,7 @@ public class MQClientAPIImpl {
                 RemotingCommand.createRequestCommand(RequestCode.END_TRANSACTION, requestHeader);
 
         request.setRemark(remark);
-        this.remotingClient.invokeOneway(addr, request, timeoutMillis);
+        this.remotingClient.invokeOneWay(addr, request, timeoutMillis);
     }
 
 
@@ -1109,7 +1109,7 @@ public class MQClientAPIImpl {
         request.setBody(requestBody.encode());
 
         if (oneway) {
-            this.remotingClient.invokeOneway(addr, request, timeoutMillis);
+            this.remotingClient.invokeOneWay(addr, request, timeoutMillis);
         }
         else {
             RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
