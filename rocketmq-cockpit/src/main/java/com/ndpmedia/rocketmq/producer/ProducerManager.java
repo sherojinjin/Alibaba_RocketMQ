@@ -5,7 +5,7 @@ import com.ndpmedia.rocketmq.producer.model.Producer;
 import java.util.List;
 
 /**
- * Created by Administrator on 2014/12/30.
+ * the interface of produce manager.
  */
 public interface ProducerManager
 {

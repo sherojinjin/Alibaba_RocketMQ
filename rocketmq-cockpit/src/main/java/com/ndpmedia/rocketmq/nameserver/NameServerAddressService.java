@@ -6,7 +6,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
-
 @Produces(MediaType.APPLICATION_JSON)
 public interface NameServerAddressService {
 

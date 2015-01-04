@@ -25,6 +25,7 @@
         <jaxrs:serviceBeans>
             <ref bean="nameServerAddressBean" />
             <ref bean="ipMappingBean" />
+            <ref bean="topicBean" />
             <ref bean="consumerBean" />
             <ref bean="producerBean" />
         </jaxrs:serviceBeans>
@@ -53,6 +54,10 @@
         <property name="fileManager" ref="fileManager" />
     </bean>
 
+    <bean id="topicManager" class="com.ndpmedia.rocketmq.topic.impl.TopicManagerImpl">
+
+    </bean>
+
     <bean id="consumerManager" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerManagerImpl">
 
     </bean>
@@ -67,6 +72,10 @@
 
     <bean id="ipMappingBean" class="com.ndpmedia.rocketmq.ip.impl.IPMappingServiceImpl">
         <property name="ipMappingManager" ref="ipMappingManager" />
+    </bean>
+
+    <bean id="topicBean" class="com.ndpmedia.rocketmq.topic.impl.TopicServiceImpl">
+        <property name="topicManager" ref="topicManager" />
     </bean>
 
     <bean id="consumerBean" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerServiceImpl">

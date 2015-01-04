@@ -13,8 +13,6 @@
         <li><a href="cockpit/name-server/">Manage Name Server</a></li>
         <li><a href="cockpit/ip/">Manage IP Mapping</a></li>
         <li><a href="cockpit/broker/">Broker Status</a></li>
-        <li><a href="cockpit/producer/">Manage Producer</a></li>
-        <li><a href="cockpit/consumer/">Manage Consumer</a></li>
     </ul>
 
     <h1>Console Home</h1>

@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-    $.get("rocketmq/nsaddrJson", function(data) {
+    $.get("rocketmq/producersJson", function(data) {
         $(".table-content").children().remove();
         data.forEach(function(nameServerItem) {
             var operationLink = $("<a class='removeItem' href='javascript:;'>Remove</a>");
