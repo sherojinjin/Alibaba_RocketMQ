@@ -114,9 +114,6 @@ public class ConsumerManagerImpl implements ConsumerManager
                 for (MessageQueue mq : mqList) {
                     OffsetWrapper offsetWrapper = consumeStats.getOffsetTable().get(mq);
 
-                    long diff = offsetWrapper.getBrokerOffset() - offsetWrapper.getConsumerOffset();
-                    diffTotal += diff;
-
                     if (null != topic && !topic.equals(mq.getTopic()))
                     {
                         continue;
@@ -126,6 +123,10 @@ public class ConsumerManagerImpl implements ConsumerManager
                     {
                         continue;
                     }
+
+                    long diff = offsetWrapper.getBrokerOffset() - offsetWrapper.getConsumerOffset();
+                    diffTotal += diff;
+
 
                     progressList.add(new ConsumerProgress(mq, offsetWrapper, diff));
                     System.out.printf("%-32s  %-32s  %-4d  %-20d  %-20d  %d\n",//
