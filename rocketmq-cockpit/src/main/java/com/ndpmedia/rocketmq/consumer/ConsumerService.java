@@ -17,13 +17,13 @@ public interface ConsumerService
 {
     @GET
     @POST
-    @Path("/consumerByGroupName")
+    @Path("/cJson")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     List<Consumer> list(@FormParam("groupName") String groupName);
 
     @GET
     @POST
-    @Path("/consumerProgress")
+    @Path("/cpJson")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     List<ConsumerProgress> list(@FormParam("groupName") String groupName,@FormParam("topic") String topic,
                                 @FormParam("broker")String broker);

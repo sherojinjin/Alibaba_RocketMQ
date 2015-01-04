@@ -16,7 +16,7 @@ public interface ProducerService
 {
     @GET
     @POST
-    @Path("/producersJson")
+    @Path("/pJson")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     List<Producer> list(@FormParam("groupName") String groupName, @FormParam("topic") String topic);
 }
