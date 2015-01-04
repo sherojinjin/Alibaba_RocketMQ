@@ -15,11 +15,16 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public interface ConsumerService
 {
+    @GET
     @POST
     @Path("/consumerByGroupName")
-    List<Consumer> list(String groupName);
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    List<Consumer> list(@FormParam("groupName") String groupName);
 
+    @GET
     @POST
     @Path("/consumerProgress")
-    List<ConsumerProgress> list(String groupName, String topic, String broker);
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    List<ConsumerProgress> list(@FormParam("groupName") String groupName,@FormParam("topic") String topic,
+                                @FormParam("broker")String broker);
 }

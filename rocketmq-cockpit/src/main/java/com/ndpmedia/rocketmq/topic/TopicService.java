@@ -12,6 +12,7 @@ import java.util.Set;
 public interface TopicService
 {
     @GET
+    @POST
     @Path("/topicList")
     Set<String> list();
 }

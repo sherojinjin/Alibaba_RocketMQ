@@ -14,7 +14,9 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public interface ProducerService
 {
+    @GET
     @POST
     @Path("/producersJson")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     List<Producer> list(@FormParam("groupName") String groupName, @FormParam("topic") String topic);
 }
