@@ -94,54 +94,55 @@ public class ConsumerManagerImpl implements ConsumerManager
         try {
             defaultMQAdminExt.start();
             // 查询特定consumer
-                ConsumeStats consumeStats = defaultMQAdminExt.examineConsumeStats(groupName);
+            ConsumeStats consumeStats = defaultMQAdminExt.examineConsumeStats(groupName);
 
-                List<MessageQueue> mqList = new LinkedList<MessageQueue>();
-                mqList.addAll(consumeStats.getOffsetTable().keySet());
-                Collections.sort(mqList);
+            List<MessageQueue> mqList = new LinkedList<MessageQueue>();
+            mqList.addAll(consumeStats.getOffsetTable().keySet());
+            Collections.sort(mqList);
 
-                System.out.printf("%-32s  %-32s  %-4s  %-20s  %-20s  %s\n",//
-                        "#Topic",//
-                        "#Broker Name",//
-                        "#QID",//
-                        "#Broker Offset",//
-                        "#Consumer Offset",//
-                        "#Diff" //
-                );
+            System.out.printf("%-32s  %-32s  %-4s  %-20s  %-20s  %s\n",//
+                    "#Topic",//
+                    "#Broker Name",//
+                    "#QID",//
+                    "#Broker Offset",//
+                    "#Consumer Offset",//
+                    "#Diff" //
+            );
 
-                long diffTotal = 0L;
+            long diffTotal = 0L;
 
-                for (MessageQueue mq : mqList) {
-                    OffsetWrapper offsetWrapper = consumeStats.getOffsetTable().get(mq);
+            for (MessageQueue mq : mqList) {
+                OffsetWrapper offsetWrapper = consumeStats.getOffsetTable().get(mq);
 
-                    if (null != topic && !topic.equals(mq.getTopic()))
-                    {
-                        continue;
-                    }
-
-                    if (null != broker && !broker.equals(mq.getBrokerName()))
-                    {
-                        continue;
-                    }
-
-                    long diff = offsetWrapper.getBrokerOffset() - offsetWrapper.getConsumerOffset();
-                    diffTotal += diff;
-
-
-                    progressList.add(new ConsumerProgress(mq, offsetWrapper, diff));
-                    System.out.printf("%-32s  %-32s  %-4d  %-20d  %-20d  %d\n",//
-                            UtilAll.frontStringAtLeast(mq.getTopic(), 32),//
-                            UtilAll.frontStringAtLeast(mq.getBrokerName(), 32),//
-                            mq.getQueueId(),//
-                            offsetWrapper.getBrokerOffset(),//
-                            offsetWrapper.getConsumerOffset(),//
-                            diff //
-                    );
+                if (null != topic && !topic.equals(mq.getTopic()))
+                {
+                    continue;
                 }
 
-                System.out.println("");
-                System.out.printf("Consume TPS: %d\n", consumeStats.getConsumeTps());
-                System.out.printf("Diff Total: %d\n", diffTotal);
+                if (null != broker && !broker.equals(mq.getBrokerName()))
+                {
+                    continue;
+                }
+
+                long diff = offsetWrapper.getBrokerOffset() - offsetWrapper.getConsumerOffset();
+                diffTotal += diff;
+
+                progressList.add(new ConsumerProgress(mq, offsetWrapper, diff));
+
+                System.out.printf("%-32s  %-32s  %-4d  %-20d  %-20d  %d\n",
+                        UtilAll.frontStringAtLeast(mq.getTopic(), 32),//
+                        UtilAll.frontStringAtLeast(mq.getBrokerName(), 32),
+                        mq.getQueueId(),
+                        offsetWrapper.getBrokerOffset(),
+                        offsetWrapper.getConsumerOffset(),
+                        diff
+                );
+            }
+
+            progressList.add(new ConsumerProgress(null, null, diffTotal));
+            System.out.println("");
+            System.out.printf("Consume TPS: %d\n", consumeStats.getConsumeTps());
+            System.out.printf("Diff Total: %d\n", diffTotal);
 
         }
         catch (Exception e) {
