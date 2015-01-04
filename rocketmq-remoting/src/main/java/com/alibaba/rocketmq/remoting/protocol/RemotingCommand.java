@@ -54,7 +54,7 @@ public class RemotingCommand {
     private int code;
     private LanguageCode language = LanguageCode.JAVA;
     private int version = 0;
-    private int opaque = REQUEST_OPAQUE_ID_GENERATOR.getAndIncrement();
+    private int opaque = 0;
     private int flag = 0;
     private String remark;
     private HashMap<String, String> extFields;
@@ -76,6 +76,7 @@ public class RemotingCommand {
         cmd.setCode(code);
         cmd.customHeader = customHeader;
         setCmdVersion(cmd);
+        cmd.setOpaque(REQUEST_OPAQUE_ID_GENERATOR.getAndIncrement());
         return cmd;
     }
 
@@ -101,6 +102,7 @@ public class RemotingCommand {
         cmd.markResponseType();
         cmd.setCode(code);
         cmd.setRemark(remark);
+        cmd.setOpaque(REQUEST_OPAQUE_ID_GENERATOR.getAndIncrement());
         setCmdVersion(cmd);
 
         if (classHeader != null) {
@@ -150,10 +152,8 @@ public class RemotingCommand {
                         try {
                             field.setAccessible(true);
                             value = field.get(this.customHeader);
-                        }
-                        catch (IllegalArgumentException e) {
-                        }
-                        catch (IllegalAccessException e) {
+                        } catch (IllegalArgumentException e) {
+                        } catch (IllegalAccessException e) {
                         }
 
                         if (value != null) {
@@ -248,8 +248,7 @@ public class RemotingCommand {
 
                             field.set(objectHeader, valueParsed);
 
-                        }
-                        catch (Throwable e) {
+                        } catch (Throwable e) {
                         }
                     }
                 }
