@@ -223,10 +223,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
         try {
             //Block if no space available.
-            messageQueue.put(message.buildStashableMessage());
+            StashableMessage stashableMessage = message.buildStashableMessage();
+            messageQueue.put(stashableMessage);
+            LOGGER.info("Put message into message queue. [" + JSON.toJSONString(stashableMessage) + "]");
         } catch (InterruptedException e) {
             LOGGER.error("Unable to stash message locally.", e);
-            LOGGER.error("We are risking of losing message:[" + JSON.toJSONString(message) + "]");
+            LOGGER.error("Fatal Error: Message [" + JSON.toJSONString(message) + "] is lost.");
         }
     }
 

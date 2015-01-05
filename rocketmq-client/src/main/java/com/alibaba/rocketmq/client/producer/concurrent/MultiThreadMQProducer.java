@@ -1,5 +1,6 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
@@ -213,12 +214,13 @@ public class MultiThreadMQProducer {
     }
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
-        LOGGER.error("Send message failed. Enter re-send logic. Exception:", e);
+        LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
 
         //Release assigned token.
         semaphore.release();
 
         localMessageStore.stash(msg);
+        LOGGER.error("#handleSendMessageFailure: completion of stashing [" + JSON.toJSONString(msg) + "]");
     }
 
     public void send(final Message msg) {
@@ -365,6 +367,8 @@ public class MultiThreadMQProducer {
                 } catch (Exception e) {
                     if (null != message) {
                         handleSendMessageFailure(message, e);
+                    } else {
+                        LOGGER.error("Message being null when exception raised.", e);
                     }
                 }
             }
