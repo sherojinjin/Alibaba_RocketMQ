@@ -1,6 +1,5 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
@@ -220,7 +219,6 @@ public class MultiThreadMQProducer {
         semaphore.release();
 
         localMessageStore.stash(msg);
-        LOGGER.error("#handleSendMessageFailure: completion of stashing [" + JSON.toJSONString(msg) + "]");
     }
 
     public void send(final Message msg) {
