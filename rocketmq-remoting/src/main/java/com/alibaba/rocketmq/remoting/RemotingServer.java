@@ -15,15 +15,14 @@
  */
 package com.alibaba.rocketmq.remoting;
 
-import io.netty.channel.Channel;
-
-import java.util.concurrent.ExecutorService;
-
 import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTooMuchRequestException;
 import com.alibaba.rocketmq.remoting.netty.NettyRequestProcessor;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
+import io.netty.channel.Channel;
+
+import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -66,7 +65,7 @@ public interface RemotingServer extends RemotingService {
             RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException;
 
 
-    public void invokeOneway(final Channel channel, final RemotingCommand request, final long timeoutMillis)
+    public void invokeOneWay(final Channel channel, final RemotingCommand request, final long timeoutMillis)
             throws InterruptedException, RemotingTooMuchRequestException, RemotingTimeoutException,
             RemotingSendRequestException;
 
