@@ -26,12 +26,19 @@
               </security:session-management>
        </security:http>
 
-
        <security:authentication-manager>
-              <security:authentication-provider>
-                     <security:user-service>
-                            <security:user name="root" authorities="ROLE_ADMIN" password="password" />
-                     </security:user-service>
+              <security:authentication-provider user-service-ref="userService">
+                   <security:password-encoder hash="md5">
+                       <security:salt-source user-property="username"  />
+                   </security:password-encoder>
               </security:authentication-provider>
        </security:authentication-manager>
+
+       <!--
+               通过 RocketMQUserDetailsService,Spring会控制用户的访问级别.
+               也可以理解成:以后我们和数据库操作就是通过RocketMQUserDetailsService来进行关联.
+            -->
+           <bean id="userService" class="com.ndpmedia.rocketmq.authentication.RocketMQUserDetailsService" >
+               <property name="cockpitDao" ref="cockpitDao" />
+           </bean>
 </beans>
