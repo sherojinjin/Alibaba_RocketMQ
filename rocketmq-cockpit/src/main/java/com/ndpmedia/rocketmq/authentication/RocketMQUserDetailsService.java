@@ -27,16 +27,16 @@ public class RocketMQUserDetailsService implements UserDetailsService
         try
         {
             System.out.println(" try to login ====username===== " + username);
-            System.out.println(" try to login ====password===== " + new Md5PasswordEncoder().encodePassword("password", "root"));
             Map<String, Object> map = getUser(username);
+            System.out.println(" try to login ====getUser====== " + map);
+
             // 用户名、密码、是否启用、是否被锁定、是否过期、权限
-            user = new User("root", new Md5PasswordEncoder().encodePassword("password", "root"),
-                    true, true, true, true, getAuthority(""));
+            user = new User(username, map.get("password").toString(), true, true, true, true, getAuthority("ROLE_ADMIN"));
             
         }
         catch (Exception e)
         {
-            throw  new UsernameNotFoundException("");
+            throw  new UsernameNotFoundException(" log faied !" + e.getMessage());
         }
 
         return user;
@@ -51,7 +51,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
     {
         List<GrantedAuthority> authList = new ArrayList<GrantedAuthority>();
 
-        authList.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        authList.add(new SimpleGrantedAuthority(role));
 
         return authList;
     }
@@ -61,7 +61,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
         String sql = " select * from cockpit_user where username='" + username + "'";
         List<Map<String, Object>> list = cockpitDao.getList(sql);
         if (list.isEmpty() || list.size() > 1)
-            throw new Exception("");
+            throw new Exception(" the user is in trouble, call 911 ");
         return list.get(0);
     }
 
