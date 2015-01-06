@@ -47,8 +47,7 @@
     <bean id="fileManager" class="com.ndpmedia.rocketmq.io.FileManager" />
 
     <bean id="dataSource"
-          class="org.springframework.jdbc.datasource.DriverManagerDataSource"
-          destroy-method="close">
+          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
         <property name="url" value="jdbc:mysql://172.30.10.76:3306/cockpit?useUnicode=true&amp;characterEncoding=UTF-8" />
         <property name="username" value="root"></property>
