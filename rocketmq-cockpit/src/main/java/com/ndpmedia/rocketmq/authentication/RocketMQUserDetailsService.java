@@ -28,7 +28,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
         {
             System.out.println(" try to login ====username===== " + username);
             Map<String, Object> map = getUser(username);
-            System.out.println(" try to login ====getUser====== " + map);
+            System.out.println(" try to login ====getUser====== " + map.get("username") + " " + map.get("password"));
 
             // 用户名、密码、是否启用、是否被锁定、是否过期、权限
             user = new User(username, map.get("password").toString(), true, true, true, true, getAuthority("ROLE_ADMIN"));
