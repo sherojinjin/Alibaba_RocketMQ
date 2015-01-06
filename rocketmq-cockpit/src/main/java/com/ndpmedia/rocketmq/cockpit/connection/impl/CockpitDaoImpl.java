@@ -2,13 +2,12 @@ package com.ndpmedia.rocketmq.cockpit.connection.impl;
 
 import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import javax.sql.DataSource;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Created by Administrator on 2015/1/6.
+ * cockpit dao implement.
  */
 public class CockpitDaoImpl implements CockpitDao
 {
@@ -22,5 +21,10 @@ public class CockpitDaoImpl implements CockpitDao
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
+    public List<Map<String, Object>> getList(String sql)
+    {
+        return jdbcTemplate.queryForList(sql);
+    }
 }
 
