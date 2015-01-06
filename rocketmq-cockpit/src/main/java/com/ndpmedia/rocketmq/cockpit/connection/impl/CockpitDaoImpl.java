@@ -24,6 +24,8 @@ public class CockpitDaoImpl implements CockpitDao
     @Override
     public List<Map<String, Object>> getList(String sql)
     {
+        System.out.println(" try to query : sql = [" + sql + " ]" + jdbcTemplate.getDataSource());
+
         return jdbcTemplate.queryForList(sql);
     }
 }

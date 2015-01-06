@@ -36,6 +36,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
         }
         catch (Exception e)
         {
+            System.err.println(" log faied !" + e.getMessage());
             throw  new UsernameNotFoundException(" log faied !" + e.getMessage());
         }
 
@@ -61,7 +62,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
         String sql = " select * from cockpit_user where username='" + username + "'";
         List<Map<String, Object>> list = cockpitDao.getList(sql);
         if (list.isEmpty() || list.size() > 1)
-            throw new Exception(" the user is in trouble, call 911 ");
+            throw new Exception(" the user is in trouble, call 911 ! " );
         return list.get(0);
     }
 
