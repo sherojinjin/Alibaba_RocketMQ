@@ -213,7 +213,7 @@ public class MultiThreadMQProducer {
     }
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
-        LOGGER.error("Send message failed. Enter re-send logic. Exception:", e);
+        LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
 
         //Release assigned token.
         semaphore.release();
@@ -365,6 +365,8 @@ public class MultiThreadMQProducer {
                 } catch (Exception e) {
                     if (null != message) {
                         handleSendMessageFailure(message, e);
+                    } else {
+                        LOGGER.error("Message being null when exception raised.", e);
                     }
                 }
             }

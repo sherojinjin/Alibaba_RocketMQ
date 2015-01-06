@@ -268,7 +268,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
 
     @Override
-    public void invokeOneway(Channel channel, RemotingCommand request, long timeoutMillis)
+    public void invokeOneWay(Channel channel, RemotingCommand request, long timeoutMillis)
             throws InterruptedException, RemotingTooMuchRequestException, RemotingTimeoutException,
             RemotingSendRequestException {
         this.invokeOneWayImpl(channel, request, timeoutMillis);

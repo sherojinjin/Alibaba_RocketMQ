@@ -33,8 +33,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final int MAGIC_CODE = 0xAABBCCDD ^ 1880681586 + 8;
 
-    private String storeLocation = System.getProperty("defaultLocalMessageStoreLocation",
-            DEFAULT_STORE_LOCATION);
+    private String storeLocation = System.getProperty("defaultLocalMessageStoreLocation", DEFAULT_STORE_LOCATION);
 
     private File localMessageStoreDirectory;
 
@@ -42,7 +41,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private File configFile;
 
-    private RandomAccessFile randomAccessFile;
+    private RandomAccessFile writeRandomAccessFile;
 
     private ReentrantLock lock = new ReentrantLock();
 
@@ -159,9 +158,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 if (null != lastWrittenFileName) {
-                    randomAccessFile = new RandomAccessFile(lastWrittenFileName, ACCESS_FILE_MODE);
+                    writeRandomAccessFile = new RandomAccessFile(lastWrittenFileName, ACCESS_FILE_MODE);
                     if (writeOffSet.longValue() > 0) {
-                        randomAccessFile.seek(writeOffSet.longValue());
+                        writeRandomAccessFile.seek(writeOffSet.longValue());
                     }
                 }
             } catch (FileNotFoundException e) {
@@ -223,10 +222,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
         try {
             //Block if no space available.
-            messageQueue.put(message.buildStashableMessage());
+            StashableMessage stashableMessage = message.buildStashableMessage();
+            messageQueue.put(stashableMessage);
         } catch (InterruptedException e) {
             LOGGER.error("Unable to stash message locally.", e);
-            LOGGER.error("We are risking of losing message:[" + JSON.toJSONString(message) + "]");
+            LOGGER.error("Fatal Error: Message [" + JSON.toJSONString(message) + "] is lost.");
         }
     }
 
@@ -287,24 +287,24 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     messageStoreNameFileMapping.putIfAbsent(currentWriteIndex, newMessageStoreFile);
 
                     //close previous file.
-                    if (null != randomAccessFile) {
-                        randomAccessFile.close();
+                    if (null != writeRandomAccessFile) {
+                        writeRandomAccessFile.close();
                     }
                     File dataFile = messageStoreNameFileMapping.get(currentWriteIndex);
-                    randomAccessFile = new RandomAccessFile(dataFile, ACCESS_FILE_MODE);
+                    writeRandomAccessFile = new RandomAccessFile(dataFile, ACCESS_FILE_MODE);
                 }
 
-                if (null == randomAccessFile) {
+                if (null == writeRandomAccessFile) {
                     File currentWritingDataFile = messageStoreNameFileMapping
                             .get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
 
-                    randomAccessFile = new RandomAccessFile(currentWritingDataFile, ACCESS_FILE_MODE);
+                    writeRandomAccessFile = new RandomAccessFile(currentWritingDataFile, ACCESS_FILE_MODE);
                 }
 
                 byte[] msgData = JSON.toJSONString(message).getBytes();
-                randomAccessFile.writeInt(msgData.length);
-                randomAccessFile.writeInt(MAGIC_CODE);
-                randomAccessFile.write(msgData);
+                writeRandomAccessFile.writeInt(msgData.length);
+                writeRandomAccessFile.writeInt(MAGIC_CODE);
+                writeRandomAccessFile.write(msgData);
                 writeOffSet.addAndGet(4 + 4 + msgData.length);
                 writeIndex.incrementAndGet();
                 if (writeIndex.longValue() % MESSAGES_PER_FILE == 0) {
@@ -352,6 +352,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             throw new RuntimeException("Message store is not ready. You may have closed it already.");
         }
 
+
+        //In case we need more messages, read from local files.
+        RandomAccessFile readRandomAccessFile = null;
         try {
             if (!lock.tryLock()) {
                 lock.lockInterruptibly();
@@ -376,8 +379,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 message = messageQueue.poll();
             }
 
-            //In case we need more messages, read from local files.
-            RandomAccessFile readRandomAccessFile = null;
+
             File currentReadFile = null;
             while (messageRead < messageToRead && readIndex.longValue() <= writeIndex.longValue()) {
                 if (null == readRandomAccessFile) {
@@ -446,11 +448,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             LOGGER.error("readIndex:" + readIndex.longValue() + ", writeIndex:" + writeIndex.longValue()
                     + ", readOffset:" + readOffSet.longValue() + ", writeOffset:" + writeOffSet.longValue());
         } finally {
-            if (null != randomAccessFile) {
+            if (null != readRandomAccessFile) {
                 try {
-                    randomAccessFile.close();
+                    readRandomAccessFile.close();
                 } catch (IOException e) {
-                    //Ingore.
+                    LOGGER.error("Unexpected IO error", e);
                 }
             }
 

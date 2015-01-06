@@ -15,18 +15,17 @@
  */
 package com.alibaba.rocketmq.remoting.netty;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-
-import java.nio.ByteBuffer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.util.ReferenceCountUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
 
 
 /**
@@ -58,16 +57,12 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
             ByteBuffer byteBuffer = frame.nioBuffer();
 
             return RemotingCommand.decode(byteBuffer);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("decode exception, " + RemotingHelper.parseChannelRemoteAddr(ctx.channel()), e);
             // 这里关闭后， 会在pipeline中产生事件，通过具体的close事件来清理数据结构
             RemotingUtil.closeChannel(ctx.channel());
-        }
-        finally {
-            if (null != frame) {
-                frame.release();
-            }
+        } finally {
+            ReferenceCountUtil.release(frame);
         }
 
         return null;
