@@ -16,6 +16,8 @@ public class NameServer {
 
     private long update_time;
 
+    private Date date = new Date();
+
     public NameServer() {}
 
     public NameServer(String url, long create_time)
@@ -32,6 +34,7 @@ public class NameServer {
         }
 
         this.create_time = create_time;
+        this.date = new Date(create_time);
     }
 
     public String getUrl() {
@@ -45,6 +48,19 @@ public class NameServer {
     public void makeUrl()
     {
         this.url = this.ip + ":" + this.port;
+    }
+
+    public void makeDate()
+    {
+        this.date = 0 < this.update_time ? new Date(this.update_time) : new Date(this.create_time);
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     public String getIp() {
@@ -85,17 +101,5 @@ public class NameServer {
 
     public void setUpdate_time(long update_time) {
         this.update_time = update_time;
-    }
-
-    @Override
-    public String toString() {
-        return "NameServer{" +
-                "id=" + id +
-                ", url='" + url + '\'' +
-                ", ip='" + ip + '\'' +
-                ", port='" + port + '\'' +
-                ", create_time=" + create_time +
-                ", update_time=" + update_time +
-                '}';
     }
 }

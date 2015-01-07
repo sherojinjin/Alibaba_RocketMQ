@@ -1,17 +1,17 @@
 package com.ndpmedia.rocketmq.nameserver;
 
+import com.ndpmedia.rocketmq.nameserver.model.NameServer;
+
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 public interface NameServerManager {
 
-    Set<String> list();
+    List<NameServer> list();
 
-    Set<String> list(boolean fromDisk);
+    Set<String> listNames();
 
-    Set<String> add(String nameServer);
+    List<NameServer> add(String nameServer);
 
-    Set<String> remove(String nameServer);
-
-    public ConcurrentHashMap<String, Long> listAll(boolean fromDisk);
+    List<NameServer> remove(String nameServer);
 }

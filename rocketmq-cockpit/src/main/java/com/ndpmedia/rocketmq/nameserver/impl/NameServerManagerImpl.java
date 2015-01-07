@@ -6,117 +6,82 @@ import com.ndpmedia.rocketmq.nameserver.model.NameServer;
 import com.ndpmedia.rocketmq.nameserver.model.NameServerRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service("nameServerManager")
-public class NameServerManagerImpl implements NameServerManager {
-
-    private static final ConcurrentHashMap<String, Long> NAME_SERVERS = new ConcurrentHashMap<String, Long>(16);
+public class NameServerManagerImpl implements NameServerManager
+{
 
     private CockpitDao cockpitDao;
 
     @Override
-    public Set<String> list() {
+    public List<NameServer> list() {
+        List<NameServer> list = null;
         try {
-            if (NAME_SERVERS.isEmpty()) {
-
-
-                String sql = "select * from name_server ";
-
-                List<NameServer> list = cockpitDao.getBeanList(sql, new NameServerRowMapper());
-
-                for (NameServer nameServer : list)
-                {
-                    NAME_SERVERS.putIfAbsent(nameServer.getUrl(), 0 < nameServer.getUpdate_time() ?
-                            nameServer.getUpdate_time() : nameServer.getCreate_time());
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return NAME_SERVERS.keySet();
-    }
-
-    @Override
-    public Set<String> list(boolean fromDisk) {
-        try {
-            NAME_SERVERS.clear();
-
             String sql = "select * from name_server ";
 
-            List<NameServer> list = cockpitDao.getBeanList(sql, new NameServerRowMapper());
-
-            for (NameServer nameServer : list)
-            {
-                NAME_SERVERS.putIfAbsent(nameServer.getUrl(), 0 < nameServer.getUpdate_time() ?
-                        nameServer.getUpdate_time() : nameServer.getCreate_time());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return NAME_SERVERS.keySet();
-    }
-
-
-    @Override
-    public ConcurrentHashMap<String, Long> listAll(boolean fromDisk) {
-        try {
-            NAME_SERVERS.clear();
-
-            String sql = "select * from name_server ";
-
-            List<NameServer> list = cockpitDao.getBeanList(sql, new NameServerRowMapper());
-
-            for (NameServer nameServer : list)
-            {
-                NAME_SERVERS.putIfAbsent(nameServer.getUrl(), 0 < nameServer.getUpdate_time() ?
-                        nameServer.getUpdate_time() : nameServer.getCreate_time());
-            }
+            list = cockpitDao.getBeanList(sql, new NameServerRowMapper());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return NAME_SERVERS;
+        return list;
     }
 
     @Override
-    public Set<String> add(String nameServer) {
+    public Set<String> listNames()
+    {
+        Set<String> names = new HashSet<String>();
+        try
+        {
+            List<NameServer> lists = list();
+            for(NameServer nameServer:lists)
+            {
+                names.add(nameServer.getUrl());
+            }
+        }
+        catch (Exception e)
+        {
+
+        }
+
+        return names;
+    }
+
+    @Override
+    public List<NameServer> add(String nameServer) {
         if (null == nameServer || nameServer.trim().isEmpty()) {
-            return NAME_SERVERS.keySet();
+            return list();
         }
         try {
             NameServer ns = new NameServer(nameServer, System.currentTimeMillis());
             String sql = " insert into name_server(ip, port , create_time) values(:ip, :port , :create_time) ";
             cockpitDao.add(sql, ns);
-            return list(true);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return NAME_SERVERS.keySet();
+        return list();
     }
 
     @Override
-    public Set<String> remove(String nameServer) {
+    public List<NameServer> remove(String nameServer) {
 
         if (null == nameServer || nameServer.trim().isEmpty()) {
-            return NAME_SERVERS.keySet();
+            return list();
         }
 
         try {
-            list(true);
-            NAME_SERVERS.remove(nameServer);
-            String sql = " DELETE FROM name_server WHERE ip = " + nameServer.split(":")[0];
+            String sql = " DELETE FROM name_server WHERE ip = '" + nameServer.split(":")[0] + "'";
 
             cockpitDao.del(sql);
         } catch (Exception e) {
            e.printStackTrace();
         }
-        return NAME_SERVERS.keySet();
+
+        return list();
     }
 
     public CockpitDao getCockpitDao() {

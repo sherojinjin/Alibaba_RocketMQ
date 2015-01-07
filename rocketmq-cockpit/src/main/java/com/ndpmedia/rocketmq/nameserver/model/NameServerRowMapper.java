@@ -20,6 +20,7 @@ public class NameServerRowMapper implements RowMapper
         nameServer.setCreate_time(rs.getLong("create_time"));
         nameServer.setUpdate_time(rs.getLong("update_time"));
         nameServer.makeUrl();
+        nameServer.makeDate();
 
         return nameServer;
     }

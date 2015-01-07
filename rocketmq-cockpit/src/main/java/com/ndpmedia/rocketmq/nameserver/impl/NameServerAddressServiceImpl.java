@@ -6,7 +6,6 @@ import com.ndpmedia.rocketmq.nameserver.NameServerManager;
 import com.ndpmedia.rocketmq.nameserver.model.NameServer;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class NameServerAddressServiceImpl implements NameServerAddressService {
 
@@ -15,7 +14,7 @@ public class NameServerAddressServiceImpl implements NameServerAddressService {
     @Override
     public String listNameServer() {
         StringBuilder stringBuilder = new StringBuilder(256);
-        Set<String> nameServers = nameServerManager.list();
+        Set<String> nameServers = nameServerManager.listNames();
         Joiner joiner = Joiner.on(";").skipNulls();
         return joiner.join(nameServers);
     }
@@ -35,11 +34,7 @@ public class NameServerAddressServiceImpl implements NameServerAddressService {
     public List<NameServer> list() {
 
         try {
-            ConcurrentHashMap<String, Long> map = nameServerManager.listAll(true);
-            List<NameServer> nameServers = new ArrayList<NameServer>();
-            for (Map.Entry<String, Long> row : map.entrySet()) {
-                nameServers.add(new NameServer(row.getKey(), row.getValue()));
-            }
+            List<NameServer> nameServers = nameServerManager.list();
 
             return nameServers;
         } catch (Exception e) {
