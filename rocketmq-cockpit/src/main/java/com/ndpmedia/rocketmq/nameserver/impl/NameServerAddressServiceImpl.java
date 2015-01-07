@@ -38,7 +38,7 @@ public class NameServerAddressServiceImpl implements NameServerAddressService {
             ConcurrentHashMap<String, Long> map = nameServerManager.listAll(true);
             List<NameServer> nameServers = new ArrayList<NameServer>();
             for (Map.Entry<String, Long> row : map.entrySet()) {
-                nameServers.add(new NameServer(row.getKey(), new Date(row.getValue())));
+                nameServers.add(new NameServer(row.getKey(), row.getValue()));
             }
 
             return nameServers;

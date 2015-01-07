@@ -44,6 +44,19 @@
         </jaxrs:extensionMappings>
     </jaxrs:server>
 
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="namedParameterJdbcTemplate" class="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="cockpitDao" class="com.ndpmedia.rocketmq.cockpit.connection.impl.CockpitDaoImpl">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+        <property name="namedParameterJdbcTemplate" ref="namedParameterJdbcTemplate" />
+    </bean>
+
     <bean id="fileManager" class="com.ndpmedia.rocketmq.io.FileManager" />
 
     <bean id="dataSource"
@@ -55,7 +68,7 @@
     </bean>
 
     <bean id="nameServerManager" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerManagerImpl">
-        <property name="fileManager" ref="fileManager" />
+        <property name="cockpitDao" ref="cockpitDao" />
     </bean>
 
     <bean id="ipMappingManager" class="com.ndpmedia.rocketmq.ip.impl.IPMappingManagerImpl">
@@ -92,13 +105,5 @@
 
     <bean id="producerBean" class="com.ndpmedia.rocketmq.producer.impl.ProducerServiceImpl">
         <property name="producerManager" ref="producerManager" />
-    </bean>
-
-    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <property name="dataSource" ref="dataSource" />
-    </bean>
-
-    <bean id="cockpitDao" class="com.ndpmedia.rocketmq.cockpit.connection.impl.CockpitDaoImpl">
-        <property name="jdbcTemplate" ref="jdbcTemplate"/>
     </bean>
 </beans>

@@ -4,15 +4,34 @@ import java.util.Date;
 
 public class NameServer {
 
+    private int id;
+
     private String url;
 
-    private Date date = new Date();
+    private String ip;
+
+    private String port;
+
+    private long create_time;
+
+    private long update_time;
 
     public NameServer() {}
 
-    public NameServer(String url, Date date) {
+    public NameServer(String url, long create_time)
+    {
         this.url = url;
-        this.date = date;
+        if (url.contains(":"))
+        {
+            this.ip = url.split(":")[0];
+            this.port = url.split(":")[1];
+        }
+        else
+        {
+            this.ip = url;
+        }
+
+        this.create_time = create_time;
     }
 
     public String getUrl() {
@@ -23,11 +42,60 @@ public class NameServer {
         this.url = url;
     }
 
-    public Date getDate() {
-        return date;
+    public void makeUrl()
+    {
+        this.url = this.ip + ":" + this.port;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public long getCreate_time() {
+        return create_time;
+    }
+
+    public void setCreate_time(long create_time) {
+        this.create_time = create_time;
+    }
+
+    public long getUpdate_time() {
+        return update_time;
+    }
+
+    public void setUpdate_time(long update_time) {
+        this.update_time = update_time;
+    }
+
+    @Override
+    public String toString() {
+        return "NameServer{" +
+                "id=" + id +
+                ", url='" + url + '\'' +
+                ", ip='" + ip + '\'' +
+                ", port='" + port + '\'' +
+                ", create_time=" + create_time +
+                ", update_time=" + update_time +
+                '}';
     }
 }

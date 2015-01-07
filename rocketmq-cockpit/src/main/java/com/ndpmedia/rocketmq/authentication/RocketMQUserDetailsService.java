@@ -1,7 +1,6 @@
 package com.ndpmedia.rocketmq.authentication;
 
 import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
-import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
