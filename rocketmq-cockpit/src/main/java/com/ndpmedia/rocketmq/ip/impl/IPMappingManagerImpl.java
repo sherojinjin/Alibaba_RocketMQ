@@ -1,75 +1,81 @@
 package com.ndpmedia.rocketmq.ip.impl;
 
-import com.ndpmedia.rocketmq.io.Constants;
-import com.ndpmedia.rocketmq.io.FileManager;
+import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
 import com.ndpmedia.rocketmq.ip.IPMappingManager;
+import com.ndpmedia.rocketmq.ip.model.IPPair;
+import com.ndpmedia.rocketmq.ip.model.IPRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service("ipMappingManager")
 public class IPMappingManagerImpl implements IPMappingManager {
 
-    private static final String IP_FILE_KEY = "ip_mapping_file";
-
-    private FileManager fileManager;
-
-    private static final ConcurrentHashMap<String, String> MAPPING = new ConcurrentHashMap<String, String>();
-
-    @Override
-    public ConcurrentHashMap<String, String> refresh() throws IOException{
-        List<String> rows = fileManager.read(IP_FILE_KEY);
-        MAPPING.clear();
-        for (String row : rows) {
-            if (null != row && !row.isEmpty()) {
-                String[] segments = row.trim().split(Constants.REGEX_SEPARATOR);
-                if (segments.length == 2) {
-                    MAPPING.put(segments[0].trim(), segments[1].trim());
-                }
-            }
-        }
-
-        return MAPPING;
-    }
+    private CockpitDao cockpitDao;
 
     @Override
     public void remove(String innerIP) throws IOException {
-        refresh();
-        MAPPING.remove(innerIP);
-        fileManager.write(IP_FILE_KEY, MAPPING, false);
+        try
+        {
+            String sql = " DELETE FROM ip_mapping WHERE inner_ip = '" + innerIP + "'";
+            cockpitDao.del(sql);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void add(String innerIP, String publicIP) throws IOException {
-        refresh();
-        MAPPING.put(innerIP, publicIP);
-        fileManager.write(IP_FILE_KEY, MAPPING, false);
+        try
+        {
+            IPPair ipPair = new IPPair(innerIP, publicIP);
+            String sql = " INSERT INTO ip_mapping(inner_ip, public_ip, create_time) values(:innerIP, :publicIP, :create_time)";
+            cockpitDao.add(sql, ipPair);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public String lookup(String privateIP) throws IOException {
-        if (MAPPING.isEmpty()) {
-            refresh();
+        List<IPPair> list = null;
+        try {
+            String sql = " SELECT * FROM ip_mapping WHERE inner_ip = '" + privateIP + "'";
+            list = cockpitDao.getBeanList(sql, new IPRowMapper());
+            if (list.isEmpty())
+                return null;
         }
-        return MAPPING.get(privateIP);
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return list.get(0).getPublicIP();
     }
 
     @Override
-    public Map<String, String> list() throws IOException {
-        if (MAPPING.isEmpty()) {
-            return refresh();
+    public List<IPPair> list() throws IOException {
+        List<IPPair> list = null;
+        try {
+            String sql = " SELECT * FROM ip_mapping ";
+            list = cockpitDao.getBeanList(sql, new IPRowMapper());
         }
-        return MAPPING;
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return list;
     }
 
-    public FileManager getFileManager() {
-        return fileManager;
+    public CockpitDao getCockpitDao() {
+        return cockpitDao;
     }
 
-    public void setFileManager(FileManager fileManager) {
-        this.fileManager = fileManager;
+    public void setCockpitDao(CockpitDao cockpitDao) {
+        this.cockpitDao = cockpitDao;
     }
 }

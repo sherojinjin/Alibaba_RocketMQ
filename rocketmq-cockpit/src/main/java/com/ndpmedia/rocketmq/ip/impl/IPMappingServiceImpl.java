@@ -5,9 +5,7 @@ import com.ndpmedia.rocketmq.ip.IPMappingService;
 import com.ndpmedia.rocketmq.ip.model.IPPair;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class IPMappingServiceImpl implements IPMappingService {
 
@@ -30,12 +28,7 @@ public class IPMappingServiceImpl implements IPMappingService {
 
     @Override
     public List<IPPair> list() throws IOException {
-        Map<String, String> mappings = ipMappingManager.list();
-        List<IPPair> pairs = new ArrayList<IPPair>(mappings.size());
-        for (Map.Entry<String, String> next : mappings.entrySet()) {
-            pairs.add(new IPPair(next.getKey(), next.getValue()));
-        }
-        return pairs;
+        return ipMappingManager.list();
     }
 
     public IPMappingManager getIpMappingManager() {

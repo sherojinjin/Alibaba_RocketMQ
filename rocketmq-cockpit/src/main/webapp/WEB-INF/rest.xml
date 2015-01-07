@@ -68,7 +68,7 @@
     </bean>
 
     <bean id="ipMappingManager" class="com.ndpmedia.rocketmq.ip.impl.IPMappingManagerImpl">
-        <property name="fileManager" ref="fileManager" />
+        <property name="cockpitDao" ref="cockpitDao" />
     </bean>
 
     <bean id="topicManager" class="com.ndpmedia.rocketmq.topic.impl.TopicManagerImpl">
