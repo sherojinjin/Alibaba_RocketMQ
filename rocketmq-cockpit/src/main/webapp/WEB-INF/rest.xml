@@ -56,13 +56,9 @@
         <property name="dataSource" ref="dataSource" />
     </bean>
 
-    <bean id="namedParameterJdbcTemplate" class="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate">
-        <property name="dataSource" ref="dataSource" />
-    </bean>
-
     <bean id="cockpitDao" class="com.ndpmedia.rocketmq.cockpit.connection.impl.CockpitDaoImpl">
         <property name="jdbcTemplate" ref="jdbcTemplate"/>
-        <property name="namedParameterJdbcTemplate" ref="namedParameterJdbcTemplate" />
+        <property name="dataSource" ref="dataSource" />
     </bean>
 
     <bean id="fileManager" class="com.ndpmedia.rocketmq.io.FileManager" />

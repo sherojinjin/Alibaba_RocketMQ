@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ public class CockpitDaoImpl<T> implements CockpitDao
     private JdbcTemplate jdbcTemplate;
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    private DataSource dataSource;
 
     public JdbcTemplate getJdbcTemplate() {
         return jdbcTemplate;
@@ -75,6 +78,15 @@ public class CockpitDaoImpl<T> implements CockpitDao
         List<T> list = new ArrayList<T>();
         list.addAll(namedParameterJdbcTemplate.query(sql, rowMapper));
         return list;
+    }
+
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+        this.dataSource = dataSource;
     }
 }
 
