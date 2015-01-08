@@ -4,7 +4,6 @@
     <title>Cockpit Home</title>
     <%@include file="include/base-path.jsp"%>
     <base href="<%=basePath%>">
-    <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body>
     <h1>Cockpit Home</h1>
@@ -15,9 +14,5 @@
         <li><a href="cockpit/broker/">Broker Status</a></li>
     </ul>
 
-    <h1>Console Home</h1>
-    <ul>
-        <li><a href="console/">Manage</a></li>
-    </ul>
 </body>
 </html>
