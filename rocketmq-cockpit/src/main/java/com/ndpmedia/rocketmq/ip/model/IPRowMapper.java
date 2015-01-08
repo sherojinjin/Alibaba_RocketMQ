@@ -6,12 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * row mapper for ip.
+ * row mapper for ip pair.
  */
-public class IPRowMapper implements RowMapper
+public class IPRowMapper<T> implements RowMapper
 {
     @Override
-    public IPPair mapRow(ResultSet rs, int rowNum) throws SQLException
+    public Object mapRow(ResultSet rs, int rowNum) throws SQLException
     {
         IPPair ipPair = new IPPair();
 

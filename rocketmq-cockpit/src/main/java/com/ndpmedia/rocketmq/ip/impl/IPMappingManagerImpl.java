@@ -10,12 +10,14 @@ import java.io.IOException;
 import java.util.List;
 
 @Service("ipMappingManager")
-public class IPMappingManagerImpl implements IPMappingManager {
+public class IPMappingManagerImpl implements IPMappingManager
+{
 
     private CockpitDao cockpitDao;
 
     @Override
-    public void remove(String innerIP) throws IOException {
+    public void remove(String innerIP) throws IOException
+    {
         try
         {
             String sql = " DELETE FROM ip_mapping WHERE inner_ip = '" + innerIP + "'";
@@ -28,7 +30,8 @@ public class IPMappingManagerImpl implements IPMappingManager {
     }
 
     @Override
-    public void add(String innerIP, String publicIP) throws IOException {
+    public void add(String innerIP, String publicIP) throws IOException
+    {
         try
         {
             IPPair ipPair = new IPPair(innerIP, publicIP);
@@ -42,27 +45,35 @@ public class IPMappingManagerImpl implements IPMappingManager {
     }
 
     @Override
-    public String lookup(String privateIP) throws IOException {
-        List<IPPair> list = null;
-        try {
+    public String lookup(String privateIP) throws IOException
+    {
+        List<IPPair> list;
+        try
+        {
             String sql = " SELECT * FROM ip_mapping WHERE inner_ip = '" + privateIP + "'";
-            list = cockpitDao.getBeanList(sql, new IPRowMapper());
-            if (list.isEmpty())
-                return null;
+            IPRowMapper<IPPair> ipRowMapper = new IPRowMapper<IPPair>();
+            list = cockpitDao.getBeanList(sql, ipRowMapper);
+            if (list != null)
+            {
+                list.get(0).getPublicIP();
+            }
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
-        return list.get(0).getPublicIP();
+        return null;
     }
 
     @Override
-    public List<IPPair> list() throws IOException {
+    public List<IPPair> list() throws IOException
+    {
         List<IPPair> list = null;
-        try {
+        try
+        {
             String sql = " SELECT * FROM ip_mapping ";
-            list = cockpitDao.getBeanList(sql, new IPRowMapper());
+            IPRowMapper<IPPair> ipRowMapper = new IPRowMapper<IPPair>();
+            list = cockpitDao.getBeanList(sql, ipRowMapper);
         }
         catch (Exception e)
         {
@@ -71,11 +82,13 @@ public class IPMappingManagerImpl implements IPMappingManager {
         return list;
     }
 
-    public CockpitDao getCockpitDao() {
+    public CockpitDao getCockpitDao()
+    {
         return cockpitDao;
     }
 
-    public void setCockpitDao(CockpitDao cockpitDao) {
+    public void setCockpitDao(CockpitDao cockpitDao)
+    {
         this.cockpitDao = cockpitDao;
     }
 }

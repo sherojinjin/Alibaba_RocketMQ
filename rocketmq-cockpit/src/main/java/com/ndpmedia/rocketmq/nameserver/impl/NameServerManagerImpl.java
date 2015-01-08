@@ -21,8 +21,8 @@ public class NameServerManagerImpl implements NameServerManager
         List<NameServer> list = null;
         try {
             String sql = "select * from name_server ";
-
-            list = cockpitDao.getBeanList(sql, new NameServerRowMapper());
+            NameServerRowMapper nameServerRowMapper = new NameServerRowMapper();
+            list = cockpitDao.getBeanList(sql, nameServerRowMapper);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -44,7 +44,7 @@ public class NameServerManagerImpl implements NameServerManager
         }
         catch (Exception e)
         {
-
+            e.printStackTrace();
         }
 
         return names;

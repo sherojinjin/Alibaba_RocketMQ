@@ -23,68 +23,75 @@ public class CockpitDaoImpl<T> implements CockpitDao
 
     private DataSource dataSource;
 
-    public JdbcTemplate getJdbcTemplate() {
+    public JdbcTemplate getJdbcTemplate()
+    {
         return jdbcTemplate;
     }
 
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate)
+    {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public NamedParameterJdbcTemplate getNamedParameterJdbcTemplate() {
+    public NamedParameterJdbcTemplate getNamedParameterJdbcTemplate()
+    {
         return namedParameterJdbcTemplate;
     }
 
-    public void setNamedParameterJdbcTemplate(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public void setNamedParameterJdbcTemplate(NamedParameterJdbcTemplate namedParameterJdbcTemplate)
+    {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     @Override
     public List<Map<String, Object>> getList(String sql)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]" );
+        System.out.println(" try to query : sql = [" + sql + " ]");
         return jdbcTemplate.queryForList(sql);
     }
 
     @Override
     public int add(String sql)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]" );
+        System.out.println(" try to query : sql = [" + sql + " ]");
         return jdbcTemplate.update(sql);
     }
 
-    public int add(String sql, Map params)
+    public int add(String sql, Map<String, ?> params)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]" );
+        System.out.println(" try to query : sql = [" + sql + " ]");
         return namedParameterJdbcTemplate.update(sql, params);
     }
 
     @Override
     public int add(String sql, Object object)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]" );
+        System.out.println(" try to query : sql = [" + sql + " ]");
         SqlParameterSource source = new BeanPropertySqlParameterSource(object);
         return namedParameterJdbcTemplate.update(sql, source);
     }
 
     public int del(String sql)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]" );
+        System.out.println(" try to query : sql = [" + sql + " ]");
         return jdbcTemplate.update(sql);
     }
 
     public <T> List<T> getBeanList(String sql, RowMapper<T> rowMapper)
     {
         List<T> list = new ArrayList<T>();
+        System.out.println(" try to query : sql = [" + sql + " ]");
         list.addAll(namedParameterJdbcTemplate.query(sql, rowMapper));
         return list;
     }
 
-    public DataSource getDataSource() {
+    public DataSource getDataSource()
+    {
         return dataSource;
     }
 
-    public void setDataSource(DataSource dataSource) {
+    public void setDataSource(DataSource dataSource)
+    {
         this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         this.dataSource = dataSource;
     }

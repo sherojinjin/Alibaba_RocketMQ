@@ -14,16 +14,15 @@
        <security:http pattern="/rocketmq/**" security="none" />
 
        <security:http auto-config="true">
-
               <!-- Use the comment out line in production -->
-
               <!--
               <security:intercept-url pattern="/**" access="ROLE_ADMIN" requires-channel="https" />
               -->
               <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
               <security:session-management>
-                     <security:concurrency-control max-sessions="1" />
+                     <security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false"  />
               </security:session-management>
+
        </security:http>
 
        <security:authentication-manager>
