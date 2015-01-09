@@ -63,4 +63,16 @@ public class IPPair
     public void setUpdate_time(long update_time) {
         this.update_time = update_time;
     }
+
+    @Override
+    public String toString()
+    {
+        return "IPPair{" +
+                "id=" + id +
+                ", innerIP='" + innerIP + '\'' +
+                ", publicIP='" + publicIP + '\'' +
+                ", create_time=" + create_time +
+                ", update_time=" + update_time +
+                '}';
+    }
 }

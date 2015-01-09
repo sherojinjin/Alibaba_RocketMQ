@@ -26,6 +26,7 @@ public class CockpitDaoImpl<T> implements CockpitDao
     public JdbcTemplate getJdbcTemplate()
     {
         return jdbcTemplate;
+
     }
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate)
@@ -44,6 +45,18 @@ public class CockpitDaoImpl<T> implements CockpitDao
     }
 
     @Override
+    public Map<String, Object> getFirstRow(String sql)
+    {
+        List<Map<String, Object>> list = getList(sql);
+        if (list != null)
+        {
+            return list.get(0);
+        }
+
+        return null;
+    }
+
+    @Override
     public List<Map<String, Object>> getList(String sql)
     {
         System.out.println(" try to query : sql = [" + sql + " ]");
@@ -57,6 +70,7 @@ public class CockpitDaoImpl<T> implements CockpitDao
         return jdbcTemplate.update(sql);
     }
 
+    @Override
     public int add(String sql, Map<String, ?> params)
     {
         System.out.println(" try to query : sql = [" + sql + " ]");
@@ -71,12 +85,14 @@ public class CockpitDaoImpl<T> implements CockpitDao
         return namedParameterJdbcTemplate.update(sql, source);
     }
 
+    @Override
     public int del(String sql)
     {
         System.out.println(" try to query : sql = [" + sql + " ]");
         return jdbcTemplate.update(sql);
     }
 
+    @Override
     public <T> List<T> getBeanList(String sql, RowMapper<T> rowMapper)
     {
         List<T> list = new ArrayList<T>();

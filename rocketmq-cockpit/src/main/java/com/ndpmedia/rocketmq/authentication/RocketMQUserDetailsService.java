@@ -21,22 +21,30 @@ public class RocketMQUserDetailsService implements UserDetailsService
     private CockpitDao cockpitDao;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
+    {
         UserDetails user = null;
         try
         {
             System.out.println(" try to login ====username===== " + username);
             Map<String, Object> map = getUser(username);
+
+            if (map == null)
+            {
+                throw new UsernameNotFoundException(" this user is no one :" + username);
+            }
+
             System.out.println(" try to login ====getUser====== " + map.get("username") + " " + map.get("password"));
 
             // 用户名、密码、是否启用、是否被锁定、是否过期、权限
-            user = new User(username, map.get("password").toString(), true, true, true, true, getAuthority("ROLE_ADMIN"));
+            user = new User(username, map.get("password").toString(), true, true, true, true,
+                    getAuthority("ROLE_ADMIN"));
             
         }
         catch (Exception e)
         {
             System.err.println(" log faied !" + e.getMessage());
-            throw  new UsernameNotFoundException(" log faied !" + e.getMessage());
+            throw new UsernameNotFoundException(" log faied !" + e.getMessage());
         }
 
         return user;
@@ -44,6 +52,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
 
     /**
      * try to get the role of the user
+     *
      * @param role
      * @return
      */
@@ -59,17 +68,17 @@ public class RocketMQUserDetailsService implements UserDetailsService
     private Map<String, Object> getUser(String username) throws Exception
     {
         String sql = " select * from cockpit_user where username='" + username + "'";
-        List<Map<String, Object>> list = cockpitDao.getList(sql);
-        if (list.isEmpty() || list.size() > 1)
-            throw new Exception(" the user is in trouble, call 911 ! " );
-        return list.get(0);
+
+        return cockpitDao.getFirstRow(sql);
     }
 
-    public CockpitDao getCockpitDao() {
+    public CockpitDao getCockpitDao()
+    {
         return cockpitDao;
     }
 
-    public void setCockpitDao(CockpitDao cockpitDao) {
+    public void setCockpitDao(CockpitDao cockpitDao)
+    {
         this.cockpitDao = cockpitDao;
     }
 
