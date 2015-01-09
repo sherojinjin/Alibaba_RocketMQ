@@ -35,6 +35,7 @@
 		<module>rocketmq-console</module>
 		<module>rocketmq-spring-adaptor</module>
 		<module>rocketmq-web-example</module>
+		<module>rocketmq-babel</module>
 	</modules>
 
 	<developers>
