@@ -18,7 +18,7 @@ public class RocketMQUserLoginServiceImpl implements RocketMQUserLoginService
 {
     private RocketMQUserLoginManager rocketMQUserLoginManager;
 
-    private ConcurrentMap<String, LoginType> users = new ConcurrentHashMap<String, LoginType>();
+    private static ConcurrentMap<String, LoginType> users = new ConcurrentHashMap<String, LoginType>();
 
     private static Properties config;
 

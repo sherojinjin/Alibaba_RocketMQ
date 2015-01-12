@@ -8,78 +8,37 @@
                            http://www.springframework.org/schema/security/spring-security.xsd">
 
 
-       <security:http pattern="/js/**" security="none" />
-       <security:http pattern="/css/**" security="none" />
-       <security:http pattern="/img/**" security="none" />
-       <security:http pattern="/rocketmq/**" security="none" />
+    <security:http pattern="/js/**" security="none" />
+    <security:http pattern="/css/**" security="none" />
+    <security:http pattern="/img/**" security="none" />
+    <security:http pattern="/rocketmq/**" security="none" />
 
-       <security:http entry-point-ref="loginEntryPoint">
-           <!-- 替换默认的LoginFilter -->
-           <security:custom-filter ref="customLoginFilter" position="FORM_LOGIN_FILTER" />
-           <!-- Use the comment out line in production -->
-              <!--
-              <security:intercept-url pattern="/**" access="ROLE_ADMIN" requires-channel="https" />
-              -->
-              <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
-              <security:session-management>
-                     <security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false"  />
-              </security:session-management>
+    <security:http auto-config="true">
+        <!-- Use the comment out line in production -->
+        <!--
+        <security:intercept-url pattern="/**" access="ROLE_ADMIN" requires-channel="https" />
+        -->
+        <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
+        <security:session-management>
+            <security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false"  />
+        </security:session-management>
 
-       </security:http>
+    </security:http>
 
-       <security:authentication-manager alias="authenticationManager">
-              <security:authentication-provider user-service-ref="userService">
-                   <security:password-encoder hash="md5">
-                       <security:salt-source user-property="username"  />
-                   </security:password-encoder>
-              </security:authentication-provider>
-       </security:authentication-manager>
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="userService">
+            <security:password-encoder hash="md5">
+                <security:salt-source user-property="username"  />
+            </security:password-encoder>
+        </security:authentication-provider>
+    </security:authentication-manager>
 
-       <!--
-               通过 RocketMQUserDetailsService,Spring会控制用户的访问级别.
-               也可以理解成:以后我们和数据库操作就是通过RocketMQUserDetailsService来进行关联.
-            -->
-           <bean id="userService" class="com.ndpmedia.rocketmq.authentication.RocketMQUserDetailsService" >
-               <property name="cockpitDao" ref="cockpitDao" />
-               <property name="rocketMQUserLoginService" ref="rocketMQUserLoginService" />
-           </bean>
-
-    <bean id="rocketMQUserLoginManager"
-          class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginManagerImpl">
+    <!--
+            通过 RocketMQUserDetailsService,Spring会控制用户的访问级别.
+            也可以理解成:以后我们和数据库操作就是通过RocketMQUserDetailsService来进行关联.
+         -->
+    <bean id="userService" class="com.ndpmedia.rocketmq.authentication.RocketMQUserDetailsService" >
         <property name="cockpitDao" ref="cockpitDao" />
+        <property name="rocketMQUserLoginService" ref="rocketMQUserLoginService" />
     </bean>
-
-    <bean id="rocketMQUserLoginService" class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginServiceImpl">
-        <property name="rocketMQUserLoginManager" ref="rocketMQUserLoginManager" />
-    </bean>
-
-    <bean id="loginEntryPoint"
-          class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
-        <constructor-arg value="/login.jsp" />
-    </bean>
-
-    <bean id="customLoginFilter" class="com.ndpmedia.rocketmq.authentication.RocketMQUserLoginFilter">
-        <!-- 校验登录是否有效的虚拟url -->
-                 <property name="filterProcessesUrl" value="/checklogin" />
-                 <property name="authenticationManager" ref="authenticationManager" />
-                 <property name="usernameParameter" value="username" />
-                 <property name="passwordParameter" value="password" />
-                 <property name="authenticationSuccessHandler">
-                     <!-- 自定义登录成功后的处理handler -->
-                     <bean class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
-                         <!-- 登录成功后的默认url -->
-                         <property name="defaultTargetUrl" value="/home.jsp" />
-                     </bean>
-                 </property>
-                 <property name="authenticationFailureHandler">
-                     <bean
-                         class="com.ndpmedia.rocketmq.authentication.RocketMQUserLoginHandler">
-                         <!-- 登录失败后的默认Url -->
-                         <property name="defaultFailureUrl" value="/login.jsp?error" />
-                         <property name="rocketMQUserLoginService" ref="rocketMQUserLoginService" />
-                     </bean>
-                 </property>
-
-</bean>
-
 </beans>
