@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS consumer_group (
 
 CREATE TABLE IF NOT EXISTS cockpit_user (
   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  user_name VARCHAR(32),
+  username VARCHAR(32),
   password  VARCHAR(64)
 ) ENGINE = INNODB;
 

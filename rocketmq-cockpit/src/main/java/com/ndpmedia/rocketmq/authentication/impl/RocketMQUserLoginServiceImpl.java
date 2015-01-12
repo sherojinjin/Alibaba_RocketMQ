@@ -37,6 +37,7 @@ public class RocketMQUserLoginServiceImpl implements RocketMQUserLoginService
         {
             long lockTime = loginType.getLockTime();
             int status = loginType.getStatus();
+            System.out.println(" get the user status " + loginType.toString());
             if (lockTime > System.currentTimeMillis() && 1 == status)
             {
                 return false;
@@ -68,9 +69,14 @@ public class RocketMQUserLoginServiceImpl implements RocketMQUserLoginService
     @Override
     public boolean userRetryTimeAdd(String username)
     {
+        LoginType loginType = new LoginType(username);
         try
         {
-            LoginType loginType = null == users.get(username) ? new LoginType(username) : users.get(username);
+            if (null != users.get(username))
+            {
+                loginType = users.get(username);
+            }
+
             if (loginType.getStatus() != 1)
             {
                 loginType.setRetryTimes(loginType.getRetryTimes() + 1);
@@ -88,7 +94,7 @@ public class RocketMQUserLoginServiceImpl implements RocketMQUserLoginService
             return false;
         }
 
-
+        System.out.println(" login failed , retry time ++ " + loginType.toString());
         return true;
     }
 
