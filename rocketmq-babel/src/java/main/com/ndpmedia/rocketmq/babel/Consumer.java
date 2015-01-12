@@ -37,13 +37,11 @@ public class Consumer {
 
     public void setMessageModel(MessageModel messageModel) throws org.apache.thrift.TException;
 
-    public void registerTopic(String topic) throws org.apache.thrift.TException;
-
-    public void registerTopics(List<String> topics) throws org.apache.thrift.TException;
+    public void registerTopic(String topic, String tag) throws org.apache.thrift.TException;
 
     public void start() throws org.apache.thrift.TException;
 
-    public List<MessageExt> pull() throws org.apache.thrift.TException;
+    public void pull() throws org.apache.thrift.TException;
 
     public void stop() throws org.apache.thrift.TException;
 
@@ -55,9 +53,7 @@ public class Consumer {
 
     public void setMessageModel(MessageModel messageModel, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void registerTopic(String topic, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
-
-    public void registerTopics(List<String> topics, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void registerTopic(String topic, String tag, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void start(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -111,28 +107,17 @@ public class Consumer {
       sendBase("setMessageModel", args);
     }
 
-    public void registerTopic(String topic) throws org.apache.thrift.TException
+    public void registerTopic(String topic, String tag) throws org.apache.thrift.TException
     {
-      send_registerTopic(topic);
+      send_registerTopic(topic, tag);
     }
 
-    public void send_registerTopic(String topic) throws org.apache.thrift.TException
+    public void send_registerTopic(String topic, String tag) throws org.apache.thrift.TException
     {
       registerTopic_args args = new registerTopic_args();
       args.setTopic(topic);
+      args.setTag(tag);
       sendBase("registerTopic", args);
-    }
-
-    public void registerTopics(List<String> topics) throws org.apache.thrift.TException
-    {
-      send_registerTopics(topics);
-    }
-
-    public void send_registerTopics(List<String> topics) throws org.apache.thrift.TException
-    {
-      registerTopics_args args = new registerTopics_args();
-      args.setTopics(topics);
-      sendBase("registerTopics", args);
     }
 
     public void start() throws org.apache.thrift.TException
@@ -146,10 +131,10 @@ public class Consumer {
       sendBase("start", args);
     }
 
-    public List<MessageExt> pull() throws org.apache.thrift.TException
+    public void pull() throws org.apache.thrift.TException
     {
       send_pull();
-      return recv_pull();
+      recv_pull();
     }
 
     public void send_pull() throws org.apache.thrift.TException
@@ -158,14 +143,11 @@ public class Consumer {
       sendBase("pull", args);
     }
 
-    public List<MessageExt> recv_pull() throws org.apache.thrift.TException
+    public void recv_pull() throws org.apache.thrift.TException
     {
       pull_result result = new pull_result();
       receiveBase(result, "pull");
-      if (result.isSetSuccess()) {
-        return result.success;
-      }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "pull failed: unknown result");
+      return;
     }
 
     public void stop() throws org.apache.thrift.TException
@@ -259,55 +241,27 @@ public class Consumer {
       }
     }
 
-    public void registerTopic(String topic, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void registerTopic(String topic, String tag, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      registerTopic_call method_call = new registerTopic_call(topic, resultHandler, this, ___protocolFactory, ___transport);
+      registerTopic_call method_call = new registerTopic_call(topic, tag, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class registerTopic_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String topic;
-      public registerTopic_call(String topic, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String tag;
+      public registerTopic_call(String topic, String tag, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, true);
         this.topic = topic;
+        this.tag = tag;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("registerTopic", org.apache.thrift.protocol.TMessageType.ONEWAY, 0));
         registerTopic_args args = new registerTopic_args();
         args.setTopic(topic);
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public void getResult() throws org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-      }
-    }
-
-    public void registerTopics(List<String> topics, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      registerTopics_call method_call = new registerTopics_call(topics, resultHandler, this, ___protocolFactory, ___transport);
-      this.___currentMethod = method_call;
-      ___manager.call(method_call);
-    }
-
-    public static class registerTopics_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private List<String> topics;
-      public registerTopics_call(List<String> topics, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, true);
-        this.topics = topics;
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("registerTopics", org.apache.thrift.protocol.TMessageType.ONEWAY, 0));
-        registerTopics_args args = new registerTopics_args();
-        args.setTopics(topics);
+        args.setTag(tag);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -368,13 +322,13 @@ public class Consumer {
         prot.writeMessageEnd();
       }
 
-      public List<MessageExt> getResult() throws org.apache.thrift.TException {
+      public void getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_pull();
+        (new Client(prot)).recv_pull();
       }
     }
 
@@ -422,7 +376,6 @@ public class Consumer {
       processMap.put("setConsumerGroup", new setConsumerGroup());
       processMap.put("setMessageModel", new setMessageModel());
       processMap.put("registerTopic", new registerTopic());
-      processMap.put("registerTopics", new registerTopics());
       processMap.put("start", new start());
       processMap.put("pull", new pull());
       processMap.put("stop", new stop());
@@ -481,26 +434,7 @@ public class Consumer {
       }
 
       public org.apache.thrift.TBase getResult(I iface, registerTopic_args args) throws org.apache.thrift.TException {
-        iface.registerTopic(args.topic);
-        return null;
-      }
-    }
-
-    public static class registerTopics<I extends Iface> extends org.apache.thrift.ProcessFunction<I, registerTopics_args> {
-      public registerTopics() {
-        super("registerTopics");
-      }
-
-      public registerTopics_args getEmptyArgsInstance() {
-        return new registerTopics_args();
-      }
-
-      protected boolean isOneway() {
-        return true;
-      }
-
-      public org.apache.thrift.TBase getResult(I iface, registerTopics_args args) throws org.apache.thrift.TException {
-        iface.registerTopics(args.topics);
+        iface.registerTopic(args.topic, args.tag);
         return null;
       }
     }
@@ -539,7 +473,7 @@ public class Consumer {
 
       public pull_result getResult(I iface, pull_args args) throws org.apache.thrift.TException {
         pull_result result = new pull_result();
-        result.success = iface.pull();
+        iface.pull();
         return result;
       }
     }
@@ -579,7 +513,6 @@ public class Consumer {
       processMap.put("setConsumerGroup", new setConsumerGroup());
       processMap.put("setMessageModel", new setMessageModel());
       processMap.put("registerTopic", new registerTopic());
-      processMap.put("registerTopics", new registerTopics());
       processMap.put("start", new start());
       processMap.put("pull", new pull());
       processMap.put("stop", new stop());
@@ -666,35 +599,7 @@ public class Consumer {
       }
 
       public void start(I iface, registerTopic_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.registerTopic(args.topic,resultHandler);
-      }
-    }
-
-    public static class registerTopics<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, registerTopics_args, Void> {
-      public registerTopics() {
-        super("registerTopics");
-      }
-
-      public registerTopics_args getEmptyArgsInstance() {
-        return new registerTopics_args();
-      }
-
-      public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
-        final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<Void>() { 
-          public void onComplete(Void o) {
-          }
-          public void onError(Exception e) {
-          }
-        };
-      }
-
-      protected boolean isOneway() {
-        return true;
-      }
-
-      public void start(I iface, registerTopics_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.registerTopics(args.topics,resultHandler);
+        iface.registerTopic(args.topic, args.tag,resultHandler);
       }
     }
 
@@ -726,7 +631,7 @@ public class Consumer {
       }
     }
 
-    public static class pull<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, pull_args, List<MessageExt>> {
+    public static class pull<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, pull_args, Void> {
       public pull() {
         super("pull");
       }
@@ -735,12 +640,11 @@ public class Consumer {
         return new pull_args();
       }
 
-      public AsyncMethodCallback<List<MessageExt>> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+      public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<List<MessageExt>>() { 
-          public void onComplete(List<MessageExt> o) {
+        return new AsyncMethodCallback<Void>() { 
+          public void onComplete(Void o) {
             pull_result result = new pull_result();
-            result.success = o;
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
               return;
@@ -772,7 +676,7 @@ public class Consumer {
         return false;
       }
 
-      public void start(I iface, pull_args args, org.apache.thrift.async.AsyncMethodCallback<List<MessageExt>> resultHandler) throws TException {
+      public void start(I iface, pull_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
         iface.pull(resultHandler);
       }
     }
@@ -1549,6 +1453,7 @@ public class Consumer {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("registerTopic_args");
 
     private static final org.apache.thrift.protocol.TField TOPIC_FIELD_DESC = new org.apache.thrift.protocol.TField("topic", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField TAG_FIELD_DESC = new org.apache.thrift.protocol.TField("tag", org.apache.thrift.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -1557,10 +1462,12 @@ public class Consumer {
     }
 
     public String topic; // required
+    public String tag; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TOPIC((short)1, "topic");
+      TOPIC((short)1, "topic"),
+      TAG((short)2, "tag");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -1577,6 +1484,8 @@ public class Consumer {
         switch(fieldId) {
           case 1: // TOPIC
             return TOPIC;
+          case 2: // TAG
+            return TAG;
           default:
             return null;
         }
@@ -1622,6 +1531,8 @@ public class Consumer {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TOPIC, new org.apache.thrift.meta_data.FieldMetaData("topic", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TAG, new org.apache.thrift.meta_data.FieldMetaData("tag", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(registerTopic_args.class, metaDataMap);
     }
@@ -1630,10 +1541,12 @@ public class Consumer {
     }
 
     public registerTopic_args(
-      String topic)
+      String topic,
+      String tag)
     {
       this();
       this.topic = topic;
+      this.tag = tag;
     }
 
     /**
@@ -1642,6 +1555,9 @@ public class Consumer {
     public registerTopic_args(registerTopic_args other) {
       if (other.isSetTopic()) {
         this.topic = other.topic;
+      }
+      if (other.isSetTag()) {
+        this.tag = other.tag;
       }
     }
 
@@ -1652,6 +1568,7 @@ public class Consumer {
     @Override
     public void clear() {
       this.topic = null;
+      this.tag = null;
     }
 
     public String getTopic() {
@@ -1678,6 +1595,30 @@ public class Consumer {
       }
     }
 
+    public String getTag() {
+      return this.tag;
+    }
+
+    public registerTopic_args setTag(String tag) {
+      this.tag = tag;
+      return this;
+    }
+
+    public void unsetTag() {
+      this.tag = null;
+    }
+
+    /** Returns true if field tag is set (has been assigned a value) and false otherwise */
+    public boolean isSetTag() {
+      return this.tag != null;
+    }
+
+    public void setTagIsSet(boolean value) {
+      if (!value) {
+        this.tag = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case TOPIC:
@@ -1688,6 +1629,14 @@ public class Consumer {
         }
         break;
 
+      case TAG:
+        if (value == null) {
+          unsetTag();
+        } else {
+          setTag((String)value);
+        }
+        break;
+
       }
     }
 
@@ -1695,6 +1644,9 @@ public class Consumer {
       switch (field) {
       case TOPIC:
         return getTopic();
+
+      case TAG:
+        return getTag();
 
       }
       throw new IllegalStateException();
@@ -1709,6 +1661,8 @@ public class Consumer {
       switch (field) {
       case TOPIC:
         return isSetTopic();
+      case TAG:
+        return isSetTag();
       }
       throw new IllegalStateException();
     }
@@ -1735,6 +1689,15 @@ public class Consumer {
           return false;
       }
 
+      boolean this_present_tag = true && this.isSetTag();
+      boolean that_present_tag = true && that.isSetTag();
+      if (this_present_tag || that_present_tag) {
+        if (!(this_present_tag && that_present_tag))
+          return false;
+        if (!this.tag.equals(that.tag))
+          return false;
+      }
+
       return true;
     }
 
@@ -1746,6 +1709,11 @@ public class Consumer {
       list.add(present_topic);
       if (present_topic)
         list.add(topic);
+
+      boolean present_tag = true && (isSetTag());
+      list.add(present_tag);
+      if (present_tag)
+        list.add(tag);
 
       return list.hashCode();
     }
@@ -1764,6 +1732,16 @@ public class Consumer {
       }
       if (isSetTopic()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.topic, other.topic);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTag()).compareTo(other.isSetTag());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTag()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tag, other.tag);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -1793,6 +1771,14 @@ public class Consumer {
         sb.append("null");
       } else {
         sb.append(this.topic);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tag:");
+      if (this.tag == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tag);
       }
       first = false;
       sb.append(")");
@@ -1846,6 +1832,14 @@ public class Consumer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 2: // TAG
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.tag = iprot.readString();
+                struct.setTagIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -1864,6 +1858,11 @@ public class Consumer {
         if (struct.topic != null) {
           oprot.writeFieldBegin(TOPIC_FIELD_DESC);
           oprot.writeString(struct.topic);
+          oprot.writeFieldEnd();
+        }
+        if (struct.tag != null) {
+          oprot.writeFieldBegin(TAG_FIELD_DESC);
+          oprot.writeString(struct.tag);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -1887,429 +1886,29 @@ public class Consumer {
         if (struct.isSetTopic()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetTag()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
         if (struct.isSetTopic()) {
           oprot.writeString(struct.topic);
+        }
+        if (struct.isSetTag()) {
+          oprot.writeString(struct.tag);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, registerTopic_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           struct.topic = iprot.readString();
           struct.setTopicIsSet(true);
         }
-      }
-    }
-
-  }
-
-  public static class registerTopics_args implements org.apache.thrift.TBase<registerTopics_args, registerTopics_args._Fields>, java.io.Serializable, Cloneable, Comparable<registerTopics_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("registerTopics_args");
-
-    private static final org.apache.thrift.protocol.TField TOPICS_FIELD_DESC = new org.apache.thrift.protocol.TField("topics", org.apache.thrift.protocol.TType.LIST, (short)1);
-
-    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
-    static {
-      schemes.put(StandardScheme.class, new registerTopics_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new registerTopics_argsTupleSchemeFactory());
-    }
-
-    public List<String> topics; // required
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TOPICS((short)1, "topics");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 1: // TOPICS
-            return TOPICS;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TOPICS, new org.apache.thrift.meta_data.FieldMetaData("topics", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(registerTopics_args.class, metaDataMap);
-    }
-
-    public registerTopics_args() {
-    }
-
-    public registerTopics_args(
-      List<String> topics)
-    {
-      this();
-      this.topics = topics;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public registerTopics_args(registerTopics_args other) {
-      if (other.isSetTopics()) {
-        List<String> __this__topics = new ArrayList<String>(other.topics);
-        this.topics = __this__topics;
-      }
-    }
-
-    public registerTopics_args deepCopy() {
-      return new registerTopics_args(this);
-    }
-
-    @Override
-    public void clear() {
-      this.topics = null;
-    }
-
-    public int getTopicsSize() {
-      return (this.topics == null) ? 0 : this.topics.size();
-    }
-
-    public java.util.Iterator<String> getTopicsIterator() {
-      return (this.topics == null) ? null : this.topics.iterator();
-    }
-
-    public void addToTopics(String elem) {
-      if (this.topics == null) {
-        this.topics = new ArrayList<String>();
-      }
-      this.topics.add(elem);
-    }
-
-    public List<String> getTopics() {
-      return this.topics;
-    }
-
-    public registerTopics_args setTopics(List<String> topics) {
-      this.topics = topics;
-      return this;
-    }
-
-    public void unsetTopics() {
-      this.topics = null;
-    }
-
-    /** Returns true if field topics is set (has been assigned a value) and false otherwise */
-    public boolean isSetTopics() {
-      return this.topics != null;
-    }
-
-    public void setTopicsIsSet(boolean value) {
-      if (!value) {
-        this.topics = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case TOPICS:
-        if (value == null) {
-          unsetTopics();
-        } else {
-          setTopics((List<String>)value);
-        }
-        break;
-
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case TOPICS:
-        return getTopics();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      case TOPICS:
-        return isSetTopics();
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof registerTopics_args)
-        return this.equals((registerTopics_args)that);
-      return false;
-    }
-
-    public boolean equals(registerTopics_args that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_topics = true && this.isSetTopics();
-      boolean that_present_topics = true && that.isSetTopics();
-      if (this_present_topics || that_present_topics) {
-        if (!(this_present_topics && that_present_topics))
-          return false;
-        if (!this.topics.equals(that.topics))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      List<Object> list = new ArrayList<Object>();
-
-      boolean present_topics = true && (isSetTopics());
-      list.add(present_topics);
-      if (present_topics)
-        list.add(topics);
-
-      return list.hashCode();
-    }
-
-    @Override
-    public int compareTo(registerTopics_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-
-      lastComparison = Boolean.valueOf(isSetTopics()).compareTo(other.isSetTopics());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTopics()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.topics, other.topics);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("registerTopics_args(");
-      boolean first = true;
-
-      sb.append("topics:");
-      if (this.topics == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.topics);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-      // check for sub-struct validity
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private static class registerTopics_argsStandardSchemeFactory implements SchemeFactory {
-      public registerTopics_argsStandardScheme getScheme() {
-        return new registerTopics_argsStandardScheme();
-      }
-    }
-
-    private static class registerTopics_argsStandardScheme extends StandardScheme<registerTopics_args> {
-
-      public void read(org.apache.thrift.protocol.TProtocol iprot, registerTopics_args struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            case 1: // TOPICS
-              if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-                {
-                  org.apache.thrift.protocol.TList _list10 = iprot.readListBegin();
-                  struct.topics = new ArrayList<String>(_list10.size);
-                  String _elem11;
-                  for (int _i12 = 0; _i12 < _list10.size; ++_i12)
-                  {
-                    _elem11 = iprot.readString();
-                    struct.topics.add(_elem11);
-                  }
-                  iprot.readListEnd();
-                }
-                struct.setTopicsIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          iprot.readFieldEnd();
-        }
-        iprot.readStructEnd();
-
-        // check for required fields of primitive type, which can't be checked in the validate method
-        struct.validate();
-      }
-
-      public void write(org.apache.thrift.protocol.TProtocol oprot, registerTopics_args struct) throws org.apache.thrift.TException {
-        struct.validate();
-
-        oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.topics != null) {
-          oprot.writeFieldBegin(TOPICS_FIELD_DESC);
-          {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.topics.size()));
-            for (String _iter13 : struct.topics)
-            {
-              oprot.writeString(_iter13);
-            }
-            oprot.writeListEnd();
-          }
-          oprot.writeFieldEnd();
-        }
-        oprot.writeFieldStop();
-        oprot.writeStructEnd();
-      }
-
-    }
-
-    private static class registerTopics_argsTupleSchemeFactory implements SchemeFactory {
-      public registerTopics_argsTupleScheme getScheme() {
-        return new registerTopics_argsTupleScheme();
-      }
-    }
-
-    private static class registerTopics_argsTupleScheme extends TupleScheme<registerTopics_args> {
-
-      @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, registerTopics_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol oprot = (TTupleProtocol) prot;
-        BitSet optionals = new BitSet();
-        if (struct.isSetTopics()) {
-          optionals.set(0);
-        }
-        oprot.writeBitSet(optionals, 1);
-        if (struct.isSetTopics()) {
-          {
-            oprot.writeI32(struct.topics.size());
-            for (String _iter14 : struct.topics)
-            {
-              oprot.writeString(_iter14);
-            }
-          }
-        }
-      }
-
-      @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, registerTopics_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
-        if (incoming.get(0)) {
-          {
-            org.apache.thrift.protocol.TList _list15 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.topics = new ArrayList<String>(_list15.size);
-            String _elem16;
-            for (int _i17 = 0; _i17 < _list15.size; ++_i17)
-            {
-              _elem16 = iprot.readString();
-              struct.topics.add(_elem16);
-            }
-          }
-          struct.setTopicsIsSet(true);
+        if (incoming.get(1)) {
+          struct.tag = iprot.readString();
+          struct.setTagIsSet(true);
         }
       }
     }
@@ -2815,7 +2414,6 @@ public class Consumer {
   public static class pull_result implements org.apache.thrift.TBase<pull_result, pull_result._Fields>, java.io.Serializable, Cloneable, Comparable<pull_result>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("pull_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -2823,11 +2421,10 @@ public class Consumer {
       schemes.put(TupleScheme.class, new pull_resultTupleSchemeFactory());
     }
 
-    public List<MessageExt> success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success");
+;
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -2842,8 +2439,6 @@ public class Consumer {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
           default:
             return null;
         }
@@ -2882,14 +2477,9 @@ public class Consumer {
         return _fieldName;
       }
     }
-
-    // isset id assignments
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, MessageExt.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(pull_result.class, metaDataMap);
     }
@@ -2897,24 +2487,10 @@ public class Consumer {
     public pull_result() {
     }
 
-    public pull_result(
-      List<MessageExt> success)
-    {
-      this();
-      this.success = success;
-    }
-
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public pull_result(pull_result other) {
-      if (other.isSetSuccess()) {
-        List<MessageExt> __this__success = new ArrayList<MessageExt>(other.success.size());
-        for (MessageExt other_element : other.success) {
-          __this__success.add(new MessageExt(other_element));
-        }
-        this.success = __this__success;
-      }
     }
 
     public pull_result deepCopy() {
@@ -2923,66 +2499,15 @@ public class Consumer {
 
     @Override
     public void clear() {
-      this.success = null;
-    }
-
-    public int getSuccessSize() {
-      return (this.success == null) ? 0 : this.success.size();
-    }
-
-    public java.util.Iterator<MessageExt> getSuccessIterator() {
-      return (this.success == null) ? null : this.success.iterator();
-    }
-
-    public void addToSuccess(MessageExt elem) {
-      if (this.success == null) {
-        this.success = new ArrayList<MessageExt>();
-      }
-      this.success.add(elem);
-    }
-
-    public List<MessageExt> getSuccess() {
-      return this.success;
-    }
-
-    public pull_result setSuccess(List<MessageExt> success) {
-      this.success = success;
-      return this;
-    }
-
-    public void unsetSuccess() {
-      this.success = null;
-    }
-
-    /** Returns true if field success is set (has been assigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return this.success != null;
-    }
-
-    public void setSuccessIsSet(boolean value) {
-      if (!value) {
-        this.success = null;
-      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((List<MessageExt>)value);
-        }
-        break;
-
       }
     }
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return getSuccess();
-
       }
       throw new IllegalStateException();
     }
@@ -2994,8 +2519,6 @@ public class Consumer {
       }
 
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
       }
       throw new IllegalStateException();
     }
@@ -3013,26 +2536,12 @@ public class Consumer {
       if (that == null)
         return false;
 
-      boolean this_present_success = true && this.isSetSuccess();
-      boolean that_present_success = true && that.isSetSuccess();
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
-          return false;
-        if (!this.success.equals(that.success))
-          return false;
-      }
-
       return true;
     }
 
     @Override
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
-
-      boolean present_success = true && (isSetSuccess());
-      list.add(present_success);
-      if (present_success)
-        list.add(success);
 
       return list.hashCode();
     }
@@ -3045,16 +2554,6 @@ public class Consumer {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuccess()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       return 0;
     }
 
@@ -3075,13 +2574,6 @@ public class Consumer {
       StringBuilder sb = new StringBuilder("pull_result(");
       boolean first = true;
 
-      sb.append("success:");
-      if (this.success == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.success);
-      }
-      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -3125,25 +2617,6 @@ public class Consumer {
             break;
           }
           switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-                {
-                  org.apache.thrift.protocol.TList _list18 = iprot.readListBegin();
-                  struct.success = new ArrayList<MessageExt>(_list18.size);
-                  MessageExt _elem19;
-                  for (int _i20 = 0; _i20 < _list18.size; ++_i20)
-                  {
-                    _elem19 = new MessageExt();
-                    _elem19.read(iprot);
-                    struct.success.add(_elem19);
-                  }
-                  iprot.readListEnd();
-                }
-                struct.setSuccessIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -3159,18 +2632,6 @@ public class Consumer {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.success != null) {
-          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-          {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.success.size()));
-            for (MessageExt _iter21 : struct.success)
-            {
-              _iter21.write(oprot);
-            }
-            oprot.writeListEnd();
-          }
-          oprot.writeFieldEnd();
-        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -3188,40 +2649,11 @@ public class Consumer {
       @Override
       public void write(org.apache.thrift.protocol.TProtocol prot, pull_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
-        BitSet optionals = new BitSet();
-        if (struct.isSetSuccess()) {
-          optionals.set(0);
-        }
-        oprot.writeBitSet(optionals, 1);
-        if (struct.isSetSuccess()) {
-          {
-            oprot.writeI32(struct.success.size());
-            for (MessageExt _iter22 : struct.success)
-            {
-              _iter22.write(oprot);
-            }
-          }
-        }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, pull_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
-        if (incoming.get(0)) {
-          {
-            org.apache.thrift.protocol.TList _list23 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new ArrayList<MessageExt>(_list23.size);
-            MessageExt _elem24;
-            for (int _i25 = 0; _i25 < _list23.size; ++_i25)
-            {
-              _elem24 = new MessageExt();
-              _elem24.read(iprot);
-              struct.success.add(_elem24);
-            }
-          }
-          struct.setSuccessIsSet(true);
-        }
       }
     }
 

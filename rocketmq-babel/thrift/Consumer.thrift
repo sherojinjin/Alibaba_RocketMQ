@@ -29,7 +29,7 @@ enum MessageModel {
 
 service Consumer {
 
-  oneway void setConsumerGroup(1:string consumerGroup),
+   oneway void setConsumerGroup(1:string consumerGroup),
 
    oneway void setMessageModel(1:MessageModel messageModel),
 

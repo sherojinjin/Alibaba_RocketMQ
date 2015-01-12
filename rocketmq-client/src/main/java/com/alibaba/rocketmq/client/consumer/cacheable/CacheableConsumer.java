@@ -21,7 +21,7 @@ public class CacheableConsumer {
 
     private String consumerGroupName;
 
-    private DefaultLocalMessageStore localMessageStore;
+    protected DefaultLocalMessageStore localMessageStore;
 
     private final ConcurrentHashMap<String, MessageHandler> topicHandlerMap;
 
@@ -207,7 +207,7 @@ public class CacheableConsumer {
         }
     }
 
-    private void stopReceiving() throws InterruptedException {
+    protected void stopReceiving() throws InterruptedException {
         if (started) {
             //Stop pulling messages from broker server.
             defaultMQPushConsumer.shutdown();
