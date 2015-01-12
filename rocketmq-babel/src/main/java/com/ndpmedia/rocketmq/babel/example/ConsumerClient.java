@@ -1,7 +1,7 @@
 package com.ndpmedia.rocketmq.babel.example;
 
 import com.ndpmedia.rocketmq.babel.Consumer;
-import com.ndpmedia.rocketmq.babel.MessageModel;
+import com.ndpmedia.rocketmq.babel.MessageExt;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.apache.thrift.async.TAsyncClientManager;
@@ -11,6 +11,7 @@ import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TNonblockingTransport;
 
 import java.io.IOException;
+import java.util.List;
 
 public class ConsumerClient {
     public static void main(String[] args) throws TException, IOException {
@@ -19,49 +20,21 @@ public class ConsumerClient {
         TProtocolFactory protocolFactory = new TCompactProtocol.Factory();
         TAsyncClientManager clientManager = new TAsyncClientManager();
         Consumer.AsyncClient client = new Consumer.AsyncClient(protocolFactory, clientManager, transport);
-        client.setConsumerGroup("CG_QuickStart", new AsyncMethodCallbackWrapper());
-        client.setMessageModel(MessageModel.CLUSTERING, new AsyncMethodCallbackWrapper());
-        client.registerTopic("T_QuickStart", "*", new AsyncMethodCallbackWrapper());
-        client.start(new AsyncMethodCallbackWrapper());
-
         client.pull(new AsyncMethodCallback() {
             @Override
             public void onComplete(Object response) {
-
+                if (response instanceof List) {
+                    List<MessageExt> messageList = (List<MessageExt>)response;
+                    for (MessageExt msg : messageList) {
+                        System.out.println(msg.getTopic());
+                    }
+                }
             }
 
             @Override
             public void onError(Exception exception) {
-
+                exception.printStackTrace();
             }
         });
-    }
-}
-
-class AsyncMethodCallbackWrapper implements AsyncMethodCallback {
-
-    /**
-     * This method will be called when the remote side has completed invoking
-     * your method call and the result is fully read. For oneway method calls,
-     * this method will be called as soon as we have completed writing out the
-     * request.
-     *
-     * @param response
-     */
-    @Override
-    public void onComplete(Object response) {
-
-    }
-
-    /**
-     * This method will be called when there is an unexpected clientside
-     * exception. This does not include application-defined exceptions that
-     * appear in the IDL, but rather things like IOExceptions.
-     *
-     * @param exception
-     */
-    @Override
-    public void onError(Exception exception) {
-
     }
 }

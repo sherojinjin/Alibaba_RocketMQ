@@ -8,6 +8,7 @@ import org.apache.thrift.async.AsyncMethodCallback;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ConsumerService implements Consumer.AsyncIface {
@@ -18,58 +19,30 @@ public class ConsumerService implements Consumer.AsyncIface {
 
     private LinkedBlockingQueue<MessageExt> messageQueue = new LinkedBlockingQueue<MessageExt>(500);
 
-    @Override
-    public void setConsumerGroup(String consumerGroup, AsyncMethodCallback resultHandler) throws TException {
-        this.consumerGroup = consumerGroup;
-        resultHandler.onComplete("success");
-    }
+    public ConsumerService() throws MQClientException, InterruptedException {
+        Properties properties = Helper.getConfig();
+        String consumerGroup = properties.getProperty("consumer_group");
+        String topicInfo = properties.getProperty("topic_info");
+        consumer = new CustomCacheableConsumer(consumerGroup);
 
-    private void checkInit() {
-        if (null == consumer) {
-            synchronized (ConsumerService.class) {
-                if (null == consumer) {
-                    consumer = new CustomCacheableConsumer(consumerGroup);
-                }
+        if(!"cluster".equals(properties.getProperty("message_model"))) {
+            consumer.setMessageModel(com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel.BROADCASTING);
+        }
+
+        String[] topicList = topicInfo.split(";");
+        for (String topicItem : topicList) {
+            String[] topicAndTag = topicItem.split(",");
+            if (topicAndTag.length != 2) {
+                throw new RuntimeException("Configuration file format illegal. Please refer to sample_rocketmq_client_setting.properties file");
             }
-        }
-    }
 
-    @Override
-    public void setMessageModel(MessageModel messageModel, AsyncMethodCallback resultHandler) throws TException {
-        checkInit();
-
-        switch (messageModel) {
-            case CLUSTERING:
-                consumer.setMessageModel(com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel.CLUSTERING);
-                break;
-            case BROADCASTING:
-                consumer.setMessageModel(com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel.BROADCASTING);
-                break;
-        }
-    }
-
-    @Override
-    public void registerTopic(String topic, String tag, AsyncMethodCallback resultHandler) throws TException {
-        checkInit();
-
-        MessageHandler messageHandler = new ThriftMessageHandler(this);
-        messageHandler.setTopic(topic);
-        messageHandler.setTag(tag); //TODO add tag.
-        try {
+            MessageHandler messageHandler = new ThriftMessageHandler(this);
+            messageHandler.setTopic(topicAndTag[0]);
+            messageHandler.setTag(topicAndTag[1]);
             consumer.registerMessageHandler(messageHandler);
-        } catch (MQClientException e) {
-            resultHandler.onError(e);
-        }
-    }
-
-    @Override
-    public void start(AsyncMethodCallback resultHandler) throws TException {
-        try {
-            consumer.start();
-        } catch (Exception e) {
-            resultHandler.onError(e);
         }
 
+        consumer.start();
     }
 
     @Override
@@ -81,7 +54,6 @@ public class ConsumerService implements Consumer.AsyncIface {
             messageList.add(wrap(msg));
             msg = messageQueue.poll();
         }
-
         resultHandler.onComplete(messageList);
     }
 
@@ -95,6 +67,9 @@ public class ConsumerService implements Consumer.AsyncIface {
         message.setQueueOffset(msg.getQueueOffset());
         message.setStoreSize(msg.getStoreSize());
         message.setStoreTimestamp(msg.getStoreTimestamp());
+        message.setStoreHost(null == msg.getBornHost() ? null : msg.getBornHost().toString());
+        message.setBornTimestamp(msg.getBornTimestamp());
+        message.setBornHost(null == msg.getBornHost() ? null : msg.getBornHost().toString());
         message.setBodyCRC(msg.getBodyCRC());
         message.setData(msg.getBody());
         message.setReconsumeTimes(msg.getReconsumeTimes());
@@ -115,6 +90,10 @@ public class ConsumerService implements Consumer.AsyncIface {
         } catch (InterruptedException e) {
             resultHandler.onError(e);
         }
+    }
+
+    public LinkedBlockingQueue<MessageExt> getMessageQueue() {
+        return messageQueue;
     }
 }
 

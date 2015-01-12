@@ -18,7 +18,6 @@ public class ProducerClient {
         Message message = new Message();
         message.setTopic("T_QuickStart");
         message.setData("Test".getBytes());
-        client.setProducerGroup("PG_ConsumerGroup");
         client.send(message);
     }
 }

@@ -39,25 +39,21 @@ public class Producer {
 
   public interface Iface {
 
-    public void setProducerGroup(String consumerGroup) throws org.apache.thrift.TException;
+    public void send(Message message) throws TException;
 
-    public void send(Message message) throws org.apache.thrift.TException;
+    public void batchSend(List<Message> messageList) throws TException;
 
-    public void batchSend(List<Message> messageList) throws org.apache.thrift.TException;
-
-    public void stop() throws org.apache.thrift.TException;
+    public void stop() throws TException;
 
   }
 
   public interface AsyncIface {
 
-    public void setProducerGroup(String consumerGroup, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void send(Message message, AsyncMethodCallback resultHandler) throws TException;
 
-    public void send(Message message, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void batchSend(List<Message> messageList, AsyncMethodCallback resultHandler) throws TException;
 
-    public void batchSend(List<Message> messageList, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
-
-    public void stop(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void stop(AsyncMethodCallback resultHandler) throws TException;
 
   }
 
@@ -81,64 +77,52 @@ public class Producer {
       super(iprot, oprot);
     }
 
-    public void setProducerGroup(String consumerGroup) throws org.apache.thrift.TException
-    {
-      send_setProducerGroup(consumerGroup);
-    }
-
-    public void send_setProducerGroup(String consumerGroup) throws org.apache.thrift.TException
-    {
-      setProducerGroup_args args = new setProducerGroup_args();
-      args.setConsumerGroup(consumerGroup);
-      sendBase("setProducerGroup", args);
-    }
-
-    public void send(Message message) throws org.apache.thrift.TException
+    public void send(Message message) throws TException
     {
       send_send(message);
       recv_send();
     }
 
-    public void send_send(Message message) throws org.apache.thrift.TException
+    public void send_send(Message message) throws TException
     {
       send_args args = new send_args();
       args.setMessage(message);
       sendBase("send", args);
     }
 
-    public void recv_send() throws org.apache.thrift.TException
+    public void recv_send() throws TException
     {
       send_result result = new send_result();
       receiveBase(result, "send");
       return;
     }
 
-    public void batchSend(List<Message> messageList) throws org.apache.thrift.TException
+    public void batchSend(List<Message> messageList) throws TException
     {
       send_batchSend(messageList);
       recv_batchSend();
     }
 
-    public void send_batchSend(List<Message> messageList) throws org.apache.thrift.TException
+    public void send_batchSend(List<Message> messageList) throws TException
     {
       batchSend_args args = new batchSend_args();
       args.setMessageList(messageList);
       sendBase("batchSend", args);
     }
 
-    public void recv_batchSend() throws org.apache.thrift.TException
+    public void recv_batchSend() throws TException
     {
       batchSend_result result = new batchSend_result();
       receiveBase(result, "batchSend");
       return;
     }
 
-    public void stop() throws org.apache.thrift.TException
+    public void stop() throws TException
     {
       send_stop();
     }
 
-    public void send_stop() throws org.apache.thrift.TException
+    public void send_stop() throws TException
     {
       stop_args args = new stop_args();
       sendBase("stop", args);
@@ -162,38 +146,7 @@ public class Producer {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void setProducerGroup(String consumerGroup, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      setProducerGroup_call method_call = new setProducerGroup_call(consumerGroup, resultHandler, this, ___protocolFactory, ___transport);
-      this.___currentMethod = method_call;
-      ___manager.call(method_call);
-    }
-
-    public static class setProducerGroup_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String consumerGroup;
-      public setProducerGroup_call(String consumerGroup, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, true);
-        this.consumerGroup = consumerGroup;
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("setProducerGroup", org.apache.thrift.protocol.TMessageType.ONEWAY, 0));
-        setProducerGroup_args args = new setProducerGroup_args();
-        args.setConsumerGroup(consumerGroup);
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public void getResult() throws org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-      }
-    }
-
-    public void send(Message message, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void send(Message message, AsyncMethodCallback resultHandler) throws TException {
       checkReady();
       send_call method_call = new send_call(message, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -202,12 +155,12 @@ public class Producer {
 
     public static class send_call extends org.apache.thrift.async.TAsyncMethodCall {
       private Message message;
-      public send_call(Message message, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public send_call(Message message, AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.message = message;
       }
 
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("send", org.apache.thrift.protocol.TMessageType.CALL, 0));
         send_args args = new send_args();
         args.setMessage(message);
@@ -215,8 +168,8 @@ public class Producer {
         prot.writeMessageEnd();
       }
 
-      public void getResult() throws org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+      public void getResult() throws TException {
+        if (getState() != State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
@@ -225,7 +178,7 @@ public class Producer {
       }
     }
 
-    public void batchSend(List<Message> messageList, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void batchSend(List<Message> messageList, AsyncMethodCallback resultHandler) throws TException {
       checkReady();
       batchSend_call method_call = new batchSend_call(messageList, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -234,12 +187,12 @@ public class Producer {
 
     public static class batchSend_call extends org.apache.thrift.async.TAsyncMethodCall {
       private List<Message> messageList;
-      public batchSend_call(List<Message> messageList, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public batchSend_call(List<Message> messageList, AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.messageList = messageList;
       }
 
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("batchSend", org.apache.thrift.protocol.TMessageType.CALL, 0));
         batchSend_args args = new batchSend_args();
         args.setMessageList(messageList);
@@ -247,8 +200,8 @@ public class Producer {
         prot.writeMessageEnd();
       }
 
-      public void getResult() throws org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+      public void getResult() throws TException {
+        if (getState() != State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
@@ -257,7 +210,7 @@ public class Producer {
       }
     }
 
-    public void stop(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void stop(AsyncMethodCallback resultHandler) throws TException {
       checkReady();
       stop_call method_call = new stop_call(resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -265,19 +218,19 @@ public class Producer {
     }
 
     public static class stop_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public stop_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public stop_call(AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, true);
       }
 
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("stop", org.apache.thrift.protocol.TMessageType.ONEWAY, 0));
         stop_args args = new stop_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
 
-      public void getResult() throws org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+      public void getResult() throws TException {
+        if (getState() != State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
@@ -298,30 +251,10 @@ public class Producer {
     }
 
     private static <I extends Iface> Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> getProcessMap(Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> processMap) {
-      processMap.put("setProducerGroup", new setProducerGroup());
       processMap.put("send", new send());
       processMap.put("batchSend", new batchSend());
       processMap.put("stop", new stop());
       return processMap;
-    }
-
-    public static class setProducerGroup<I extends Iface> extends org.apache.thrift.ProcessFunction<I, setProducerGroup_args> {
-      public setProducerGroup() {
-        super("setProducerGroup");
-      }
-
-      public setProducerGroup_args getEmptyArgsInstance() {
-        return new setProducerGroup_args();
-      }
-
-      protected boolean isOneway() {
-        return true;
-      }
-
-      public org.apache.thrift.TBase getResult(I iface, setProducerGroup_args args) throws org.apache.thrift.TException {
-        iface.setProducerGroup(args.consumerGroup);
-        return null;
-      }
     }
 
     public static class send<I extends Iface> extends org.apache.thrift.ProcessFunction<I, send_args> {
@@ -337,7 +270,7 @@ public class Producer {
         return false;
       }
 
-      public send_result getResult(I iface, send_args args) throws org.apache.thrift.TException {
+      public send_result getResult(I iface, send_args args) throws TException {
         send_result result = new send_result();
         iface.send(args.message);
         return result;
@@ -357,7 +290,7 @@ public class Producer {
         return false;
       }
 
-      public batchSend_result getResult(I iface, batchSend_args args) throws org.apache.thrift.TException {
+      public batchSend_result getResult(I iface, batchSend_args args) throws TException {
         batchSend_result result = new batchSend_result();
         iface.batchSend(args.messageList);
         return result;
@@ -377,7 +310,7 @@ public class Producer {
         return true;
       }
 
-      public org.apache.thrift.TBase getResult(I iface, stop_args args) throws org.apache.thrift.TException {
+      public org.apache.thrift.TBase getResult(I iface, stop_args args) throws TException {
         iface.stop();
         return null;
       }
@@ -396,39 +329,10 @@ public class Producer {
     }
 
     private static <I extends AsyncIface> Map<String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase,?>> getProcessMap(Map<String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase, ?>> processMap) {
-      processMap.put("setProducerGroup", new setProducerGroup());
       processMap.put("send", new send());
       processMap.put("batchSend", new batchSend());
       processMap.put("stop", new stop());
       return processMap;
-    }
-
-    public static class setProducerGroup<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, setProducerGroup_args, Void> {
-      public setProducerGroup() {
-        super("setProducerGroup");
-      }
-
-      public setProducerGroup_args getEmptyArgsInstance() {
-        return new setProducerGroup_args();
-      }
-
-      public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
-        final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<Void>() { 
-          public void onComplete(Void o) {
-          }
-          public void onError(Exception e) {
-          }
-        };
-      }
-
-      protected boolean isOneway() {
-        return true;
-      }
-
-      public void start(I iface, setProducerGroup_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.setProducerGroup(args.consumerGroup,resultHandler);
-      }
     }
 
     public static class send<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, send_args, Void> {
@@ -476,7 +380,7 @@ public class Producer {
         return false;
       }
 
-      public void start(I iface, send_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+      public void start(I iface, send_args args, AsyncMethodCallback<Void> resultHandler) throws TException {
         iface.send(args.message,resultHandler);
       }
     }
@@ -526,7 +430,7 @@ public class Producer {
         return false;
       }
 
-      public void start(I iface, batchSend_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+      public void start(I iface, batchSend_args args, AsyncMethodCallback<Void> resultHandler) throws TException {
         iface.batchSend(args.messageList,resultHandler);
       }
     }
@@ -554,369 +458,8 @@ public class Producer {
         return true;
       }
 
-      public void start(I iface, stop_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+      public void start(I iface, stop_args args, AsyncMethodCallback<Void> resultHandler) throws TException {
         iface.stop(resultHandler);
-      }
-    }
-
-  }
-
-  public static class setProducerGroup_args implements org.apache.thrift.TBase<setProducerGroup_args, setProducerGroup_args._Fields>, java.io.Serializable, Cloneable, Comparable<setProducerGroup_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("setProducerGroup_args");
-
-    private static final org.apache.thrift.protocol.TField CONSUMER_GROUP_FIELD_DESC = new org.apache.thrift.protocol.TField("consumerGroup", org.apache.thrift.protocol.TType.STRING, (short)1);
-
-    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
-    static {
-      schemes.put(StandardScheme.class, new setProducerGroup_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new setProducerGroup_argsTupleSchemeFactory());
-    }
-
-    public String consumerGroup; // required
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      CONSUMER_GROUP((short)1, "consumerGroup");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 1: // CONSUMER_GROUP
-            return CONSUMER_GROUP;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.CONSUMER_GROUP, new org.apache.thrift.meta_data.FieldMetaData("consumerGroup", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(setProducerGroup_args.class, metaDataMap);
-    }
-
-    public setProducerGroup_args() {
-    }
-
-    public setProducerGroup_args(
-      String consumerGroup)
-    {
-      this();
-      this.consumerGroup = consumerGroup;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public setProducerGroup_args(setProducerGroup_args other) {
-      if (other.isSetConsumerGroup()) {
-        this.consumerGroup = other.consumerGroup;
-      }
-    }
-
-    public setProducerGroup_args deepCopy() {
-      return new setProducerGroup_args(this);
-    }
-
-    @Override
-    public void clear() {
-      this.consumerGroup = null;
-    }
-
-    public String getConsumerGroup() {
-      return this.consumerGroup;
-    }
-
-    public setProducerGroup_args setConsumerGroup(String consumerGroup) {
-      this.consumerGroup = consumerGroup;
-      return this;
-    }
-
-    public void unsetConsumerGroup() {
-      this.consumerGroup = null;
-    }
-
-    /** Returns true if field consumerGroup is set (has been assigned a value) and false otherwise */
-    public boolean isSetConsumerGroup() {
-      return this.consumerGroup != null;
-    }
-
-    public void setConsumerGroupIsSet(boolean value) {
-      if (!value) {
-        this.consumerGroup = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case CONSUMER_GROUP:
-        if (value == null) {
-          unsetConsumerGroup();
-        } else {
-          setConsumerGroup((String)value);
-        }
-        break;
-
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case CONSUMER_GROUP:
-        return getConsumerGroup();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      case CONSUMER_GROUP:
-        return isSetConsumerGroup();
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof setProducerGroup_args)
-        return this.equals((setProducerGroup_args)that);
-      return false;
-    }
-
-    public boolean equals(setProducerGroup_args that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_consumerGroup = true && this.isSetConsumerGroup();
-      boolean that_present_consumerGroup = true && that.isSetConsumerGroup();
-      if (this_present_consumerGroup || that_present_consumerGroup) {
-        if (!(this_present_consumerGroup && that_present_consumerGroup))
-          return false;
-        if (!this.consumerGroup.equals(that.consumerGroup))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      List<Object> list = new ArrayList<Object>();
-
-      boolean present_consumerGroup = true && (isSetConsumerGroup());
-      list.add(present_consumerGroup);
-      if (present_consumerGroup)
-        list.add(consumerGroup);
-
-      return list.hashCode();
-    }
-
-    @Override
-    public int compareTo(setProducerGroup_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-
-      lastComparison = Boolean.valueOf(isSetConsumerGroup()).compareTo(other.isSetConsumerGroup());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetConsumerGroup()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.consumerGroup, other.consumerGroup);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("setProducerGroup_args(");
-      boolean first = true;
-
-      sb.append("consumerGroup:");
-      if (this.consumerGroup == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.consumerGroup);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-      // check for sub-struct validity
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private static class setProducerGroup_argsStandardSchemeFactory implements SchemeFactory {
-      public setProducerGroup_argsStandardScheme getScheme() {
-        return new setProducerGroup_argsStandardScheme();
-      }
-    }
-
-    private static class setProducerGroup_argsStandardScheme extends StandardScheme<setProducerGroup_args> {
-
-      public void read(org.apache.thrift.protocol.TProtocol iprot, setProducerGroup_args struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            case 1: // CONSUMER_GROUP
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.consumerGroup = iprot.readString();
-                struct.setConsumerGroupIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          iprot.readFieldEnd();
-        }
-        iprot.readStructEnd();
-
-        // check for required fields of primitive type, which can't be checked in the validate method
-        struct.validate();
-      }
-
-      public void write(org.apache.thrift.protocol.TProtocol oprot, setProducerGroup_args struct) throws org.apache.thrift.TException {
-        struct.validate();
-
-        oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.consumerGroup != null) {
-          oprot.writeFieldBegin(CONSUMER_GROUP_FIELD_DESC);
-          oprot.writeString(struct.consumerGroup);
-          oprot.writeFieldEnd();
-        }
-        oprot.writeFieldStop();
-        oprot.writeStructEnd();
-      }
-
-    }
-
-    private static class setProducerGroup_argsTupleSchemeFactory implements SchemeFactory {
-      public setProducerGroup_argsTupleScheme getScheme() {
-        return new setProducerGroup_argsTupleScheme();
-      }
-    }
-
-    private static class setProducerGroup_argsTupleScheme extends TupleScheme<setProducerGroup_args> {
-
-      @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, setProducerGroup_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol oprot = (TTupleProtocol) prot;
-        BitSet optionals = new BitSet();
-        if (struct.isSetConsumerGroup()) {
-          optionals.set(0);
-        }
-        oprot.writeBitSet(optionals, 1);
-        if (struct.isSetConsumerGroup()) {
-          oprot.writeString(struct.consumerGroup);
-        }
-      }
-
-      @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, setProducerGroup_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
-        if (incoming.get(0)) {
-          struct.consumerGroup = iprot.readString();
-          struct.setConsumerGroupIsSet(true);
-        }
       }
     }
 
@@ -1152,11 +695,11 @@ public class Producer {
       return _Fields.findByThriftId(fieldId);
     }
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -1176,7 +719,7 @@ public class Producer {
       return sb.toString();
     }
 
-    public void validate() throws org.apache.thrift.TException {
+    public void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
       if (message != null) {
@@ -1187,7 +730,7 @@ public class Producer {
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
       try {
         write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -1195,7 +738,7 @@ public class Producer {
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -1208,7 +751,7 @@ public class Producer {
 
     private static class send_argsStandardScheme extends StandardScheme<send_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, send_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, send_args struct) throws TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -1238,7 +781,7 @@ public class Producer {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, send_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, send_args struct) throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -1262,7 +805,7 @@ public class Producer {
     private static class send_argsTupleScheme extends TupleScheme<send_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, send_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, send_args struct) throws TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetMessage()) {
@@ -1275,7 +818,7 @@ public class Producer {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, send_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, send_args struct) throws TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -1438,11 +981,11 @@ public class Producer {
       return _Fields.findByThriftId(fieldId);
     }
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
       }
 
@@ -1455,7 +998,7 @@ public class Producer {
       return sb.toString();
     }
 
-    public void validate() throws org.apache.thrift.TException {
+    public void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
     }
@@ -1463,7 +1006,7 @@ public class Producer {
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
       try {
         write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -1471,7 +1014,7 @@ public class Producer {
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -1484,7 +1027,7 @@ public class Producer {
 
     private static class send_resultStandardScheme extends StandardScheme<send_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, send_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, send_result struct) throws TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -1505,7 +1048,7 @@ public class Producer {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, send_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, send_result struct) throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -1524,12 +1067,12 @@ public class Producer {
     private static class send_resultTupleScheme extends TupleScheme<send_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, send_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, send_result struct) throws TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, send_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, send_result struct) throws TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
@@ -1786,11 +1329,11 @@ public class Producer {
       return _Fields.findByThriftId(fieldId);
     }
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -1810,7 +1353,7 @@ public class Producer {
       return sb.toString();
     }
 
-    public void validate() throws org.apache.thrift.TException {
+    public void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
     }
@@ -1818,7 +1361,7 @@ public class Producer {
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
       try {
         write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -1826,7 +1369,7 @@ public class Producer {
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -1839,7 +1382,7 @@ public class Producer {
 
     private static class batchSend_argsStandardScheme extends StandardScheme<batchSend_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, batchSend_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, batchSend_args struct) throws TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -1879,7 +1422,7 @@ public class Producer {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, batchSend_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, batchSend_args struct) throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -1910,7 +1453,7 @@ public class Producer {
     private static class batchSend_argsTupleScheme extends TupleScheme<batchSend_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, batchSend_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, batchSend_args struct) throws TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetMessageList()) {
@@ -1929,7 +1472,7 @@ public class Producer {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, batchSend_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, batchSend_args struct) throws TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -2101,11 +1644,11 @@ public class Producer {
       return _Fields.findByThriftId(fieldId);
     }
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
       }
 
@@ -2118,7 +1661,7 @@ public class Producer {
       return sb.toString();
     }
 
-    public void validate() throws org.apache.thrift.TException {
+    public void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
     }
@@ -2126,7 +1669,7 @@ public class Producer {
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
       try {
         write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -2134,7 +1677,7 @@ public class Producer {
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -2147,7 +1690,7 @@ public class Producer {
 
     private static class batchSend_resultStandardScheme extends StandardScheme<batchSend_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, batchSend_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, batchSend_result struct) throws TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -2168,7 +1711,7 @@ public class Producer {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, batchSend_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, batchSend_result struct) throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -2187,12 +1730,12 @@ public class Producer {
     private static class batchSend_resultTupleScheme extends TupleScheme<batchSend_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, batchSend_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, batchSend_result struct) throws TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, batchSend_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, batchSend_result struct) throws TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
@@ -2349,11 +1892,11 @@ public class Producer {
       return _Fields.findByThriftId(fieldId);
     }
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -2366,7 +1909,7 @@ public class Producer {
       return sb.toString();
     }
 
-    public void validate() throws org.apache.thrift.TException {
+    public void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
     }
@@ -2374,7 +1917,7 @@ public class Producer {
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
       try {
         write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -2382,7 +1925,7 @@ public class Producer {
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
+      } catch (TException te) {
         throw new java.io.IOException(te);
       }
     }
@@ -2395,7 +1938,7 @@ public class Producer {
 
     private static class stop_argsStandardScheme extends StandardScheme<stop_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, stop_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, stop_args struct) throws TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -2416,7 +1959,7 @@ public class Producer {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, stop_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, stop_args struct) throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -2435,12 +1978,12 @@ public class Producer {
     private static class stop_argsTupleScheme extends TupleScheme<stop_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, stop_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, stop_args struct) throws TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, stop_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, stop_args struct) throws TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }

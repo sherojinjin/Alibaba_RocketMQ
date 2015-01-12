@@ -12,6 +12,7 @@ class ThriftMessageHandler extends MessageHandler {
 
     @Override
     public int handle(com.alibaba.rocketmq.common.message.MessageExt message) {
+        consumerService.getMessageQueue().offer(message);
         return 0;
     }
 }

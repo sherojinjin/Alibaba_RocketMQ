@@ -11,10 +11,10 @@ public class ProducerService implements Producer.Iface {
 
     private MultiThreadMQProducer producer;
 
-    private MultiThreadMQProducerConfiguration configuration;
-
     public ProducerService() {
-        configuration = MultiThreadMQProducer.configure();
+        producer = MultiThreadMQProducer.configure()
+                .configureProducerGroup(Helper.getConfig().getProperty("producer_group")).build();
+
     }
 
     private com.alibaba.rocketmq.common.message.Message wrap(Message message) {
@@ -33,32 +33,12 @@ public class ProducerService implements Producer.Iface {
     }
 
     @Override
-    public void setProducerGroup(String producerGroup) throws TException {
-        if (null == configuration.getProducerGroup()) {
-            configuration = configuration.configureProducerGroup(producerGroup);
-        }
-    }
-
-    @Override
     public void send(Message message) throws TException {
-        checkInit();
         producer.send(wrap(message));
-    }
-
-    private void checkInit() {
-        if (null == producer) {
-            synchronized (ProducerService.class) {
-                if (null == producer) {
-                    producer = configuration.build();
-                }
-            }
-        }
     }
 
     @Override
     public void batchSend(List<Message> messageList) throws TException {
-        checkInit();
-
         com.alibaba.rocketmq.common.message.Message[] messages =
                 new com.alibaba.rocketmq.common.message.Message[messageList.size()];
         int count = 0;

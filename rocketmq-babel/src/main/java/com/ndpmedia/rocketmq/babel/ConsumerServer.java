@@ -1,5 +1,6 @@
 package com.ndpmedia.rocketmq.babel;
 
+import com.alibaba.rocketmq.client.exception.MQClientException;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServer;
@@ -26,6 +27,10 @@ public class ConsumerServer {
             server = new TThreadedSelectorServer(serverArgs);
             server.serve();
         } catch (TTransportException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (MQClientException e) {
             e.printStackTrace();
         }
     }
