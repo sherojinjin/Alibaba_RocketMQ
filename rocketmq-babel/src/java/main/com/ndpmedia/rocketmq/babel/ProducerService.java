@@ -30,6 +30,11 @@ public class ProducerService implements Producer.Iface {
     }
 
     @Override
+    public void setProducerGroup(String consumerGroup) throws TException {
+
+    }
+
+    @Override
     public void send(Message message) throws TException {
         producer.send(wrap(message));
     }

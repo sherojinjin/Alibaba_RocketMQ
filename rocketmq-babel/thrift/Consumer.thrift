@@ -39,5 +39,7 @@ service Consumer {
 
    oneway void start(),
 
-   void consume()
+   list<MessageExt> pull(),
+
+   oneway void stop()
 }
