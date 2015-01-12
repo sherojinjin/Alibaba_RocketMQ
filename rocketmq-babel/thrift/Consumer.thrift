@@ -27,10 +27,17 @@ enum MessageModel {
    CLUSTERING   = 2
 }
 
-service MessageHandler {
-    void handle(1:MessageExt messageExt)
-}
-
 service Consumer {
-   
+
+  oneway void setConsumerGroup(1:string consumerGroup),
+
+   oneway void setMessageModel(1:MessageModel messageModel),
+
+   oneway void registerTopic(1:string topic),
+
+   oneway void registerTopics(1:list<string> topics),
+
+   oneway void start(),
+
+   void consume()
 }
