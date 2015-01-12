@@ -79,7 +79,8 @@ public class RocketMQUserLoginServiceImpl implements RocketMQUserLoginService
 
             if (loginType.getStatus() != 1)
             {
-                loginType.setRetryTimes(loginType.getRetryTimes() + 1);
+                int index = loginType.getRetryTimes() + 1;
+                loginType.setRetryTimes(index);
             }
 
             if (loginType.getRetryTimes() >= Integer.parseInt(config.getProperty("login_retry_time")))
@@ -95,6 +96,7 @@ public class RocketMQUserLoginServiceImpl implements RocketMQUserLoginService
         }
 
         System.out.println(" login failed , retry time ++ " + loginType.toString());
+        System.out.println(" login failed , retry time ++ " + users);
         return true;
     }
 

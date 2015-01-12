@@ -27,7 +27,7 @@
 
        </security:http>
 
-       <security:authentication-manager>
+       <security:authentication-manager alias="authenticationManager">
               <security:authentication-provider user-service-ref="userService">
                    <security:password-encoder hash="md5">
                        <security:salt-source user-property="username"  />
