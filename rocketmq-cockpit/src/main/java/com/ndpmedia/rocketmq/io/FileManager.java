@@ -129,4 +129,9 @@ public class FileManager {
             lock.writeLock().unlock();
         }
     }
+
+    public static Properties getConfig()
+    {
+        return CONFIG;
+    }
 }

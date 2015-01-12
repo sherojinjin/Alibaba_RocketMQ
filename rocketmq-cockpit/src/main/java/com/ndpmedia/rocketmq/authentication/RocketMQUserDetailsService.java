@@ -1,6 +1,8 @@
 package com.ndpmedia.rocketmq.authentication;
 
 import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
+import com.ndpmedia.rocketmq.cockpit.log.CockpitLogger;
+import org.slf4j.Logger;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -20,6 +22,10 @@ public class RocketMQUserDetailsService implements UserDetailsService
 {
     private CockpitDao cockpitDao;
 
+    private RocketMQUserLoginService rocketMQUserLoginService;
+
+    private final Logger logger = CockpitLogger.getLogger();
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
     {
@@ -28,13 +34,18 @@ public class RocketMQUserDetailsService implements UserDetailsService
         {
             System.out.println(" try to login ====username===== " + username);
             Map<String, Object> map = getUser(username);
-
-            if (map == null)
+            boolean status = rocketMQUserLoginService.findUserStatus(username);
+            if (map == null )
             {
-                throw new UsernameNotFoundException(" this user is no one :" + username);
+                throw new Exception(" this user need register first :" + username);
             }
 
-            System.out.println(" try to login ====getUser====== " + map.get("username") + " " + map.get("password"));
+            if (!status)
+            {
+                throw new Exception(" this user is already locked : " + username);
+            }
+
+            logger.debug(" try to login ====getUser====== " + map.get("username") + " " + map.get("password"));
 
             // 用户名、密码、是否启用、是否被锁定、是否过期、权限
             user = new User(username, map.get("password").toString(), true, true, true, true,
@@ -43,18 +54,20 @@ public class RocketMQUserDetailsService implements UserDetailsService
         }
         catch (Exception e)
         {
-            System.err.println(" log faied !" + e.getMessage());
+            rocketMQUserLoginService.userRetryTimeAdd(username);
+            logger.error(" log faied !" + e.getMessage());
             throw new UsernameNotFoundException(" log faied !" + e.getMessage());
         }
 
+        rocketMQUserLoginService.logUserStatus(username);
         return user;
     }
 
     /**
      * try to get the role of the user
      *
-     * @param role
-     * @return
+     * @param role user role type,just admin for every  one.
+     * @return the role of user
      */
     public Collection<GrantedAuthority> getAuthority(String role)
     {
@@ -82,4 +95,13 @@ public class RocketMQUserDetailsService implements UserDetailsService
         this.cockpitDao = cockpitDao;
     }
 
+    public RocketMQUserLoginService getRocketMQUserLoginService()
+    {
+        return rocketMQUserLoginService;
+    }
+
+    public void setRocketMQUserLoginService(RocketMQUserLoginService rocketMQUserLoginService)
+    {
+        this.rocketMQUserLoginService = rocketMQUserLoginService;
+    }
 }

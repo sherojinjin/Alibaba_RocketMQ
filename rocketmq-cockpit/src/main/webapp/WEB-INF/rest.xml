@@ -61,6 +61,15 @@
         <property name="dataSource" ref="dataSource" />
     </bean>
 
+    <bean id="rocketMQUserLoginManager"
+          class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginManagerImpl">
+        <property name="cockpitDao" ref="cockpitDao" />
+    </bean>
+
+    <bean id="rocketMQUserService" class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginServiceImpl">
+        <property name="rocketMQUserLoginManager" ref="rocketMQUserLoginManager" />
+    </bean>
+
     <bean id="fileManager" class="com.ndpmedia.rocketmq.io.FileManager" />
 
     <bean id="nameServerManager" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerManagerImpl">

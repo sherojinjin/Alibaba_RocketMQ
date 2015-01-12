@@ -52,3 +52,10 @@ CREATE TABLE IF NOT EXISTS cockpit_user (
   user_name VARCHAR(32),
   password  VARCHAR(64)
 ) ENGINE = INNODB;
+
+CREATE TABLE IF NOT EXISTS cockpit_user_login (
+  user_name VARCHAR(32),
+  login_status INT NOT NULL DEFAULT 1,
+  retry INT NOT NULL DEFAULT 0,
+  lock_time BIGINT NOT NULL DEFAULT 0
+) ENGINE = INNODB;

@@ -1,6 +1,8 @@
 package com.ndpmedia.rocketmq.cockpit.connection.impl;
 
 import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
+import com.ndpmedia.rocketmq.cockpit.log.CockpitLogger;
+import org.slf4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -22,6 +24,8 @@ public class CockpitDaoImpl<T> implements CockpitDao
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     private DataSource dataSource;
+
+    private final Logger logger = CockpitLogger.getLogger();
 
     public JdbcTemplate getJdbcTemplate()
     {
@@ -59,28 +63,28 @@ public class CockpitDaoImpl<T> implements CockpitDao
     @Override
     public List<Map<String, Object>> getList(String sql)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]");
+        logger.debug(" try to query : sql = [" + sql + " ]");
         return jdbcTemplate.queryForList(sql);
     }
 
     @Override
     public int add(String sql)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]");
+        logger.debug(" try to query : sql = [" + sql + " ]");
         return jdbcTemplate.update(sql);
     }
 
     @Override
     public int add(String sql, Map<String, ?> params)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]");
+        logger.debug(" try to query : sql = [" + sql + " ]");
         return namedParameterJdbcTemplate.update(sql, params);
     }
 
     @Override
     public int add(String sql, Object object)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]");
+        logger.debug(" try to query : sql = [" + sql + " ]");
         SqlParameterSource source = new BeanPropertySqlParameterSource(object);
         return namedParameterJdbcTemplate.update(sql, source);
     }
@@ -88,7 +92,7 @@ public class CockpitDaoImpl<T> implements CockpitDao
     @Override
     public int del(String sql)
     {
-        System.out.println(" try to query : sql = [" + sql + " ]");
+        logger.debug(" try to query : sql = [" + sql + " ]");
         return jdbcTemplate.update(sql);
     }
 
@@ -96,7 +100,7 @@ public class CockpitDaoImpl<T> implements CockpitDao
     public <T> List<T> getBeanList(String sql, RowMapper<T> rowMapper)
     {
         List<T> list = new ArrayList<T>();
-        System.out.println(" try to query : sql = [" + sql + " ]");
+        logger.debug(" try to query : sql = [" + sql + " ]");
         list.addAll(namedParameterJdbcTemplate.query(sql, rowMapper));
         return list;
     }
