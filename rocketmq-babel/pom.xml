@@ -32,8 +32,4 @@
 			<artifactId>rocketmq-client</artifactId>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<sourceDirectory>src/java/main</sourceDirectory>
-	</build>
 </project>
