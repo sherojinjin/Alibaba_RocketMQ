@@ -27,10 +27,10 @@ public class CockpitLogger
         Boolean isloadconfig = Boolean.parseBoolean(System.getProperty("rocketmq.client.log.loadconfig", "true"));
 
         final String log4j_resource_file = System
-                .getProperty("rocketmq.client.log4j.resource.fileName", "log4j_rocketmq_client.xml");
+                .getProperty("rocketmq.client.log4j.resource.fileName", "log4j_rocketmq_cockpit.xml");
 
         final String logback_resource_file = System
-                .getProperty("rocketmq.client.logback.resource.fileName", "logback_rocketmq_client.xml");
+                .getProperty("rocketmq.client.logback.resource.fileName", "logback_rocketmq_cockpit.xml");
 
         if (isloadconfig)
         {

@@ -90,7 +90,7 @@ public class RocketMQUserLoginServiceImpl implements RocketMQUserLoginService
         }
         catch (Exception e)
         {
-            logger.error(e.getMessage());
+            System.out.println(e.getMessage());
             return false;
         }
 
