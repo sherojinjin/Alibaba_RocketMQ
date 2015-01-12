@@ -33,13 +33,11 @@ service Consumer {
 
    oneway void setMessageModel(1:MessageModel messageModel),
 
-   oneway void registerTopic(1:string topic),
-
-   oneway void registerTopics(1:list<string> topics),
+   oneway void registerTopic(1:string topic, 2:string tag),
 
    oneway void start(),
 
-   list<MessageExt> pull(),
+   void pull(),
 
    oneway void stop()
 }
