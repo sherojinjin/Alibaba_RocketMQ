@@ -22,21 +22,7 @@ struct MessageExt {
    16: i32 reconsumeTimes,
 }
 
-enum MessageModel {
-   BROADCASTING = 1,
-   CLUSTERING   = 2
-}
-
 service Consumer {
-
-   oneway void setConsumerGroup(1:string consumerGroup),
-
-   oneway void setMessageModel(1:MessageModel messageModel),
-
-   oneway void registerTopic(1:string topic, 2:string tag),
-
-   oneway void start(),
-
    void pull(),
 
    oneway void stop()
