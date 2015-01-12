@@ -66,7 +66,7 @@
         <property name="cockpitDao" ref="cockpitDao" />
     </bean>
 
-    <bean id="rocketMQUserService" class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginServiceImpl">
+    <bean id="rocketMQUserLoginService" class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginServiceImpl">
         <property name="rocketMQUserLoginManager" ref="rocketMQUserLoginManager" />
     </bean>
 
