@@ -21,7 +21,8 @@ public class RocketMQUserLoginHandler extends SimpleUrlAuthenticationFailureHand
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException exception) throws IOException, ServletException
     {
-
+        String username = request.getParameter("j_username");
+        rocketMQUserLoginService.userRetryTimeAdd(username);
         super.onAuthenticationFailure(request, response, exception);
     }
 
