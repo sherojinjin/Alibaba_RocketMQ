@@ -32,17 +32,11 @@ class Iface:
     """
     pass
 
-  def registerTopic(self, topic):
+  def registerTopic(self, topic, tag):
     """
     Parameters:
      - topic
-    """
-    pass
-
-  def registerTopics(self, topics):
-    """
-    Parameters:
-     - topics
+     - tag
     """
     pass
 
@@ -91,31 +85,19 @@ class Client(Iface):
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
-  def registerTopic(self, topic):
+  def registerTopic(self, topic, tag):
     """
     Parameters:
      - topic
+     - tag
     """
-    self.send_registerTopic(topic)
+    self.send_registerTopic(topic, tag)
 
-  def send_registerTopic(self, topic):
+  def send_registerTopic(self, topic, tag):
     self._oprot.writeMessageBegin('registerTopic', TMessageType.ONEWAY, self._seqid)
     args = registerTopic_args()
     args.topic = topic
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-  def registerTopics(self, topics):
-    """
-    Parameters:
-     - topics
-    """
-    self.send_registerTopics(topics)
-
-  def send_registerTopics(self, topics):
-    self._oprot.writeMessageBegin('registerTopics', TMessageType.ONEWAY, self._seqid)
-    args = registerTopics_args()
-    args.topics = topics
+    args.tag = tag
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -130,7 +112,7 @@ class Client(Iface):
     self._oprot.trans.flush()
   def pull(self):
     self.send_pull()
-    return self.recv_pull()
+    self.recv_pull()
 
   def send_pull(self):
     self._oprot.writeMessageBegin('pull', TMessageType.CALL, self._seqid)
@@ -150,9 +132,7 @@ class Client(Iface):
     result = pull_result()
     result.read(iprot)
     iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "pull failed: unknown result");
+    return
 
   def stop(self):
     self.send_stop()
@@ -171,7 +151,6 @@ class Processor(Iface, TProcessor):
     self._processMap["setConsumerGroup"] = Processor.process_setConsumerGroup
     self._processMap["setMessageModel"] = Processor.process_setMessageModel
     self._processMap["registerTopic"] = Processor.process_registerTopic
-    self._processMap["registerTopics"] = Processor.process_registerTopics
     self._processMap["start"] = Processor.process_start
     self._processMap["pull"] = Processor.process_pull
     self._processMap["stop"] = Processor.process_stop
@@ -209,14 +188,7 @@ class Processor(Iface, TProcessor):
     args = registerTopic_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    self._handler.registerTopic(args.topic)
-    return
-
-  def process_registerTopics(self, seqid, iprot, oprot):
-    args = registerTopics_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    self._handler.registerTopics(args.topics)
+    self._handler.registerTopic(args.topic, args.tag)
     return
 
   def process_start(self, seqid, iprot, oprot):
@@ -231,7 +203,7 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = pull_result()
-    result.success = self._handler.pull()
+    self._handler.pull()
     oprot.writeMessageBegin("pull", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -381,15 +353,18 @@ class registerTopic_args:
   """
   Attributes:
    - topic
+   - tag
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'topic', None, None, ), # 1
+    (2, TType.STRING, 'tag', None, None, ), # 2
   )
 
-  def __init__(self, topic=None,):
+  def __init__(self, topic=None, tag=None,):
     self.topic = topic
+    self.tag = tag
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -403,6 +378,11 @@ class registerTopic_args:
       if fid == 1:
         if ftype == TType.STRING:
           self.topic = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.tag = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -419,78 +399,9 @@ class registerTopic_args:
       oprot.writeFieldBegin('topic', TType.STRING, 1)
       oprot.writeString(self.topic)
       oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.topic)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class registerTopics_args:
-  """
-  Attributes:
-   - topics
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.LIST, 'topics', (TType.STRING,None), None, ), # 1
-  )
-
-  def __init__(self, topics=None,):
-    self.topics = topics
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.LIST:
-          self.topics = []
-          (_etype12, _size9) = iprot.readListBegin()
-          for _i13 in xrange(_size9):
-            _elem14 = iprot.readString();
-            self.topics.append(_elem14)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('registerTopics_args')
-    if self.topics is not None:
-      oprot.writeFieldBegin('topics', TType.LIST, 1)
-      oprot.writeListBegin(TType.STRING, len(self.topics))
-      for iter15 in self.topics:
-        oprot.writeString(iter15)
-      oprot.writeListEnd()
+    if self.tag is not None:
+      oprot.writeFieldBegin('tag', TType.STRING, 2)
+      oprot.writeString(self.tag)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -501,7 +412,8 @@ class registerTopics_args:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.topics)
+    value = (value * 31) ^ hash(self.topic)
+    value = (value * 31) ^ hash(self.tag)
     return value
 
   def __repr__(self):
@@ -608,17 +520,9 @@ class pull_args:
     return not (self == other)
 
 class pull_result:
-  """
-  Attributes:
-   - success
-  """
 
   thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(MessageExt, MessageExt.thrift_spec)), None, ), # 0
   )
-
-  def __init__(self, success=None,):
-    self.success = success
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -629,17 +533,6 @@ class pull_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype19, _size16) = iprot.readListBegin()
-          for _i20 in xrange(_size16):
-            _elem21 = MessageExt()
-            _elem21.read(iprot)
-            self.success.append(_elem21)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -650,13 +543,6 @@ class pull_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('pull_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter22 in self.success:
-        iter22.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -666,7 +552,6 @@ class pull_result:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.success)
     return value
 
   def __repr__(self):

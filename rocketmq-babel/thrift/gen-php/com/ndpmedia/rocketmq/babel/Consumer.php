@@ -27,17 +27,13 @@ interface ConsumerIf {
   public function setMessageModel($messageModel);
   /**
    * @param string $topic
+   * @param string $tag
    */
-  public function registerTopic($topic);
-  /**
-   * @param string[] $topics
-   */
-  public function registerTopics(array $topics);
+  public function registerTopic($topic, $tag);
   /**
    */
   public function start();
   /**
-   * @return \com\ndpmedia\rocketmq\babel\MessageExt[]
    */
   public function pull();
   /**
@@ -100,15 +96,16 @@ class ConsumerClient implements \com\ndpmedia\rocketmq\babel\ConsumerIf {
       $this->output_->getTransport()->flush();
     }
   }
-  public function registerTopic($topic)
+  public function registerTopic($topic, $tag)
   {
-    $this->send_registerTopic($topic);
+    $this->send_registerTopic($topic, $tag);
   }
 
-  public function send_registerTopic($topic)
+  public function send_registerTopic($topic, $tag)
   {
     $args = new \com\ndpmedia\rocketmq\babel\Consumer_registerTopic_args();
     $args->topic = $topic;
+    $args->tag = $tag;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -117,28 +114,6 @@ class ConsumerClient implements \com\ndpmedia\rocketmq\babel\ConsumerIf {
     else
     {
       $this->output_->writeMessageBegin('registerTopic', TMessageType::ONEWAY, $this->seqid_);
-      $args->write($this->output_);
-      $this->output_->writeMessageEnd();
-      $this->output_->getTransport()->flush();
-    }
-  }
-  public function registerTopics(array $topics)
-  {
-    $this->send_registerTopics($topics);
-  }
-
-  public function send_registerTopics(array $topics)
-  {
-    $args = new \com\ndpmedia\rocketmq\babel\Consumer_registerTopics_args();
-    $args->topics = $topics;
-    $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($this->output_, 'registerTopics', TMessageType::ONEWAY, $args, $this->seqid_, $this->output_->isStrictWrite());
-    }
-    else
-    {
-      $this->output_->writeMessageBegin('registerTopics', TMessageType::ONEWAY, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
@@ -168,7 +143,7 @@ class ConsumerClient implements \com\ndpmedia\rocketmq\babel\ConsumerIf {
   public function pull()
   {
     $this->send_pull();
-    return $this->recv_pull();
+    $this->recv_pull();
   }
 
   public function send_pull()
@@ -209,10 +184,7 @@ class ConsumerClient implements \com\ndpmedia\rocketmq\babel\ConsumerIf {
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
-    if ($result->success !== null) {
-      return $result->success;
-    }
-    throw new \Exception("pull failed: unknown result");
+    return;
   }
 
   public function stop()
@@ -397,6 +369,10 @@ class Consumer_registerTopic_args {
    * @var string
    */
   public $topic = null;
+  /**
+   * @var string
+   */
+  public $tag = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -405,11 +381,18 @@ class Consumer_registerTopic_args {
           'var' => 'topic',
           'type' => TType::STRING,
           ),
+        2 => array(
+          'var' => 'tag',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['topic'])) {
         $this->topic = $vals['topic'];
+      }
+      if (isset($vals['tag'])) {
+        $this->tag = $vals['tag'];
       }
     }
   }
@@ -440,6 +423,13 @@ class Consumer_registerTopic_args {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tag);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -458,105 +448,9 @@ class Consumer_registerTopic_args {
       $xfer += $output->writeString($this->topic);
       $xfer += $output->writeFieldEnd();
     }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class Consumer_registerTopics_args {
-  static $_TSPEC;
-
-  /**
-   * @var string[]
-   */
-  public $topics = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'topics',
-          'type' => TType::LST,
-          'etype' => TType::STRING,
-          'elem' => array(
-            'type' => TType::STRING,
-            ),
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['topics'])) {
-        $this->topics = $vals['topics'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'Consumer_registerTopics_args';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::LST) {
-            $this->topics = array();
-            $_size9 = 0;
-            $_etype12 = 0;
-            $xfer += $input->readListBegin($_etype12, $_size9);
-            for ($_i13 = 0; $_i13 < $_size9; ++$_i13)
-            {
-              $elem14 = null;
-              $xfer += $input->readString($elem14);
-              $this->topics []= $elem14;
-            }
-            $xfer += $input->readListEnd();
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Consumer_registerTopics_args');
-    if ($this->topics !== null) {
-      if (!is_array($this->topics)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('topics', TType::LST, 1);
-      {
-        $output->writeListBegin(TType::STRING, count($this->topics));
-        {
-          foreach ($this->topics as $iter15)
-          {
-            $xfer += $output->writeString($iter15);
-          }
-        }
-        $output->writeListEnd();
-      }
+    if ($this->tag !== null) {
+      $xfer += $output->writeFieldBegin('tag', TType::STRING, 2);
+      $xfer += $output->writeString($this->tag);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -669,29 +563,11 @@ class Consumer_pull_args {
 class Consumer_pull_result {
   static $_TSPEC;
 
-  /**
-   * @var \com\ndpmedia\rocketmq\babel\MessageExt[]
-   */
-  public $success = null;
 
-  public function __construct($vals=null) {
+  public function __construct() {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        0 => array(
-          'var' => 'success',
-          'type' => TType::LST,
-          'etype' => TType::STRUCT,
-          'elem' => array(
-            'type' => TType::STRUCT,
-            'class' => '\com\ndpmedia\rocketmq\babel\MessageExt',
-            ),
-          ),
         );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['success'])) {
-        $this->success = $vals['success'];
-      }
     }
   }
 
@@ -714,24 +590,6 @@ class Consumer_pull_result {
       }
       switch ($fid)
       {
-        case 0:
-          if ($ftype == TType::LST) {
-            $this->success = array();
-            $_size16 = 0;
-            $_etype19 = 0;
-            $xfer += $input->readListBegin($_etype19, $_size16);
-            for ($_i20 = 0; $_i20 < $_size16; ++$_i20)
-            {
-              $elem21 = null;
-              $elem21 = new \com\ndpmedia\rocketmq\babel\MessageExt();
-              $xfer += $elem21->read($input);
-              $this->success []= $elem21;
-            }
-            $xfer += $input->readListEnd();
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -745,23 +603,6 @@ class Consumer_pull_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Consumer_pull_result');
-    if ($this->success !== null) {
-      if (!is_array($this->success)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
-      {
-        $output->writeListBegin(TType::STRUCT, count($this->success));
-        {
-          foreach ($this->success as $iter22)
-          {
-            $xfer += $iter22->write($output);
-          }
-        }
-        $output->writeListEnd();
-      }
-      $xfer += $output->writeFieldEnd();
-    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
