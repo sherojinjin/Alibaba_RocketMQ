@@ -5,7 +5,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/security
-                           http://www.springframework.org/schema/security/spring-security.xsd">
+                           http://www.springframework.org/schema/security/spring-security-3.2.xsd">
 
 
     <security:http pattern="/js/**" security="none" />
@@ -14,6 +14,9 @@
     <security:http pattern="/rocketmq/**" security="none" />
 
     <security:http auto-config="true">
+        <security:intercept-url pattern="/login.jsp" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+
+        <security:form-login login-page="/login.jsp"/>
         <!-- Use the comment out line in production -->
         <!--
         <security:intercept-url pattern="/**" access="ROLE_ADMIN" requires-channel="https" />
@@ -22,10 +25,11 @@
         <security:session-management>
             <security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false"  />
         </security:session-management>
-
     </security:http>
 
-    <security:authentication-manager>
+
+
+    <security:authentication-manager alias="authenticationManager">
         <security:authentication-provider user-service-ref="userService">
             <security:password-encoder hash="md5">
                 <security:salt-source user-property="username"  />
@@ -39,6 +43,15 @@
          -->
     <bean id="userService" class="com.ndpmedia.rocketmq.authentication.RocketMQUserDetailsService" >
         <property name="cockpitDao" ref="cockpitDao" />
+        <property name="rocketMQUserLoginService" ref="rocketMQUserLoginService" />
+    </bean>
+
+    <bean id="rocketMQUserLoginFailedHandler"
+          class="com.ndpmedia.rocketmq.authentication.RocketMQUserLoginFailedHandler" >
+        <property name="rocketMQUserLoginService" ref="rocketMQUserLoginService" />
+    </bean>
+
+    <bean id="loginController" class="com.ndpmedia.rocketmq.cockpit.controller.LoginController" >
         <property name="rocketMQUserLoginService" ref="rocketMQUserLoginService" />
     </bean>
 </beans>
