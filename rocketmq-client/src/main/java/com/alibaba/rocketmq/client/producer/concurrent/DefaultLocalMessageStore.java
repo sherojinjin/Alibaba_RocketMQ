@@ -98,7 +98,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             public void run() {
                 flush();
             }
-        }, 0, 1000, TimeUnit.MILLISECONDS);
+        }, 0, 10000, TimeUnit.MILLISECONDS);
 
         flushConfigPeriodicallyByMessageNumberExecutorService = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryImpl("LocalMessageStoreFlushConfigServicePeriodicallyByMessageNumber"));
@@ -110,7 +110,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     flush();
                 }
             }
-        }, 50, 100, TimeUnit.MILLISECONDS);
+        }, 5000, 5000, TimeUnit.MILLISECONDS);
 
         ready = true;
 
