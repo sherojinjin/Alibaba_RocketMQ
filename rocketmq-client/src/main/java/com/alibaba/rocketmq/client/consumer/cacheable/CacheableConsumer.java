@@ -12,8 +12,15 @@ import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class CacheableConsumer {
@@ -29,7 +36,9 @@ public class CacheableConsumer {
 
     private static final String BASE_INSTANCE_NAME = "CacheableConsumer@";
 
-    private DefaultMQPushConsumer defaultMQPushConsumer;
+    private static final int NUMBER_OF_CONSUMER = 2;
+
+    private List<DefaultMQPushConsumer> defaultMQPushConsumers = new ArrayList<DefaultMQPushConsumer>();
 
     private boolean started;
 
@@ -52,8 +61,7 @@ public class CacheableConsumer {
     private FrontController frontController;
 
     private static String getInstanceName() {
-        return BASE_INSTANCE_NAME + RemotingUtil.getLocalAddress(false) + "_" +
-                CONSUMER_NAME_COUNTER.incrementAndGet();
+        return BASE_INSTANCE_NAME + RemotingUtil.getLocalAddress(false) + "_" + CONSUMER_NAME_COUNTER.incrementAndGet();
     }
 
     /**
@@ -68,12 +76,17 @@ public class CacheableConsumer {
 
         this.consumerGroupName = consumerGroupName;
         this.topicHandlerMap = new ConcurrentHashMap<String, MessageHandler>();
-        defaultMQPushConsumer = new DefaultMQPushConsumer(consumerGroupName);
-        defaultMQPushConsumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueByDataCenter(defaultMQPushConsumer));
-        defaultMQPushConsumer.setInstanceName(getInstanceName());
         localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
-        defaultMQPushConsumer.setMessageModel(messageModel);
-        defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
+
+        for (int i = 0; i < NUMBER_OF_CONSUMER; i++) {
+            DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer(consumerGroupName);
+            defaultMQPushConsumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueByDataCenter(defaultMQPushConsumer));
+            defaultMQPushConsumer.setInstanceName(getInstanceName());
+            defaultMQPushConsumer.setMessageModel(messageModel);
+            defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
+            defaultMQPushConsumers.add(defaultMQPushConsumer);
+        }
+
         executorWorkerService = new ThreadPoolExecutor(
                 corePoolSizeForWorkTasks,
                 maximumPoolSizeForWorkTasks,
@@ -96,8 +109,12 @@ public class CacheableConsumer {
         }
 
         topicHandlerMap.putIfAbsent(messageHandler.getTopic(), messageHandler);
-        defaultMQPushConsumer.subscribe(messageHandler.getTopic(),
-                null != messageHandler.getTag() ? messageHandler.getTag() : "*");
+
+        for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+            defaultMQPushConsumer.subscribe(messageHandler.getTopic(),
+                    null != messageHandler.getTag() ? messageHandler.getTag() : "*");
+        }
+
         return this;
     }
 
@@ -114,8 +131,10 @@ public class CacheableConsumer {
             throw new RuntimeException("Please at least configure one message handler to subscribe one topic");
         }
 
-        defaultMQPushConsumer.registerMessageListener(frontController);
-        defaultMQPushConsumer.start();
+        for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+            defaultMQPushConsumer.registerMessageListener(frontController);
+            defaultMQPushConsumer.start();
+        }
 
         startPopThread();
 
@@ -165,8 +184,10 @@ public class CacheableConsumer {
             throw new RuntimeException("Please set message model before start");
         }
 
-        if (null != defaultMQPushConsumer) {
-            defaultMQPushConsumer.setMessageModel(messageModel);
+        for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+            if (null != defaultMQPushConsumer) {
+                defaultMQPushConsumer.setMessageModel(messageModel);
+            }
         }
     }
 
@@ -177,8 +198,10 @@ public class CacheableConsumer {
             throw new RuntimeException("Please set consume-from-where before start");
         }
 
-        if (null != defaultMQPushConsumer) {
-            defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
+        for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+            if (null != defaultMQPushConsumer) {
+                defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
+            }
         }
     }
 
@@ -210,7 +233,9 @@ public class CacheableConsumer {
     protected void stopReceiving() throws InterruptedException {
         if (started) {
             //Stop pulling messages from broker server.
-            defaultMQPushConsumer.shutdown();
+            for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+                defaultMQPushConsumer.shutdown();
+            }
 
             //Stop popping messages from local message store.
             scheduledExecutorDelayService.shutdown();
