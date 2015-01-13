@@ -36,15 +36,10 @@ public class RocketMQUserDetailsService implements UserDetailsService
         {
             System.out.println(" try to login ====username===== " + username);
             Map<String, Object> map = getUser(username);
-            boolean status = rocketMQUserLoginService.findUserStatus(username);
+
             if (map == null )
             {
                 throw new Exception(" this user need register first :" + username);
-            }
-
-            if (!status)
-            {
-                throw new Exception(" this user is already locked : " + username);
             }
 
             logger.debug(" try to login ====getUser====== " + map.get("username") + " " + map.get("password"));

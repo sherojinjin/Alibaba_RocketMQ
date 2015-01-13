@@ -1,8 +1,6 @@
 package com.ndpmedia.rocketmq.authentication;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 import javax.servlet.ServletException;
@@ -11,9 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Created by Administrator on 2015/1/12.
+ * try to process login message when login failed.
  */
-public class RocketMQUserLoginHandler extends SimpleUrlAuthenticationFailureHandler
+public class RocketMQUserLoginFailedHandler extends SimpleUrlAuthenticationFailureHandler
 {
     private RocketMQUserLoginService rocketMQUserLoginService;
 
@@ -23,6 +21,13 @@ public class RocketMQUserLoginHandler extends SimpleUrlAuthenticationFailureHand
     {
         String username = request.getParameter("j_username");
         rocketMQUserLoginService.userRetryTimeAdd(username);
+        boolean status = rocketMQUserLoginService.findUserStatus(username);
+
+        if (!status)
+        {
+            exception.addSuppressed(new Exception(" the user : [" + username + "] is locked !"));
+        }
+
         super.onAuthenticationFailure(request, response, exception);
     }
 

@@ -5,7 +5,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/security
-                           http://www.springframework.org/schema/security/spring-security.xsd">
+                           http://www.springframework.org/schema/security/spring-security-3.2.xsd">
 
 
     <security:http pattern="/js/**" security="none" />
@@ -22,8 +22,9 @@
         <security:session-management>
             <security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false"  />
         </security:session-management>
-
     </security:http>
+
+
 
     <security:authentication-manager>
         <security:authentication-provider user-service-ref="userService">
