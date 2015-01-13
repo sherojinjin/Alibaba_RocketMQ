@@ -73,6 +73,8 @@ public class ConsumerService implements Consumer.AsyncIface {
         message.setBodyCRC(msg.getBodyCRC());
         message.setData(msg.getBody());
         message.setReconsumeTimes(msg.getReconsumeTimes());
+        message.setCommitLogOffset(msg.getCommitLogOffset());
+        message.setMsgId(msg.getMsgId());
         return message;
     }
 
