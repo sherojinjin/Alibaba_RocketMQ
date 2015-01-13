@@ -33,7 +33,7 @@ public class ExampleCacheableConsumer {
          */
         @Override
         public int handle(MessageExt message) {
-            if (COUNTER.incrementAndGet() % 100 == 0) {
+            if (COUNTER.incrementAndGet() % 10000 == 0) {
                 System.out.println("By far, this consumer has consumed: " + COUNTER.longValue() + " messages.");
                 System.out.println("Current TPS: " + (COUNTER.longValue() - lastConsumptionNumber) * 1000.0F / (System.currentTimeMillis() - lastTimeStamp));
                 lastConsumptionNumber = COUNTER.longValue();
