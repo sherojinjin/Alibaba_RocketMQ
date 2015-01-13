@@ -24,7 +24,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] function [arg1 [arg2...]]')
   print('')
   print('Functions:')
-  print('  void setProducerGroup(string consumerGroup)')
   print('  void send(Message message)')
   print('  void batchSend( messageList)')
   print('  void stop()')
@@ -84,13 +83,7 @@ protocol = TBinaryProtocol.TBinaryProtocol(transport)
 client = Producer.Client(protocol)
 transport.open()
 
-if cmd == 'setProducerGroup':
-  if len(args) != 1:
-    print('setProducerGroup requires 1 args')
-    sys.exit(1)
-  pp.pprint(client.setProducerGroup(args[0],))
-
-elif cmd == 'send':
+if cmd == 'send':
   if len(args) != 1:
     print('send requires 1 args')
     sys.exit(1)

@@ -18,10 +18,6 @@ use Thrift\Exception\TApplicationException;
 
 interface ProducerIf {
   /**
-   * @param string $consumerGroup
-   */
-  public function setProducerGroup($consumerGroup);
-  /**
    * @param \com\ndpmedia\rocketmq\babel\Message $message
    */
   public function send(\com\ndpmedia\rocketmq\babel\Message $message);
@@ -45,28 +41,6 @@ class ProducerClient implements \com\ndpmedia\rocketmq\babel\ProducerIf {
     $this->output_ = $output ? $output : $input;
   }
 
-  public function setProducerGroup($consumerGroup)
-  {
-    $this->send_setProducerGroup($consumerGroup);
-  }
-
-  public function send_setProducerGroup($consumerGroup)
-  {
-    $args = new \com\ndpmedia\rocketmq\babel\Producer_setProducerGroup_args();
-    $args->consumerGroup = $consumerGroup;
-    $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($this->output_, 'setProducerGroup', TMessageType::ONEWAY, $args, $this->seqid_, $this->output_->isStrictWrite());
-    }
-    else
-    {
-      $this->output_->writeMessageBegin('setProducerGroup', TMessageType::ONEWAY, $this->seqid_);
-      $args->write($this->output_);
-      $this->output_->writeMessageEnd();
-      $this->output_->getTransport()->flush();
-    }
-  }
   public function send(\com\ndpmedia\rocketmq\babel\Message $message)
   {
     $this->send_send($message);
@@ -187,81 +161,6 @@ class ProducerClient implements \com\ndpmedia\rocketmq\babel\ProducerIf {
 }
 
 // HELPER FUNCTIONS AND STRUCTURES
-
-class Producer_setProducerGroup_args {
-  static $_TSPEC;
-
-  /**
-   * @var string
-   */
-  public $consumerGroup = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'consumerGroup',
-          'type' => TType::STRING,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['consumerGroup'])) {
-        $this->consumerGroup = $vals['consumerGroup'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'Producer_setProducerGroup_args';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->consumerGroup);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Producer_setProducerGroup_args');
-    if ($this->consumerGroup !== null) {
-      $xfer += $output->writeFieldBegin('consumerGroup', TType::STRING, 1);
-      $xfer += $output->writeString($this->consumerGroup);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
 
 class Producer_send_args {
   static $_TSPEC;

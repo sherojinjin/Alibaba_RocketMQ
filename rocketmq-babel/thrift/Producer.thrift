@@ -11,9 +11,6 @@ struct Message {
 }
 
 service Producer {
-
-   oneway void setProducerGroup(1:string consumerGroup),
-
    void send(1: Message message),
 
    void batchSend(1: list<Message> messageList)

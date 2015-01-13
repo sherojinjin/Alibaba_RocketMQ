@@ -18,13 +18,6 @@ except:
 
 
 class Iface:
-  def setProducerGroup(self, consumerGroup):
-    """
-    Parameters:
-     - consumerGroup
-    """
-    pass
-
   def send(self, message):
     """
     Parameters:
@@ -50,20 +43,6 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def setProducerGroup(self, consumerGroup):
-    """
-    Parameters:
-     - consumerGroup
-    """
-    self.send_setProducerGroup(consumerGroup)
-
-  def send_setProducerGroup(self, consumerGroup):
-    self._oprot.writeMessageBegin('setProducerGroup', TMessageType.ONEWAY, self._seqid)
-    args = setProducerGroup_args()
-    args.consumerGroup = consumerGroup
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
   def send(self, message):
     """
     Parameters:
@@ -136,7 +115,6 @@ class Processor(Iface, TProcessor):
   def __init__(self, handler):
     self._handler = handler
     self._processMap = {}
-    self._processMap["setProducerGroup"] = Processor.process_setProducerGroup
     self._processMap["send"] = Processor.process_send
     self._processMap["batchSend"] = Processor.process_batchSend
     self._processMap["stop"] = Processor.process_stop
@@ -155,13 +133,6 @@ class Processor(Iface, TProcessor):
     else:
       self._processMap[name](self, seqid, iprot, oprot)
     return True
-
-  def process_setProducerGroup(self, seqid, iprot, oprot):
-    args = setProducerGroup_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    self._handler.setProducerGroup(args.consumerGroup)
-    return
 
   def process_send(self, seqid, iprot, oprot):
     args = send_args()
@@ -194,71 +165,6 @@ class Processor(Iface, TProcessor):
 
 
 # HELPER FUNCTIONS AND STRUCTURES
-
-class setProducerGroup_args:
-  """
-  Attributes:
-   - consumerGroup
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'consumerGroup', None, None, ), # 1
-  )
-
-  def __init__(self, consumerGroup=None,):
-    self.consumerGroup = consumerGroup
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.consumerGroup = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('setProducerGroup_args')
-    if self.consumerGroup is not None:
-      oprot.writeFieldBegin('consumerGroup', TType.STRING, 1)
-      oprot.writeString(self.consumerGroup)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.consumerGroup)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
 
 class send_args:
   """
