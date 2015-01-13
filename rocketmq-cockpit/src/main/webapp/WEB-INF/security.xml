@@ -51,7 +51,4 @@
         <property name="rocketMQUserLoginService" ref="rocketMQUserLoginService" />
     </bean>
 
-    <bean id="loginController" class="com.ndpmedia.rocketmq.cockpit.controller.LoginController" >
-        <property name="rocketMQUserLoginService" ref="rocketMQUserLoginService" />
-    </bean>
 </beans>
