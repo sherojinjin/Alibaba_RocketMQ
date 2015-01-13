@@ -50,6 +50,8 @@ public class CacheableConsumer {
 
     private static final int MAXIMUM_POOL_SIZE_FOR_WORK_TASKS = 50;
 
+    private static final int DEFAULT_PULL_MESSAGE_BATCH_SIZE = 256;
+
     private int corePoolSizeForWorkTasks = CORE_POOL_SIZE_FOR_WORK_TASKS;
 
     private int maximumPoolSizeForWorkTasks = MAXIMUM_POOL_SIZE_FOR_WORK_TASKS;
@@ -84,6 +86,7 @@ public class CacheableConsumer {
             defaultMQPushConsumer.setInstanceName(getInstanceName());
             defaultMQPushConsumer.setMessageModel(messageModel);
             defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
+            defaultMQPushConsumer.setPullBatchSize(DEFAULT_PULL_MESSAGE_BATCH_SIZE);
             defaultMQPushConsumers.add(defaultMQPushConsumer);
         }
 
