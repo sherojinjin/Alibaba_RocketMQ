@@ -38,7 +38,7 @@ public class HelloHaServer {
             serverArgs.workerThreads(4);
 
             server = new THsHaServer(serverArgs);
-            LOGGER.info("Thrift Server starts. Port: " + PORT);
+            System.out.println("Thrift Server starts. Port: " + PORT);
             server.serve();
         } catch (TTransportException e) {
             e.printStackTrace();
