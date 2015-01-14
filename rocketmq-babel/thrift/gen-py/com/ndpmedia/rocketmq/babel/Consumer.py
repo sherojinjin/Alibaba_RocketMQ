@@ -34,7 +34,7 @@ class Client(Iface):
 
   def pull(self):
     self.send_pull()
-    self.recv_pull()
+    return self.recv_pull()
 
   def send_pull(self):
     self._oprot.writeMessageBegin('pull', TMessageType.CALL, self._seqid)
@@ -54,7 +54,9 @@ class Client(Iface):
     result = pull_result()
     result.read(iprot)
     iprot.readMessageEnd()
-    return
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "pull failed: unknown result");
 
   def stop(self):
     self.send_stop()
@@ -93,7 +95,7 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = pull_result()
-    self._handler.pull()
+    result.success = self._handler.pull()
     oprot.writeMessageBegin("pull", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -156,9 +158,17 @@ class pull_args:
     return not (self == other)
 
 class pull_result:
+  """
+  Attributes:
+   - success
+  """
 
   thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(MessageExt, MessageExt.thrift_spec)), None, ), # 0
   )
+
+  def __init__(self, success=None,):
+    self.success = success
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -169,6 +179,17 @@ class pull_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype12, _size9) = iprot.readListBegin()
+          for _i13 in xrange(_size9):
+            _elem14 = MessageExt()
+            _elem14.read(iprot)
+            self.success.append(_elem14)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -179,6 +200,13 @@ class pull_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('pull_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter15 in self.success:
+        iter15.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -188,6 +216,7 @@ class pull_result:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.success)
     return value
 
   def __repr__(self):

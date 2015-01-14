@@ -18,6 +18,7 @@ use Thrift\Exception\TApplicationException;
 
 interface ConsumerIf {
   /**
+   * @return \com\ndpmedia\rocketmq\babel\MessageExt[]
    */
   public function pull();
   /**
@@ -39,7 +40,7 @@ class ConsumerClient implements \com\ndpmedia\rocketmq\babel\ConsumerIf {
   public function pull()
   {
     $this->send_pull();
-    $this->recv_pull();
+    return $this->recv_pull();
   }
 
   public function send_pull()
@@ -80,7 +81,10 @@ class ConsumerClient implements \com\ndpmedia\rocketmq\babel\ConsumerIf {
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
-    return;
+    if ($result->success !== null) {
+      return $result->success;
+    }
+    throw new \Exception("pull failed: unknown result");
   }
 
   public function stop()
@@ -161,11 +165,29 @@ class Consumer_pull_args {
 class Consumer_pull_result {
   static $_TSPEC;
 
+  /**
+   * @var \com\ndpmedia\rocketmq\babel\MessageExt[]
+   */
+  public $success = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        0 => array(
+          'var' => 'success',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\com\ndpmedia\rocketmq\babel\MessageExt',
+            ),
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['success'])) {
+        $this->success = $vals['success'];
+      }
     }
   }
 
@@ -188,6 +210,24 @@ class Consumer_pull_result {
       }
       switch ($fid)
       {
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size9 = 0;
+            $_etype12 = 0;
+            $xfer += $input->readListBegin($_etype12, $_size9);
+            for ($_i13 = 0; $_i13 < $_size9; ++$_i13)
+            {
+              $elem14 = null;
+              $elem14 = new \com\ndpmedia\rocketmq\babel\MessageExt();
+              $xfer += $elem14->read($input);
+              $this->success []= $elem14;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -201,6 +241,23 @@ class Consumer_pull_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Consumer_pull_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter15)
+          {
+            $xfer += $iter15->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
