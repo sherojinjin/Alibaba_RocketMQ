@@ -13,26 +13,34 @@
     <security:http pattern="/img/**" security="none" />
     <security:http pattern="/rocketmq/**" security="none" />
 
-    <security:http auto-config="true">
+    <security:http auto-config="true" >
+        <security:custom-filter ref="rocketMQLoginFilter" before="FORM_LOGIN_FILTER" />
+        <security:intercept-url pattern="/cockpit/login.jsp" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+        <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
+        <security:form-login authentication-failure-handler-ref="rocketMQUserLoginFailedHandler"
+                             default-target-url="/cockpit/home.jsp"
+                             login-page="/cockpit/login.jsp" authentication-failure-url="/cockpit/login.jsp"/>
         <!-- Use the comment out line in production -->
         <!--
         <security:intercept-url pattern="/**" access="ROLE_ADMIN" requires-channel="https" />
         -->
-        <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
         <security:session-management>
             <security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false"  />
         </security:session-management>
     </security:http>
 
-
-
-    <security:authentication-manager>
-        <security:authentication-provider user-service-ref="userService">
+    <security:authentication-manager alias="myAuthenticationManager">
+        <security:authentication-provider  user-service-ref="userService">
             <security:password-encoder hash="md5">
                 <security:salt-source user-property="username"  />
             </security:password-encoder>
         </security:authentication-provider>
     </security:authentication-manager>
+
+    <bean id="rocketMQLoginFilter" class="com.ndpmedia.rocketmq.authentication.RocketMQLoginFilter" />
+    <bean id="userProvider" class="com.ndpmedia.rocketmq.authentication.RocketMQAuthenticationProvider" >
+        <property name="userDetailsService" ref="userService" />
+    </bean>
 
     <!--
             通过 RocketMQUserDetailsService,Spring会控制用户的访问级别.
@@ -40,6 +48,13 @@
          -->
     <bean id="userService" class="com.ndpmedia.rocketmq.authentication.RocketMQUserDetailsService" >
         <property name="cockpitDao" ref="cockpitDao" />
-        <property name="rocketMQUserLoginService" ref="rocketMQUserLoginService" />
+    </bean>
+
+    <bean id="rocketMQUserLoginFailedHandler"
+          class="com.ndpmedia.rocketmq.authentication.RocketMQUserLoginFailedHandler" >
+    </bean>
+
+    <bean id="loginController" class="com.ndpmedia.rocketmq.cockpit.controller.LoginController" >
+
     </bean>
 </beans>

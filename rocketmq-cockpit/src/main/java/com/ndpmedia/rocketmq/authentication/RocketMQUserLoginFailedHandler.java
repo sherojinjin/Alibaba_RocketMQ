@@ -13,31 +13,28 @@ import java.io.IOException;
  */
 public class RocketMQUserLoginFailedHandler extends SimpleUrlAuthenticationFailureHandler
 {
-    private RocketMQUserLoginService rocketMQUserLoginService;
-
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException exception) throws IOException, ServletException
     {
         String username = request.getParameter("j_username");
-        rocketMQUserLoginService.userRetryTimeAdd(username);
-        boolean status = rocketMQUserLoginService.findUserStatus(username);
+        int retryTime = 0;
+        try
+        {
+            retryTime = Integer.parseInt("" + request.getSession().getAttribute(username));
+        }
+        catch (Exception e)
+        {
 
-        if (!status)
+        }
+        System.out.println("login failed , this user [" + username + "] already retry " + retryTime);
+        request.getSession().setAttribute(username, retryTime + 1);
+        request.getSession().setAttribute("errorMSG", exception.getMessage());
+        if (retryTime >= 5)
         {
             exception.addSuppressed(new Exception(" the user : [" + username + "] is locked !"));
         }
-
+        this.setDefaultFailureUrl("/spring_security_login");
         super.onAuthenticationFailure(request, response, exception);
-    }
-
-    public RocketMQUserLoginService getRocketMQUserLoginService()
-    {
-        return rocketMQUserLoginService;
-    }
-
-    public void setRocketMQUserLoginService(RocketMQUserLoginService rocketMQUserLoginService)
-    {
-        this.rocketMQUserLoginService = rocketMQUserLoginService;
     }
 }
