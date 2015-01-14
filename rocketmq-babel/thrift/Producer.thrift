@@ -4,10 +4,10 @@ namespace cpp com.ndpmedia.rocketmq.babel
 namespace java com.ndpmedia.rocketmq.babel
 
 struct Message {
-   1: string topic,
-   2: i32 flag = 0,
-   3: map<string, string> properties,
-   4: binary data,
+   1: required string topic,
+   2: optional i32 flag = 0,
+   3: optional map<string, string> properties,
+   4: required binary data,
 }
 
 service Producer {
