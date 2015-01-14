@@ -23,7 +23,8 @@ struct MessageExt {
 }
 
 service Consumer {
-   void pull(),
+
+   list<MessageExt> pull(),
 
    oneway void stop()
 }

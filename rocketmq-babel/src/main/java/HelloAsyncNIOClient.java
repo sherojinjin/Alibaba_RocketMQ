@@ -6,7 +6,7 @@ import org.apache.thrift.transport.TNonblockingSocket;
 
 import java.io.IOException;
 
-public class HelloAsyncClient {
+public class HelloAsyncNIOClient {
     private static final int PORT = Integer.parseInt(System.getProperty("RocketMQProducerPort", "3210"));
     public static void main(String[] args) throws TException, IOException, InterruptedException {
         for (int i = 0; i < 65536; i++) {

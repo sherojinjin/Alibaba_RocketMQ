@@ -1,12 +1,11 @@
 package com.ndpmedia.rocketmq.babel;
 
 import com.alibaba.rocketmq.client.log.ClientLogger;
-import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TThreadedSelectorServer;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 
@@ -21,17 +20,14 @@ public class ProducerServer {
     public static void main(String[] args) throws IOException {
         TServer server = null;
         try {
-            TProtocolFactory protocolFactory = new TCompactProtocol.Factory();
+            TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
             Producer.Processor processor = new Producer.Processor<ProducerService>(new ProducerService());
-            TThreadedSelectorServer.Args serverArgs =
-                    new TThreadedSelectorServer.Args(new TNonblockingServerSocket(PORT))
-                            .transportFactory(new TFramedTransport.Factory())
+            TThreadPoolServer.Args serverArgs =
+                    new TThreadPoolServer.Args(new TServerSocket(PORT))
                             .protocolFactory(protocolFactory)
                             .processor(processor);
 
-            serverArgs.workerThreads(2);
-
-            server = new TThreadedSelectorServer(serverArgs);
+            server = new TThreadPoolServer(serverArgs);
             LOGGER.info("Thrift Server starts. Port: " + PORT);
             server.serve();
         } catch (TTransportException e) {

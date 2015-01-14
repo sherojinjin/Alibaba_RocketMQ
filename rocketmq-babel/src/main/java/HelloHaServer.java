@@ -35,7 +35,7 @@ public class HelloHaServer {
                             .protocolFactory(protocolFactory)
                             .processor(processor);
 
-            serverArgs.workerThreads(4);
+            serverArgs.workerThreads(2);
 
             server = new THsHaServer(serverArgs);
             System.out.println("Thrift Server starts. Port: " + PORT);

@@ -13,8 +13,9 @@ public class HelloClient {
         transport.open();
         TProtocol protocol = new TBinaryProtocol(transport);
         Hello.Client client = new Hello.Client(protocol);
-        for (int i = 0; i < 65536; i++) {
-            client.echo("Msg: " + i);
+        for (int i = 0; i < 10; i++) {
+            String msg = client.echo("Msg: " + i);
+            System.out.println(msg);
         }
         transport.close();
     }

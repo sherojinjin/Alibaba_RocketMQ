@@ -1,11 +1,10 @@
 package com.ndpmedia.rocketmq.babel;
 
 import com.alibaba.rocketmq.client.exception.MQClientException;
-import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TThreadedSelectorServer;
-import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TTransportException;
 
@@ -18,16 +17,14 @@ public class ConsumerServer {
         TServer server = null;
 
         try {
-            TProtocolFactory protocolFactory = new TCompactProtocol.Factory();
+            TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
             Consumer.AsyncProcessor processor = new Consumer.AsyncProcessor<ConsumerService>(new ConsumerService());
-            TThreadedSelectorServer.Args serverArgs =
-                    new TThreadedSelectorServer.Args(new TNonblockingServerSocket(PORT))
-                            .transportFactory(new TFramedTransport.Factory())
+            TThreadPoolServer.Args serverArgs =
+                    new TThreadPoolServer.Args(new TNonblockingServerSocket(PORT))
                             .protocolFactory(protocolFactory)
                             .processor(processor);
 
-            serverArgs.workerThreads(2);
-            server = new TThreadedSelectorServer(serverArgs);
+            server = new TThreadPoolServer(serverArgs);
             server.serve();
         } catch (TTransportException e) {
             e.printStackTrace();
