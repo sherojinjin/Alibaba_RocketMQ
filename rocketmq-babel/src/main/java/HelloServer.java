@@ -2,9 +2,9 @@ import com.alibaba.rocketmq.client.log.ClientLogger;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
-import org.apache.thrift.server.THsHaServer;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 
@@ -28,12 +28,12 @@ public class HelloServer {
                     return msg;
                 }
             });
-            THsHaServer.Args serverArgs =
-                    new THsHaServer.Args(new TNonblockingServerSocket(PORT))
+            TThreadPoolServer.Args serverArgs =
+                    new TThreadPoolServer.Args(new TServerSocket(PORT))
                             .protocolFactory(protocolFactory)
                             .processor(processor);
 
-            server = new THsHaServer(serverArgs);
+            server = new TThreadPoolServer(serverArgs);
             LOGGER.info("Thrift Server starts. Port: " + PORT);
             server.serve();
         } catch (TTransportException e) {
