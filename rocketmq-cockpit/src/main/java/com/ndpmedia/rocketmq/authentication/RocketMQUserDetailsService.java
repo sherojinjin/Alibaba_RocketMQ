@@ -5,8 +5,6 @@ import com.ndpmedia.rocketmq.cockpit.log.CockpitLogger;
 import org.slf4j.Logger;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,8 +21,6 @@ import java.util.Map;
 public class RocketMQUserDetailsService implements UserDetailsService
 {
     private CockpitDao cockpitDao;
-
-    private RocketMQUserLoginService rocketMQUserLoginService;
 
     private final Logger logger = CockpitLogger.getLogger();
 
@@ -51,12 +47,10 @@ public class RocketMQUserDetailsService implements UserDetailsService
         }
         catch (Exception e)
         {
-            rocketMQUserLoginService.userRetryTimeAdd(username);
             logger.error(" log faied !" + e.getMessage());
             throw new UsernameNotFoundException(" log faied !" + e.getMessage());
         }
 
-        rocketMQUserLoginService.logUserStatus(username);
         return user;
     }
 
@@ -92,13 +86,5 @@ public class RocketMQUserDetailsService implements UserDetailsService
         this.cockpitDao = cockpitDao;
     }
 
-    public RocketMQUserLoginService getRocketMQUserLoginService()
-    {
-        return rocketMQUserLoginService;
-    }
 
-    public void setRocketMQUserLoginService(RocketMQUserLoginService rocketMQUserLoginService)
-    {
-        this.rocketMQUserLoginService = rocketMQUserLoginService;
-    }
 }
