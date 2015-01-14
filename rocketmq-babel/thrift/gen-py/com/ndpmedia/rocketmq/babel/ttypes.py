@@ -109,6 +109,10 @@ class Message:
     oprot.writeStructEnd()
 
   def validate(self):
+    if self.topic is None:
+      raise TProtocol.TProtocolException(message='Required field topic is unset!')
+    if self.data is None:
+      raise TProtocol.TProtocolException(message='Required field data is unset!')
     return
 
 

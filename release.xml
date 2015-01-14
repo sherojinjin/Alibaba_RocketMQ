@@ -29,6 +29,7 @@
 				<include>com.alibaba.rocketmq:rocketmq-filtersrv</include>
 				<include>com.alibaba.rocketmq:rocketmq-example</include>
 				<include>com.alibaba.rocketmq:rocketmq-spring-adaptor</include>
+				<include>com.alibaba.rocketmq:rocketmq-babel</include>
 			</includes>
 			<binaries>
 				<outputDirectory>lib/</outputDirectory>
