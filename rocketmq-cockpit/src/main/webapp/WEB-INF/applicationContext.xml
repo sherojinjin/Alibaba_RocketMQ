@@ -9,10 +9,117 @@
                            http://www.springframework.org/schema/task/spring-task.xsd
                            http://www.springframework.org/schema/context
                            http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:property-placeholder location="classpath*:config.properties" />
     <context:component-scan base-package="com.ndpmedia.rocketmq.cockpit"/>
     <task:annotation-driven executor="myExecutor" scheduler="myScheduler"/>
     <task:executor id="myExecutor" pool-size="10" rejection-policy="CALLER_RUNS"/>
     <task:scheduler id="myScheduler" pool-size="1"/>
+
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="DriverClassName" value="${jdbc.driverClassName}" />
+        <!-- JDBC连接串 -->
+        <property name="url" value="${jdbc.url}" />
+        <!-- 数据库用户名称 -->
+        <property name="username" value="${jdbc.userName}" />
+        <!-- 数据库密码 -->
+        <property name="password" value="${jdbc.password}" />
+        <!-- 连接池最大使用连接数量 -->
+        <property name="maxActive" value="20" />
+        <!-- 初始化大小 -->
+        <property name="initialSize" value="5" />
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="60000" />
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="2" />
+        <!-- 逐出连接的检测时间间隔 -->
+        <property name="timeBetweenEvictionRunsMillis" value="3000" />
+        <!-- 最小逐出时间 -->
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+        <!-- 测试有效用的SQL Query -->
+        <property name="validationQuery" value="SELECT 1" />
+        <!-- 连接空闲时测试是否有效 -->
+        <property name="testWhileIdle" value="true" />
+        <!-- 获取连接时测试是否有效 -->
+        <property name="testOnBorrow" value="false" />
+        <!-- 归还连接时是否测试有效 -->
+        <property name="testOnReturn" value="false" />
+
+        <property name="filters" value="stat,log4j" />
+        <property name="proxyFilters">
+            <list>
+                <ref bean="statFilter" />
+            </list>
+        </property>
+    </bean>
+
+
+    <bean id="statFilter" class="com.alibaba.druid.filter.stat.StatFilter">
+        <property name="mergeSql" value="true" />
+        <property name="logSlowSql" value="true" />
+        <property name="slowSqlMillis" value="2000" />
+    </bean>
+
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="cockpitDao" class="com.ndpmedia.rocketmq.cockpit.connection.impl.CockpitDaoImpl">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="rocketMQUserLoginManager"
+          class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginManagerImpl">
+        <property name="cockpitDao" ref="cockpitDao" />
+    </bean>
+
+    <bean id="rocketMQUserLoginService" class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginServiceImpl">
+        <property name="rocketMQUserLoginManager" ref="rocketMQUserLoginManager" />
+    </bean>
+
+    <bean id="fileManager" class="com.ndpmedia.rocketmq.io.FileManager" />
+
+    <bean id="nameServerManager" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerManagerImpl">
+        <property name="cockpitDao" ref="cockpitDao" />
+    </bean>
+
+    <bean id="ipMappingManager" class="com.ndpmedia.rocketmq.ip.impl.IPMappingManagerImpl">
+        <property name="cockpitDao" ref="cockpitDao" />
+    </bean>
+
+    <bean id="topicManager" class="com.ndpmedia.rocketmq.topic.impl.TopicManagerImpl">
+
+    </bean>
+
+    <bean id="consumerManager" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerManagerImpl">
+
+    </bean>
+
+    <bean id="producerManager" class="com.ndpmedia.rocketmq.producer.impl.ProducerManagerImpl">
+
+    </bean>
+
+    <bean id="nameServerAddressBean" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerAddressServiceImpl">
+        <property name="nameServerManager" ref="nameServerManager" />
+    </bean>
+
+    <bean id="ipMappingBean" class="com.ndpmedia.rocketmq.ip.impl.IPMappingServiceImpl">
+        <property name="ipMappingManager" ref="ipMappingManager" />
+    </bean>
+
+    <bean id="topicBean" class="com.ndpmedia.rocketmq.topic.impl.TopicServiceImpl">
+        <property name="topicManager" ref="topicManager" />
+    </bean>
+
+    <bean id="consumerBean" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerServiceImpl">
+        <property name="consumerManager" ref="consumerManager" />
+    </bean>
+
+    <bean id="producerBean" class="com.ndpmedia.rocketmq.producer.impl.ProducerServiceImpl">
+        <property name="producerManager" ref="producerManager" />
+    </bean>
 
 
 </beans>

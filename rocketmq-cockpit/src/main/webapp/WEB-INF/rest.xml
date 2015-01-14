@@ -6,20 +6,16 @@
                            http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://cxf.apache.org/jaxrs
                            http://cxf.apache.org/schemas/jaxrs.xsd http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
-
-
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
-
 
     <bean id="mapper" class="org.codehaus.jackson.map.ObjectMapper">
         <property name="dateFormat">
             <bean class="java.text.SimpleDateFormat">
-                <constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss"></constructor-arg>
+                <constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss" />
             </bean>
         </property>
     </bean>
-
 
     <jaxrs:server id="nameServerAddress" address="/">
         <jaxrs:serviceBeans>
@@ -43,72 +39,4 @@
             <entry key="json" value="application/json" />
         </jaxrs:extensionMappings>
     </jaxrs:server>
-
-    <bean id="dataSource"
-          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
-        <property name="url" value="jdbc:mysql://172.30.50.54:3306/cockpit?useUnicode=true&amp;characterEncoding=UTF-8" />
-        <property name="username" value="root"></property>
-        <property name="password" value="passme"></property>
-    </bean>
-
-    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <property name="dataSource" ref="dataSource" />
-    </bean>
-
-    <bean id="cockpitDao" class="com.ndpmedia.rocketmq.cockpit.connection.impl.CockpitDaoImpl">
-        <property name="jdbcTemplate" ref="jdbcTemplate"/>
-        <property name="dataSource" ref="dataSource" />
-    </bean>
-
-    <bean id="rocketMQUserLoginManager"
-          class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginManagerImpl">
-        <property name="cockpitDao" ref="cockpitDao" />
-    </bean>
-
-    <bean id="rocketMQUserLoginService" class="com.ndpmedia.rocketmq.authentication.impl.RocketMQUserLoginServiceImpl">
-        <property name="rocketMQUserLoginManager" ref="rocketMQUserLoginManager" />
-    </bean>
-
-    <bean id="fileManager" class="com.ndpmedia.rocketmq.io.FileManager" />
-
-    <bean id="nameServerManager" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerManagerImpl">
-        <property name="cockpitDao" ref="cockpitDao" />
-    </bean>
-
-    <bean id="ipMappingManager" class="com.ndpmedia.rocketmq.ip.impl.IPMappingManagerImpl">
-        <property name="cockpitDao" ref="cockpitDao" />
-    </bean>
-
-    <bean id="topicManager" class="com.ndpmedia.rocketmq.topic.impl.TopicManagerImpl">
-
-    </bean>
-
-    <bean id="consumerManager" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerManagerImpl">
-
-    </bean>
-
-    <bean id="producerManager" class="com.ndpmedia.rocketmq.producer.impl.ProducerManagerImpl">
-
-    </bean>
-
-    <bean id="nameServerAddressBean" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerAddressServiceImpl">
-        <property name="nameServerManager" ref="nameServerManager" />
-    </bean>
-
-    <bean id="ipMappingBean" class="com.ndpmedia.rocketmq.ip.impl.IPMappingServiceImpl">
-        <property name="ipMappingManager" ref="ipMappingManager" />
-    </bean>
-
-    <bean id="topicBean" class="com.ndpmedia.rocketmq.topic.impl.TopicServiceImpl">
-        <property name="topicManager" ref="topicManager" />
-    </bean>
-
-    <bean id="consumerBean" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerServiceImpl">
-        <property name="consumerManager" ref="consumerManager" />
-    </bean>
-
-    <bean id="producerBean" class="com.ndpmedia.rocketmq.producer.impl.ProducerServiceImpl">
-        <property name="producerManager" ref="producerManager" />
-    </bean>
 </beans>

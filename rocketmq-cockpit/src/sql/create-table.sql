@@ -43,18 +43,18 @@ CREATE TABLE IF NOT EXISTS consumer_group (
   retry_max_times INT NOT NULL DEFAULT 3,
   retry_queue_num MEDIUMINT NOT NULL DEFAULT 3,
   consume_from_min_enable BOOL NOT NULL DEFAULT TRUE,
-  create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  create_time DATETIME NOT NULL DEFAULT 0,
   update_time DATETIME NOT NULL DEFAULT 0
 ) ENGINE = INNODB;
 
 CREATE TABLE IF NOT EXISTS cockpit_user (
   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  username VARCHAR(32),
-  password  VARCHAR(64)
+  username VARCHAR(32) NOT NULL ,
+  password  VARCHAR(64) NOT NULL
 ) ENGINE = INNODB;
 
 CREATE TABLE IF NOT EXISTS cockpit_user_login (
-  user_name VARCHAR(32),
+  user_name VARCHAR(32) NOT NULL ,
   login_status INT NOT NULL DEFAULT 1,
   retry INT NOT NULL DEFAULT 0,
   lock_time BIGINT NOT NULL DEFAULT 0

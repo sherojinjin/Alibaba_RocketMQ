@@ -23,8 +23,21 @@
         <ip.mapping.data.dir>${project.basedir}/ip_mapping/IP.dat</ip.mapping.data.dir>
     </properties>
 
-    <dependencies>
+    <profiles>
+        <profile>
+            <id>development</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <jdbc.url>jdbc:mysql://172.30.50.54:3306/cockpit?useUnicode=true&amp;characterEncoding=UTF-8</jdbc.url>
+                <jdbc.userName>root</jdbc.userName>
+                <jdbc.password>passme</jdbc.password>
+            </properties>
+        </profile>
+    </profiles>
 
+    <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -124,6 +137,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rocketmq-tools</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.0.9</version>
         </dependency>
     </dependencies>
 
