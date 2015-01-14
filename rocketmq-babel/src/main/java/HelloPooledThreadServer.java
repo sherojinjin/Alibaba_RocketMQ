@@ -1,6 +1,6 @@
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 
-public class HelloServer {
+public class HelloPooledThreadServer {
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
@@ -19,7 +19,7 @@ public class HelloServer {
     public static void main(String[] args) throws IOException {
         TServer server = null;
         try {
-            TProtocolFactory protocolFactory = new TCompactProtocol.Factory();
+            TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
             Hello.Processor processor = new Hello.Processor<Hello.Iface>(new Hello.Iface() {
 
                 @Override
