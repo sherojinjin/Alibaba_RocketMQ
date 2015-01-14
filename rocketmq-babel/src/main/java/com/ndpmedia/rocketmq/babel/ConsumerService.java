@@ -2,22 +2,26 @@ package com.ndpmedia.rocketmq.babel;
 
 import com.alibaba.rocketmq.client.consumer.cacheable.MessageHandler;
 import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import org.apache.thrift.TException;
-import org.apache.thrift.async.AsyncMethodCallback;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class ConsumerService implements Consumer.AsyncIface {
+public class ConsumerService implements Consumer.Iface {
 
+    private static final Logger LOGGER = ClientLogger.getLog();
+
+    private static final String CLASS_NAME = ConsumerService.class.getName();
+
+    private static final int DEFAULT_MESSAGE_BATCH_SIZE = 128;
+    private int messageBatchSize = DEFAULT_MESSAGE_BATCH_SIZE;
     private CustomCacheableConsumer consumer;
-
-    private String consumerGroup;
-
-    private LinkedBlockingQueue<MessageExt> messageQueue = new LinkedBlockingQueue<MessageExt>(500);
+    private LinkedBlockingQueue<MessageExt> messageQueue = new LinkedBlockingQueue<MessageExt>(1024);
 
     public ConsumerService() throws MQClientException, InterruptedException {
         Properties properties = Helper.getConfig();
@@ -45,18 +49,6 @@ public class ConsumerService implements Consumer.AsyncIface {
         consumer.start();
     }
 
-    @Override
-    public void pull(AsyncMethodCallback resultHandler) throws TException {
-
-        List<com.ndpmedia.rocketmq.babel.MessageExt> messageList = new ArrayList<com.ndpmedia.rocketmq.babel.MessageExt>();
-        MessageExt msg = messageQueue.poll();
-        while (null != msg) {
-            messageList.add(wrap(msg));
-            msg = messageQueue.poll();
-        }
-        resultHandler.onComplete(messageList);
-    }
-
     private com.ndpmedia.rocketmq.babel.MessageExt wrap(MessageExt msg) {
         com.ndpmedia.rocketmq.babel.MessageExt message = new com.ndpmedia.rocketmq.babel.MessageExt();
         message.setTopic(msg.getTopic());
@@ -78,8 +70,29 @@ public class ConsumerService implements Consumer.AsyncIface {
         return message;
     }
 
+    public LinkedBlockingQueue<MessageExt> getMessageQueue() {
+        return messageQueue;
+    }
+
     @Override
-    public void stop(AsyncMethodCallback resultHandler) throws TException {
+    public List<com.ndpmedia.rocketmq.babel.MessageExt> pull() throws TException {
+        List<com.ndpmedia.rocketmq.babel.MessageExt> messageList =
+                new ArrayList<com.ndpmedia.rocketmq.babel.MessageExt>(messageBatchSize);
+        MessageExt msg = messageQueue.poll();
+
+        int count = 0;
+        while (null != msg && count++ < messageBatchSize) {
+            messageList.add(wrap(msg));
+            msg = messageQueue.poll();
+        }
+
+        return messageList;
+    }
+
+    @Override
+    public void stop() throws TException {
+        final String signature = CLASS_NAME + "#stop()";
+        LOGGER.debug("Enter " + signature);
         try {
             consumer.stopReceiving();
 
@@ -90,12 +103,10 @@ public class ConsumerService implements Consumer.AsyncIface {
             }
             consumer.shutdown();
         } catch (InterruptedException e) {
-            resultHandler.onError(e);
+            LOGGER.error("Failed to stop", e);
+            throw new TException("Failed to stop", e);
         }
-    }
-
-    public LinkedBlockingQueue<MessageExt> getMessageQueue() {
-        return messageQueue;
+        LOGGER.debug("Exit " + signature);
     }
 }
 

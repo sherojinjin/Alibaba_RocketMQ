@@ -1,37 +1,40 @@
 package com.ndpmedia.rocketmq.babel;
 
 import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.client.log.ClientLogger;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
 
 public class ConsumerServer {
-
-    private static final int PORT = Integer.parseInt(System.getProperty("RocketMQConsumerPort", "3211"));
+    private static final Logger LOGGER = ClientLogger.getLog();
+    private static final int PORT = Integer.parseInt(System.getProperty("RocketMQConsumerPort", "10922"));
 
     public static void main(String[] args) {
-
         TServer server = null;
-
         try {
             TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
-            Consumer.AsyncProcessor processor = new Consumer.AsyncProcessor<ConsumerService>(new ConsumerService());
+            Consumer.Processor processor = new Consumer.Processor<ConsumerService>(new ConsumerService());
             TThreadPoolServer.Args serverArgs =
-                    new TThreadPoolServer.Args(new TNonblockingServerSocket(PORT))
+                    new TThreadPoolServer.Args(new TServerSocket(PORT))
                             .protocolFactory(protocolFactory)
                             .processor(processor);
-
             server = new TThreadPoolServer(serverArgs);
             server.serve();
         } catch (TTransportException e) {
-            e.printStackTrace();
+            LOGGER.error("Client Thrift Server got an error", e);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("Client Thrift Server got an error", e);
         } catch (MQClientException e) {
-            e.printStackTrace();
+            LOGGER.error("Client Thrift Server got an error", e);
+        } finally {
+            if (null != server) {
+                server.stop();
+            }
         }
     }
 

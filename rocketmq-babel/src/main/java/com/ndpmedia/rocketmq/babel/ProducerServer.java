@@ -12,10 +12,8 @@ import org.slf4j.Logger;
 import java.io.IOException;
 
 public class ProducerServer {
-
     private static final Logger LOGGER = ClientLogger.getLog();
-
-    private static final int PORT = Integer.parseInt(System.getProperty("RocketMQProducerPort", "3210"));
+    private static final int PORT = Integer.parseInt(System.getProperty("RocketMQProducerPort", "10921"));
 
     public static void main(String[] args) throws IOException {
         TServer server = null;
@@ -31,7 +29,11 @@ public class ProducerServer {
             LOGGER.info("Thrift Server starts. Port: " + PORT);
             server.serve();
         } catch (TTransportException e) {
-            e.printStackTrace();
+            LOGGER.error("Producer Thrift Server got an error", e);
+        }  finally {
+            if (null != server) {
+                server.stop();
+            }
         }
 
     }
