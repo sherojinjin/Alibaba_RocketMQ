@@ -1,15 +1,19 @@
 package com.ndpmedia.rocketmq.babel;
 
+import com.alibaba.rocketmq.client.log.ClientLogger;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 
 public class ProducerServer {
+
+    private static final Logger LOGGER = ClientLogger.getLog();
 
     private static final int PORT = Integer.parseInt(System.getProperty("RocketMQProducerPort", "3210"));
 
@@ -25,6 +29,7 @@ public class ProducerServer {
 
             server = new TThreadedSelectorServer(serverArgs);
             server.serve();
+            LOGGER.info("Thrift Server starts.");
         } catch (TTransportException e) {
             e.printStackTrace();
         }
