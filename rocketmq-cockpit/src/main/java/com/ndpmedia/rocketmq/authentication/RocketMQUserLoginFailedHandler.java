@@ -29,12 +29,11 @@ public class RocketMQUserLoginFailedHandler extends SimpleUrlAuthenticationFailu
         }
         System.out.println("login failed , this user [" + username + "] already retry " + retryTime);
         request.getSession().setAttribute(username, retryTime + 1);
-        request.getSession().setAttribute("errorMSG", exception.getMessage());
         if (retryTime >= 5)
         {
             exception.addSuppressed(new Exception(" the user : [" + username + "] is locked !"));
         }
-        this.setDefaultFailureUrl("/spring_security_login");
+        this.setDefaultFailureUrl("/cockpit/login");
         super.onAuthenticationFailure(request, response, exception);
     }
 }
