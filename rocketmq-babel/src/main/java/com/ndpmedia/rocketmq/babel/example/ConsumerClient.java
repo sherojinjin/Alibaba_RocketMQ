@@ -12,8 +12,9 @@ import java.io.IOException;
 import java.util.List;
 
 public class ConsumerClient {
+    private static final int PORT = Integer.parseInt(System.getProperty("RocketMQConsumerPort", "10922"));
     public static void main(String[] args) throws TException, IOException, InterruptedException {
-        TTransport transport = new TSocket("localhost", 3211);
+        TTransport transport = new TSocket("localhost", PORT);
         transport.open();
 
         TProtocol protocol = new TBinaryProtocol(transport);

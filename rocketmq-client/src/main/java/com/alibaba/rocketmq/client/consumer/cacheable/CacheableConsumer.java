@@ -36,7 +36,7 @@ public class CacheableConsumer {
 
     private static final String BASE_INSTANCE_NAME = "CacheableConsumer@";
 
-    private static final int NUMBER_OF_CONSUMER = 2;
+    private static final int NUMBER_OF_CONSUMER = 4;
 
     private List<DefaultMQPushConsumer> defaultMQPushConsumers = new ArrayList<DefaultMQPushConsumer>();
 

@@ -27,6 +27,7 @@ public class ProducerServer {
 
             server = new TThreadPoolServer(serverArgs);
             LOGGER.info("Thrift Server starts. Port: " + PORT);
+            System.out.println("Thrift Server starts. Port: " + PORT);
             server.serve();
         } catch (TTransportException e) {
             LOGGER.error("Producer Thrift Server got an error", e);
