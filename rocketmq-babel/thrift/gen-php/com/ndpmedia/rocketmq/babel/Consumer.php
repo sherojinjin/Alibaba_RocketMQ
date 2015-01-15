@@ -213,15 +213,15 @@ class Consumer_pull_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
-            $_size9 = 0;
-            $_etype12 = 0;
-            $xfer += $input->readListBegin($_etype12, $_size9);
-            for ($_i13 = 0; $_i13 < $_size9; ++$_i13)
+            $_size0 = 0;
+            $_etype3 = 0;
+            $xfer += $input->readListBegin($_etype3, $_size0);
+            for ($_i4 = 0; $_i4 < $_size0; ++$_i4)
             {
-              $elem14 = null;
-              $elem14 = new \com\ndpmedia\rocketmq\babel\MessageExt();
-              $xfer += $elem14->read($input);
-              $this->success []= $elem14;
+              $elem5 = null;
+              $elem5 = new \com\ndpmedia\rocketmq\babel\MessageExt();
+              $xfer += $elem5->read($input);
+              $this->success []= $elem5;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -249,9 +249,9 @@ class Consumer_pull_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
-          foreach ($this->success as $iter15)
+          foreach ($this->success as $iter6)
           {
-            $xfer += $iter15->write($output);
+            $xfer += $iter6->write($output);
           }
         }
         $output->writeListEnd();

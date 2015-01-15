@@ -20,9 +20,17 @@ public class ProducerClient {
             TProtocol protocol = new TBinaryProtocol(transport);
             Producer.Client client = new Producer.Client(protocol);
             Message message = new Message();
-            message.setTopic("T_QuickStart");
-            message.setData("Test".getBytes());
-            client.send(message);
+            message.setTopic("T_PARSER");
+            int i = 0;
+            while (true) {
+                message.setData(("Test" + i).getBytes());
+                System.out.println("producerClient send msg:"+"Test"+i);
+                client.send(message);
+                i++;
+                Thread.sleep(1000);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         } finally {
             if (null != transport) {
                 transport.close();

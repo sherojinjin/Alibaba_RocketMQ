@@ -174,7 +174,7 @@ class send_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRUCT, 'message', (Message, Message.thrift_spec), None, ), # 1
+    (1, TType.STRUCT, 'message', (com.ndpmedia.rocketmq.babel.ttypes.Message, com.ndpmedia.rocketmq.babel.ttypes.Message.thrift_spec), None, ), # 1
   )
 
   def __init__(self, message=None,):
@@ -191,7 +191,7 @@ class send_args:
         break
       if fid == 1:
         if ftype == TType.STRUCT:
-          self.message = Message()
+          self.message = com.ndpmedia.rocketmq.babel.ttypes.Message()
           self.message.read(iprot)
         else:
           iprot.skip(ftype)
@@ -286,7 +286,7 @@ class batchSend_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.LIST, 'messageList', (TType.STRUCT,(Message, Message.thrift_spec)), None, ), # 1
+    (1, TType.LIST, 'messageList', (TType.STRUCT,(com.ndpmedia.rocketmq.babel.ttypes.Message, com.ndpmedia.rocketmq.babel.ttypes.Message.thrift_spec)), None, ), # 1
   )
 
   def __init__(self, messageList=None,):
@@ -304,11 +304,11 @@ class batchSend_args:
       if fid == 1:
         if ftype == TType.LIST:
           self.messageList = []
-          (_etype12, _size9) = iprot.readListBegin()
-          for _i13 in xrange(_size9):
-            _elem14 = Message()
-            _elem14.read(iprot)
-            self.messageList.append(_elem14)
+          (_etype3, _size0) = iprot.readListBegin()
+          for _i4 in xrange(_size0):
+            _elem5 = com.ndpmedia.rocketmq.babel.ttypes.Message()
+            _elem5.read(iprot)
+            self.messageList.append(_elem5)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -325,8 +325,8 @@ class batchSend_args:
     if self.messageList is not None:
       oprot.writeFieldBegin('messageList', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.messageList))
-      for iter15 in self.messageList:
-        iter15.write(oprot)
+      for iter6 in self.messageList:
+        iter6.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
