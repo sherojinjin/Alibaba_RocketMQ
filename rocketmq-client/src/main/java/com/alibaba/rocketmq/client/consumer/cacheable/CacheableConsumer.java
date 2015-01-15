@@ -134,6 +134,19 @@ public class CacheableConsumer {
             throw new RuntimeException("Please at least configure one message handler to subscribe one topic");
         }
 
+        //We may have only one embedded consumer for broadcasting scenario.
+        if (MessageModel.BROADCASTING == messageModel) {
+
+            int i = 0;
+            DefaultMQPushConsumer defaultMQPushConsumer = defaultMQPushConsumers.get(i);
+            while (null == defaultMQPushConsumer) {
+                defaultMQPushConsumer = defaultMQPushConsumers.get(++i);
+            }
+
+            defaultMQPushConsumers.clear();
+            defaultMQPushConsumers.add(defaultMQPushConsumer);
+        }
+
         for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
             defaultMQPushConsumer.registerMessageListener(frontController);
             defaultMQPushConsumer.start();
