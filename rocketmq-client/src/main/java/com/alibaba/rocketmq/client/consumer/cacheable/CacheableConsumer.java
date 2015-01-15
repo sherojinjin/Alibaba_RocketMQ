@@ -42,7 +42,7 @@ public class CacheableConsumer {
 
     private boolean started;
 
-    private MessageModel messageModel = MessageModel.BROADCASTING;
+    private MessageModel messageModel = MessageModel.CLUSTERING;
 
     private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
 
