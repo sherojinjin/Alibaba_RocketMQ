@@ -53,16 +53,16 @@ public class IPMappingManagerImpl implements IPMappingManager
             String sql = " SELECT * FROM ip_mapping WHERE inner_ip = '" + privateIP + "'";
             IPRowMapper<IPPair> ipRowMapper = new IPRowMapper<IPPair>();
             list = cockpitDao.getBeanList(sql, ipRowMapper);
-            if (list != null)
+            if (list != null && !list.isEmpty())
             {
-                list.get(0).getPublicIP();
+                return list.get(0).getPublicIP();
             }
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
-        return null;
+        return "";
     }
 
     @Override
