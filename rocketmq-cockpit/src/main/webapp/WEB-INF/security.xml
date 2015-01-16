@@ -12,10 +12,12 @@
     <security:http pattern="/css/**" security="none" />
     <security:http pattern="/img/**" security="none" />
     <security:http pattern="/rocketmq/**" security="none" />
+    <security:http pattern="/**/captcha-image" security="none" />
 
     <security:http auto-config="true" >
         <security:custom-filter ref="rocketMQLoginFilter" before="FORM_LOGIN_FILTER" />
         <security:intercept-url pattern="/cockpit/login.jsp" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+        <security:intercept-url pattern="/cockpit/captcha-image.jsp" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
         <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
         <security:form-login authentication-failure-handler-ref="rocketMQUserLoginFailedHandler"
                              default-target-url="/cockpit/home.jsp"
@@ -39,10 +41,6 @@
     </security:authentication-manager>
 
     <bean id="rocketMQLoginFilter" class="com.ndpmedia.rocketmq.authentication.RocketMQLoginFilter" />
-    <bean id="userProvider" class="com.ndpmedia.rocketmq.authentication.RocketMQAuthenticationProvider" >
-        <property name="userDetailsService" ref="userService" />
-    </bean>
-
     <!--
             通过 RocketMQUserDetailsService,Spring会控制用户的访问级别.
             也可以理解成:以后我们和数据库操作就是通过RocketMQUserDetailsService来进行关联.

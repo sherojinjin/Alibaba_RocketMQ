@@ -3,11 +3,32 @@
 <html>
 <head>
 <title>Login Page</title>
+<script src="http://libs.baidu.com/jquery/1.7.0/jquery.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
 <%@include file="include/base-path.jsp"%>
     <base href="<%=basePath%>">
 <script type="text/javascript">
-    function refresh(obj) {
-
+    function check() {
+        var username = document.getElementById("j_username").value;
+        var password = document.getElementById("j_password").value;
+        var kaptcha = document.getElementById("kaptcha").value;
+        if(!username)
+        {
+            alert(" user name can not be null !");
+            return false;
+        }
+        if(!password)
+        {
+            alert(" password can not be null !");
+            return false;
+        }
+        if(!kaptcha)
+        {
+            alert(" kaptcha can not be null !");
+            return false;
+        }
+        return true;
     }
     </script>
 </head>
@@ -24,11 +45,27 @@ if (null != errMSG){
     msg = errSMSG.toString();
     }
 %>
- <table>
-    <tr><td colspan='2'><span style="color:red"><%=msg%></span></td></tr>
-    <tr><td>User:</td><td><input type='text' name='j_username' value=''></td></tr>
-    <tr><td>Password:</td><td><input type='password' name='j_password'/></td></tr>
-    <tr><td colspan='2'><input name="submit" type="submit" value="Login"/></td></tr>
-    
+ <table width="100%">
+    <tr><td colspan='2' width="100%" ><span style="color:red"><%=msg%></span></td></tr>
+    <tr><td width="20%">User:</td><td><input type='text' id="j_username" name='j_username' value=''></td></tr>
+    <tr><td width="20%">Password:</td><td><input type='password' id="j_password" name='j_password'/></td></tr>
+<tr><td colspan='2' width="100%">
+  <div class="chknumber">
+         <label>verification code：
+         <input name="kaptcha" type="text" id="kaptcha" maxlength="4" class="chknumber_input" />
+         </label>
+          <img src="/cockpit/captcha-image" width="55" height="20" id="kaptchaImage"  style="margin-bottom: -3px"/>
+         <script type="text/javascript">
+          $(function(){
+              $('#kaptchaImage').click(function () {//生成验证码
+               $(this).hide().attr('src', '/cockpit/captcha-image?' + Math.floor(Math.random()*100) ).fadeIn(); })
+
+                    });
+
+         </script>
+  </div>
+  </td></tr>
+    <tr><td colspan='2' width="100%" ><input name="submit" type="submit" value="Login" onclick="return check()
+    "/></td></tr>
   </table>
 </form></body></html>
