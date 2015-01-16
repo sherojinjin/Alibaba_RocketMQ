@@ -19,12 +19,14 @@ public class ConsumerClient {
 
         TProtocol protocol = new TBinaryProtocol(transport);
         Consumer.Client client = new Consumer.Client(protocol);
-
-        List<MessageExt> messageList = client.pull();
-        while (!messageList.isEmpty()) {
-            for (MessageExt msg : messageList) {
-                System.out.println(msg.getMsgId());
+        while(true) {
+            List<MessageExt> messageList = client.pull();
+            if (!messageList.isEmpty()) {
+                for (MessageExt msg : messageList) {
+                    System.out.println(msg.getMsgId());
+                }
             }
+            Thread.sleep(1000);
         }
     }
 }

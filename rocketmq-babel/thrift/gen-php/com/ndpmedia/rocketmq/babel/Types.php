@@ -17,6 +17,460 @@ use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
 
+class MessageExt {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $topic = null;
+  /**
+   * @var int
+   */
+  public $flag = 0;
+  /**
+   * @var array
+   */
+  public $properties = null;
+  /**
+   * @var string
+   */
+  public $data = null;
+  /**
+   * @var int
+   */
+  public $queueId = null;
+  /**
+   * @var int
+   */
+  public $storeSize = null;
+  /**
+   * @var int
+   */
+  public $queueOffset = null;
+  /**
+   * @var int
+   */
+  public $sysFlag = null;
+  /**
+   * @var int
+   */
+  public $bornTimestamp = null;
+  /**
+   * @var string
+   */
+  public $bornHost = null;
+  /**
+   * @var int
+   */
+  public $storeTimestamp = null;
+  /**
+   * @var string
+   */
+  public $storeHost = null;
+  /**
+   * @var string
+   */
+  public $msgId = null;
+  /**
+   * @var int
+   */
+  public $commitLogOffset = null;
+  /**
+   * @var int
+   */
+  public $bodyCRC = null;
+  /**
+   * @var int
+   */
+  public $reconsumeTimes = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'topic',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'flag',
+          'type' => TType::I32,
+          ),
+        3 => array(
+          'var' => 'properties',
+          'type' => TType::MAP,
+          'ktype' => TType::STRING,
+          'vtype' => TType::STRING,
+          'key' => array(
+            'type' => TType::STRING,
+          ),
+          'val' => array(
+            'type' => TType::STRING,
+            ),
+          ),
+        4 => array(
+          'var' => 'data',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'queueId',
+          'type' => TType::I32,
+          ),
+        6 => array(
+          'var' => 'storeSize',
+          'type' => TType::I32,
+          ),
+        7 => array(
+          'var' => 'queueOffset',
+          'type' => TType::I64,
+          ),
+        8 => array(
+          'var' => 'sysFlag',
+          'type' => TType::I32,
+          ),
+        9 => array(
+          'var' => 'bornTimestamp',
+          'type' => TType::I64,
+          ),
+        10 => array(
+          'var' => 'bornHost',
+          'type' => TType::STRING,
+          ),
+        11 => array(
+          'var' => 'storeTimestamp',
+          'type' => TType::I64,
+          ),
+        12 => array(
+          'var' => 'storeHost',
+          'type' => TType::STRING,
+          ),
+        13 => array(
+          'var' => 'msgId',
+          'type' => TType::STRING,
+          ),
+        14 => array(
+          'var' => 'commitLogOffset',
+          'type' => TType::I64,
+          ),
+        15 => array(
+          'var' => 'bodyCRC',
+          'type' => TType::I64,
+          ),
+        16 => array(
+          'var' => 'reconsumeTimes',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['topic'])) {
+        $this->topic = $vals['topic'];
+      }
+      if (isset($vals['flag'])) {
+        $this->flag = $vals['flag'];
+      }
+      if (isset($vals['properties'])) {
+        $this->properties = $vals['properties'];
+      }
+      if (isset($vals['data'])) {
+        $this->data = $vals['data'];
+      }
+      if (isset($vals['queueId'])) {
+        $this->queueId = $vals['queueId'];
+      }
+      if (isset($vals['storeSize'])) {
+        $this->storeSize = $vals['storeSize'];
+      }
+      if (isset($vals['queueOffset'])) {
+        $this->queueOffset = $vals['queueOffset'];
+      }
+      if (isset($vals['sysFlag'])) {
+        $this->sysFlag = $vals['sysFlag'];
+      }
+      if (isset($vals['bornTimestamp'])) {
+        $this->bornTimestamp = $vals['bornTimestamp'];
+      }
+      if (isset($vals['bornHost'])) {
+        $this->bornHost = $vals['bornHost'];
+      }
+      if (isset($vals['storeTimestamp'])) {
+        $this->storeTimestamp = $vals['storeTimestamp'];
+      }
+      if (isset($vals['storeHost'])) {
+        $this->storeHost = $vals['storeHost'];
+      }
+      if (isset($vals['msgId'])) {
+        $this->msgId = $vals['msgId'];
+      }
+      if (isset($vals['commitLogOffset'])) {
+        $this->commitLogOffset = $vals['commitLogOffset'];
+      }
+      if (isset($vals['bodyCRC'])) {
+        $this->bodyCRC = $vals['bodyCRC'];
+      }
+      if (isset($vals['reconsumeTimes'])) {
+        $this->reconsumeTimes = $vals['reconsumeTimes'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'MessageExt';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->topic);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->flag);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::MAP) {
+            $this->properties = array();
+            $_size0 = 0;
+            $_ktype1 = 0;
+            $_vtype2 = 0;
+            $xfer += $input->readMapBegin($_ktype1, $_vtype2, $_size0);
+            for ($_i4 = 0; $_i4 < $_size0; ++$_i4)
+            {
+              $key5 = '';
+              $val6 = '';
+              $xfer += $input->readString($key5);
+              $xfer += $input->readString($val6);
+              $this->properties[$key5] = $val6;
+            }
+            $xfer += $input->readMapEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->data);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->queueId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->storeSize);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->queueOffset);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->sysFlag);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 9:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->bornTimestamp);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 10:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->bornHost);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 11:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->storeTimestamp);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 12:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->storeHost);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 13:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->msgId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 14:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->commitLogOffset);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 15:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->bodyCRC);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 16:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->reconsumeTimes);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('MessageExt');
+    if ($this->topic !== null) {
+      $xfer += $output->writeFieldBegin('topic', TType::STRING, 1);
+      $xfer += $output->writeString($this->topic);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->flag !== null) {
+      $xfer += $output->writeFieldBegin('flag', TType::I32, 2);
+      $xfer += $output->writeI32($this->flag);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->properties !== null) {
+      if (!is_array($this->properties)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('properties', TType::MAP, 3);
+      {
+        $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
+        {
+          foreach ($this->properties as $kiter7 => $viter8)
+          {
+            $xfer += $output->writeString($kiter7);
+            $xfer += $output->writeString($viter8);
+          }
+        }
+        $output->writeMapEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->data !== null) {
+      $xfer += $output->writeFieldBegin('data', TType::STRING, 4);
+      $xfer += $output->writeString($this->data);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->queueId !== null) {
+      $xfer += $output->writeFieldBegin('queueId', TType::I32, 5);
+      $xfer += $output->writeI32($this->queueId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->storeSize !== null) {
+      $xfer += $output->writeFieldBegin('storeSize', TType::I32, 6);
+      $xfer += $output->writeI32($this->storeSize);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->queueOffset !== null) {
+      $xfer += $output->writeFieldBegin('queueOffset', TType::I64, 7);
+      $xfer += $output->writeI64($this->queueOffset);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->sysFlag !== null) {
+      $xfer += $output->writeFieldBegin('sysFlag', TType::I32, 8);
+      $xfer += $output->writeI32($this->sysFlag);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->bornTimestamp !== null) {
+      $xfer += $output->writeFieldBegin('bornTimestamp', TType::I64, 9);
+      $xfer += $output->writeI64($this->bornTimestamp);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->bornHost !== null) {
+      $xfer += $output->writeFieldBegin('bornHost', TType::STRING, 10);
+      $xfer += $output->writeString($this->bornHost);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->storeTimestamp !== null) {
+      $xfer += $output->writeFieldBegin('storeTimestamp', TType::I64, 11);
+      $xfer += $output->writeI64($this->storeTimestamp);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->storeHost !== null) {
+      $xfer += $output->writeFieldBegin('storeHost', TType::STRING, 12);
+      $xfer += $output->writeString($this->storeHost);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->msgId !== null) {
+      $xfer += $output->writeFieldBegin('msgId', TType::STRING, 13);
+      $xfer += $output->writeString($this->msgId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->commitLogOffset !== null) {
+      $xfer += $output->writeFieldBegin('commitLogOffset', TType::I64, 14);
+      $xfer += $output->writeI64($this->commitLogOffset);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->bodyCRC !== null) {
+      $xfer += $output->writeFieldBegin('bodyCRC', TType::I64, 15);
+      $xfer += $output->writeI64($this->bodyCRC);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->reconsumeTimes !== null) {
+      $xfer += $output->writeFieldBegin('reconsumeTimes', TType::I32, 16);
+      $xfer += $output->writeI32($this->reconsumeTimes);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class Message {
   static $_TSPEC;
 
@@ -118,17 +572,17 @@ class Message {
         case 3:
           if ($ftype == TType::MAP) {
             $this->properties = array();
-            $_size0 = 0;
-            $_ktype1 = 0;
-            $_vtype2 = 0;
-            $xfer += $input->readMapBegin($_ktype1, $_vtype2, $_size0);
-            for ($_i4 = 0; $_i4 < $_size0; ++$_i4)
+            $_size9 = 0;
+            $_ktype10 = 0;
+            $_vtype11 = 0;
+            $xfer += $input->readMapBegin($_ktype10, $_vtype11, $_size9);
+            for ($_i13 = 0; $_i13 < $_size9; ++$_i13)
             {
-              $key5 = '';
-              $val6 = '';
-              $xfer += $input->readString($key5);
-              $xfer += $input->readString($val6);
-              $this->properties[$key5] = $val6;
+              $key14 = '';
+              $val15 = '';
+              $xfer += $input->readString($key14);
+              $xfer += $input->readString($val15);
+              $this->properties[$key14] = $val15;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -173,10 +627,10 @@ class Message {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
         {
-          foreach ($this->properties as $kiter7 => $viter8)
+          foreach ($this->properties as $kiter16 => $viter17)
           {
-            $xfer += $output->writeString($kiter7);
-            $xfer += $output->writeString($viter8);
+            $xfer += $output->writeString($kiter16);
+            $xfer += $output->writeString($viter17);
           }
         }
         $output->writeMapEnd();

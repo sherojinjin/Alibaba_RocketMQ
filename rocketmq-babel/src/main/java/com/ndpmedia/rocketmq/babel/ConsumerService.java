@@ -4,6 +4,7 @@ import com.alibaba.rocketmq.client.consumer.cacheable.MessageHandler;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 
@@ -29,8 +30,10 @@ public class ConsumerService implements Consumer.Iface {
         String topicInfo = properties.getProperty("topic_info");
         consumer = new CustomCacheableConsumer(consumerGroup);
 
-        if(!"cluster".equals(properties.getProperty("message_model"))) {
-            consumer.setMessageModel(com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel.BROADCASTING);
+        if("cluster".equals(properties.getProperty("message_model"))) {
+            consumer.setMessageModel(MessageModel.CLUSTERING);
+        } else {
+            consumer.setMessageModel(MessageModel.BROADCASTING);
         }
 
         String[] topicList = topicInfo.split(";");

@@ -164,7 +164,7 @@ class pull_result:
   """
 
   thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(MessageExt, MessageExt.thrift_spec)), None, ), # 0
+    (0, TType.LIST, 'success', (TType.STRUCT,(com.ndpmedia.rocketmq.babel.ttypes.MessageExt, com.ndpmedia.rocketmq.babel.ttypes.MessageExt.thrift_spec)), None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -182,11 +182,11 @@ class pull_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype12, _size9) = iprot.readListBegin()
-          for _i13 in xrange(_size9):
-            _elem14 = MessageExt()
-            _elem14.read(iprot)
-            self.success.append(_elem14)
+          (_etype3, _size0) = iprot.readListBegin()
+          for _i4 in xrange(_size0):
+            _elem5 = com.ndpmedia.rocketmq.babel.ttypes.MessageExt()
+            _elem5.read(iprot)
+            self.success.append(_elem5)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -203,8 +203,8 @@ class pull_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter15 in self.success:
-        iter15.write(oprot)
+      for iter6 in self.success:
+        iter6.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

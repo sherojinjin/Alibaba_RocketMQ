@@ -42,7 +42,7 @@ public class CacheableConsumer {
 
     private boolean started;
 
-    private MessageModel messageModel = MessageModel.BROADCASTING;
+    private MessageModel messageModel = MessageModel.CLUSTERING;
 
     private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
 
@@ -132,6 +132,19 @@ public class CacheableConsumer {
     public void start() throws InterruptedException, MQClientException {
         if (topicHandlerMap.isEmpty()) {
             throw new RuntimeException("Please at least configure one message handler to subscribe one topic");
+        }
+
+        //We may have only one embedded consumer for broadcasting scenario.
+        if (MessageModel.BROADCASTING == messageModel) {
+
+            int i = 0;
+            DefaultMQPushConsumer defaultMQPushConsumer = defaultMQPushConsumers.get(i);
+            while (null == defaultMQPushConsumer) {
+                defaultMQPushConsumer = defaultMQPushConsumers.get(++i);
+            }
+
+            defaultMQPushConsumers.clear();
+            defaultMQPushConsumers.add(defaultMQPushConsumer);
         }
 
         for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
