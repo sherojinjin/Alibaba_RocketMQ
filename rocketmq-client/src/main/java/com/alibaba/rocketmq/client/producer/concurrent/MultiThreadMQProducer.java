@@ -62,6 +62,8 @@ public class MultiThreadMQProducer {
 
     private MessageSender messageSender;
 
+    private volatile long waitResponseTimeoutCounter = 0;
+
     public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) throws IOException {
         if (null == configuration) {
             throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
@@ -231,7 +233,14 @@ public class MultiThreadMQProducer {
     }
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
-        LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
+        } else if (e instanceof MQClientException && e.getMessage().contains("timeout")) {
+            waitResponseTimeoutCounter++;
+            if (waitResponseTimeoutCounter % 1000 == 0) {
+                LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
+            }
+        }
 
         //Release assigned token.
         semaphore.release();
@@ -383,7 +392,7 @@ public class MultiThreadMQProducer {
                     message = messageQueue.take();
                     int loopRemain = (int)((roundRobinCounter++) % NUMBER_OF_EMBEDDED_PRODUCERS);
                     defaultMQProducers.get(loopRemain).send(message, messageQueueSelectors.get(loopRemain), null,
-                                    new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, message));
+                            new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, message));
                 } catch (Exception e) {
                     if (null != message) {
                         handleSendMessageFailure(message, e);
