@@ -41,7 +41,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
-    private static final int MESSAGES_PER_FILE = 10;
+    private static final int MESSAGES_PER_FILE = 100000;
 
     private final AtomicLong writeIndex = new AtomicLong(0L);
     private final AtomicLong writeOffSet = new AtomicLong(0L);
@@ -272,7 +272,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         .get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
 
                 if (null == lastWrittenFileName && writeIndex.longValue() % MESSAGES_PER_FILE != 0) {
-                    throw new RuntimeException("Data corrupted");
+                    throw new RuntimeException("The file being written to is missing");
                 }
 
                 if (null != lastWrittenFileName) {
@@ -382,8 +382,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private void recoverWriteAheadData(File dataFile) throws IOException {
         RandomAccessFile randomAccessFile = new RandomAccessFile(dataFile, "r");
+        int recoveredMessageNumber = 0;
         try {
-            int recoveredMessageNumber = 0;
             while (recoveredMessageNumber++ < MESSAGES_PER_FILE) {
                 if (writeOffSet.longValue() + 4 + 4 > randomAccessFile.length()) {
                     break;
@@ -417,6 +417,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
         } finally {
             randomAccessFile.close();
+            LOGGER.warn("Recovered " + recoveredMessageNumber + " messages.");
         }
     }
 
