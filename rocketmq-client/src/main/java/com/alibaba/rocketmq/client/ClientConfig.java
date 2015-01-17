@@ -19,6 +19,8 @@ import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.UtilAll;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * Producer与Consumer的公共配置
@@ -36,6 +38,8 @@ public class ClientConfig {
     private int heartbeatBrokerInterval = 1000 * 30;
     private int persistConsumerOffsetInterval = 1000 * 5;
 
+    private static final AtomicInteger INSTANCE_COUNTER = new AtomicInteger(0);
+
 
     public String buildMQClientId() {
         StringBuilder sb = new StringBuilder();
@@ -50,7 +54,7 @@ public class ClientConfig {
 
     public void changeInstanceNameToPID() {
         if (this.instanceName.equals("DEFAULT")) {
-            this.instanceName = String.valueOf(UtilAll.getPid());
+            this.instanceName = String.valueOf(UtilAll.getPid()) + "_" + INSTANCE_COUNTER.incrementAndGet();
         }
     }
 

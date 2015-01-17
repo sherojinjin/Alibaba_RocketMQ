@@ -171,6 +171,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
      */
     private void init(boolean needToRecoverData) throws IOException {
         configFile = new File(localMessageStoreDirectory, CONFIG_FILE_NAME);
+        String[] dataFiles = getMessageDataFiles();
         if (configFile.exists() && configFile.canRead()) {
             InputStream inputStream = null;
             try {
@@ -187,7 +188,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 readOffSet.set(null == properties.getProperty("readOffSet") ? 0L :
                         Long.parseLong(properties.getProperty("readOffSet")));
 
-                String[] dataFiles = getMessageDataFiles();
                 for (String dataFile : dataFiles) {
                     messageStoreNameFileMapping.putIfAbsent(Long.parseLong(dataFile),
                             new File(localMessageStoreDirectory, dataFile));
@@ -208,28 +208,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
                     long minMessageFileName = 0;
                     long maxMessageFileName = 0;
-
                     if (dataFiles.length > 0) {
                         minMessageFileName = Long.parseLong(dataFiles[0]);
                         maxMessageFileName = Long.parseLong(dataFiles[dataFiles.length - 1]);
-                    }
-
-                    //Remove possibly existing deprecated message data files.
-                    for (String dataFile : dataFiles) {
-                        long dataFileLong = Long.parseLong(dataFile);
-                        if (dataFileLong < readIndexLong - MESSAGES_PER_FILE) {
-                            File messageDataFile = new File(localMessageStoreDirectory, dataFile);
-                            if (!messageDataFile.delete()) {
-                                LOGGER.error("Failed to delete deprecated message data file: {}",
-                                        messageDataFile.getCanonicalPath());
-                                throw new IOException("Failed to delete file: " + messageDataFile.getAbsoluteFile());
-                            } else {
-                                minMessageFileName += MESSAGES_PER_FILE;
-                                messageStoreNameFileMapping.remove(dataFileLong);
-                            }
-                        } else {
-                            break;
-                        }
                     }
 
                     //Fix possible discrepancies.
@@ -293,7 +274,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         } else {
             LOGGER.info("Begin to recover data as there is no configuration file");
             //There is no configuration file.
-            String[] dataFiles = getMessageDataFiles();
             if (!isMessageDataContinuous(dataFiles)) {
                 throw new RuntimeException("Message data files are corrupted and unable to recover automatically");
             }
@@ -312,6 +292,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                             new File(localMessageStoreDirectory, dataFile));
                 }
             }
+            updateConfig();
 
             if (isLastShutdownAbort()) {
                 deleteAbortFile();
@@ -319,6 +300,29 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
             LOGGER.info("Data recovery completes.");
         }
+
+        cleanDeprecatedData();
+    }
+
+    private void cleanDeprecatedData() throws IOException {
+        String[] dataFiles = getMessageDataFiles();
+        //Remove possibly existing deprecated message data files.
+        LOGGER.info("Start cleaning deprecated message data files.");
+        for (String dataFile : dataFiles) {
+            long dataFileLong = Long.parseLong(dataFile);
+            if (dataFileLong < readIndex.longValue() - MESSAGES_PER_FILE) {
+                File messageDataFile = new File(localMessageStoreDirectory, dataFile);
+                if (messageDataFile.delete()) {
+                    messageStoreNameFileMapping.remove(dataFileLong);
+                } else {
+                    LOGGER.error("Failed to delete deprecated message data file: {}", messageDataFile.getCanonicalPath());
+                    throw new IOException("Failed to delete file: " + messageDataFile.getAbsoluteFile());
+                }
+            } else {
+                break;
+            }
+        }
+        LOGGER.info("Completion of cleaning deprecated message data files.");
     }
 
     private String[] getMessageDataFiles() {
