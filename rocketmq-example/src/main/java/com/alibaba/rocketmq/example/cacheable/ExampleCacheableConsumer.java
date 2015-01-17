@@ -7,6 +7,7 @@ import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -43,7 +44,7 @@ public class ExampleCacheableConsumer {
         }
     }
 
-    public static void main(String[] args) throws MQClientException, InterruptedException {
+    public static void main(String[] args) throws MQClientException, InterruptedException, IOException {
         CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_QuickStart");
 
         MessageHandler exampleMessageHandler = new ExampleMessageHandler(System.currentTimeMillis());

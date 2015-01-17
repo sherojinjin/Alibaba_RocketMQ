@@ -1,8 +1,10 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
 import com.alibaba.rocketmq.common.message.Message;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -14,7 +16,12 @@ public class DefaultLocalMessageStoreTest {
 
     private boolean stop = false;
 
-    private static DefaultLocalMessageStore defaultLocalMessageStore = new DefaultLocalMessageStore("PG_Test");
+    private static DefaultLocalMessageStore defaultLocalMessageStore;
+
+    @BeforeClass
+    public static void init() throws IOException {
+        defaultLocalMessageStore = new DefaultLocalMessageStore("PG_Test");
+    }
 
     @Test
     public void testStash() throws InterruptedException {
@@ -50,12 +57,13 @@ public class DefaultLocalMessageStoreTest {
 
     @Test
     public void testStressStash() throws InterruptedException {
-        int number = 8;
-        ExecutorService service = Executors.newFixedThreadPool(number);
-        final CountDownLatch l = new CountDownLatch(number);
+        int numberOfStashingThread = 80;
+        int numberOfPoppingThread = 1;
+        ExecutorService service = Executors.newFixedThreadPool(numberOfPoppingThread + numberOfStashingThread);
+        final CountDownLatch l = new CountDownLatch(numberOfPoppingThread + numberOfStashingThread);
         final Random random = new Random();
 
-        for (int i = 0; i < number - 2; i++) {
+        for (int i = 0; i < numberOfStashingThread; i++) {
             service.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -69,13 +77,15 @@ public class DefaultLocalMessageStoreTest {
                     try {
                         while (!stop) {
                             if (random.nextBoolean()) {
-                                Thread.sleep(100);
+                                Thread.sleep(10);
                             } else {
-                                for (int i = 0; i < random.nextInt(50); i++) {
+                                int n = 1; // random.nextInt(10);
+                                for (int i = 0; i < n; i++) {
                                     byte[] bs = new byte[1024];
                                     Arrays.fill(bs, (byte) 'a');
                                     defaultLocalMessageStore.stash(new Message("Topic", bs));
                                 }
+                                System.out.println( Thread.currentThread().getName() + ": " + n + " message(s) stashed");
                             }
                         }
                     } catch (InterruptedException e) {
@@ -86,7 +96,7 @@ public class DefaultLocalMessageStoreTest {
             });
         }
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < numberOfPoppingThread; i++) {
             service.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -102,14 +112,14 @@ public class DefaultLocalMessageStoreTest {
                     while (!stop) {
                         Message[] messages = defaultLocalMessageStore.pop(200);
                         if (messages == null || messages.length == 0) {
-                            if (++badLoop > 100) {
+                            if (++badLoop > 10) {
                                 System.out.println("Too many bad loops, going to exit.");
                                 stop = true;
                                 break;
                             }
                             try {
-                                System.out.println("Empty loop. Going to sleep 1000ms.");
-                                Thread.sleep(1000);
+                                System.out.println("Empty loop. Going to sleep 6000ms.");
+                                Thread.sleep(6000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -126,49 +136,6 @@ public class DefaultLocalMessageStoreTest {
 
         service.shutdown();
         service.awaitTermination(1, TimeUnit.MINUTES);
-        defaultLocalMessageStore.close();
-    }
-
-
-    @Test
-    public void testStash2() throws InterruptedException {
-        int number = 200;
-        ExecutorService service = Executors.newFixedThreadPool(number);
-        final CountDownLatch l = new CountDownLatch(number);
-        final Random r = new Random();
-        for (int i = 0; i < number; i++) {
-            service.execute(new Runnable() {
-
-                @Override
-                public void run() {
-                    l.countDown();
-                    try {
-                        l.await();
-                    } catch (InterruptedException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-                    while (true) {
-                        try {
-                            for (int i = 0; i < 3000; i++) {
-                                byte[] bs = new byte[1024];
-                                Arrays.fill(bs, (byte) 'a');
-                                defaultLocalMessageStore.stash(new Message("Topic", bs));
-                            }
-
-                            Thread.sleep((long) (10 * r.nextFloat()));
-                        } catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-
-
-                }
-
-            });
-        }
-        Thread.sleep(99999999);
         defaultLocalMessageStore.close();
     }
 }

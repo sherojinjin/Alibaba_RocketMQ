@@ -3,11 +3,19 @@ package com.alibaba.rocketmq.client.consumer.cacheable;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
 
 public class CacheableConsumerTest {
 
-    CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_QuickStart");
+    private static  CacheableConsumer cacheableConsumer;
+
+    @BeforeClass
+    public static void init() throws IOException {
+        cacheableConsumer = new CacheableConsumer("CG_QuickStart");
+    }
 
     @Test
     public void testCacheable() throws Exception {
@@ -20,13 +28,11 @@ public class CacheableConsumerTest {
                 return 5000;
             }
         };
+
         messageHandler.setTopic("T_QuickStart");
         cacheableConsumer.registerMessageHandler(messageHandler);
         cacheableConsumer.start();
-
         Thread.sleep(1000*60*50);
-
-
     }
 
 }

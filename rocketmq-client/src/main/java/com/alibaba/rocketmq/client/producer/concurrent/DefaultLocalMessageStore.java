@@ -20,7 +20,6 @@ import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -42,7 +41,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
-    private static final int MESSAGES_PER_FILE = 1000000;
+    private static final int MESSAGES_PER_FILE = 10;
 
     private final AtomicLong writeIndex = new AtomicLong(0L);
     private final AtomicLong writeOffSet = new AtomicLong(0L);
@@ -86,7 +85,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final String ACCESS_FILE_MODE = "rws";
 
-    public DefaultLocalMessageStore(String storeName) {
+    public DefaultLocalMessageStore(String storeName) throws IOException {
         //For convenience of development.
         if (DEFAULT_STORE_LOCATION.equals(storeLocation)) {
             File defaultStoreLocation = new File(DEFAULT_STORE_LOCATION);
@@ -133,7 +132,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     flush();
                 }
             }
-        }, 5000, 1000 * 5, TimeUnit.MILLISECONDS);
+        }, 1000 * 3, 1000 * 3, TimeUnit.MILLISECONDS);
 
         ready = true;
 
@@ -141,6 +140,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             createAbortFile();
         } catch (IOException e) {
             LOGGER.error("Failed to create abort file.", e);
+            throw e;
         }
 
         LOGGER.info("Local Message store starts to operate.");
@@ -176,7 +176,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     /**
      * This method will execute on startup.
      */
-    private void init(boolean needToRecoverData) {
+    private void init(boolean needToRecoverData) throws IOException {
         configFile = new File(localMessageStoreDirectory, CONFIG_FILE_NAME);
         if (configFile.exists() && configFile.canRead()) {
             InputStream inputStream = null;
@@ -194,28 +194,27 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 readOffSet.set(null == properties.getProperty("readOffSet") ? 0L :
                         Long.parseLong(properties.getProperty("readOffSet")));
 
-                String[] dataFiles = localMessageStoreDirectory.list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        return name.matches("\\d+");
-                    }
-                });
-
-                Arrays.sort(dataFiles, new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        return Long.parseLong(o1) < Long.parseLong(o2) ? -1 : 1;
-                    }
-                });
-
+                String[] dataFiles = getMessageDataFiles();
                 for (String dataFile : dataFiles) {
                     messageStoreNameFileMapping.putIfAbsent(Long.parseLong(dataFile),
                             new File(localMessageStoreDirectory, dataFile));
                 }
 
+                if (!isMessageDataComplete(dataFiles)) {
+                    throw new RuntimeException("Message data files are corrupted and unable to recover automatically");
+                }
+
                 if (needToRecoverData) {
                     long readIndexLong = readIndex.longValue();
                     long writeIndexLong = writeIndex.longValue();
+
+                    long minMessageFileName = 0;
+                    long maxMessageFileName = 0;
+
+                    if (dataFiles.length > 0) {
+                        minMessageFileName = Long.parseLong(dataFiles[0]);
+                        maxMessageFileName = Long.parseLong(dataFiles[dataFiles.length - 1]);
+                    }
 
                     //Remove possibly existing deprecated message data files.
                     for (String dataFile : dataFiles) {
@@ -225,57 +224,39 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                             if (!messageDataFile.delete()) {
                                 LOGGER.error("Failed to delete deprecated message data file: {}",
                                         messageDataFile.getCanonicalPath());
+                                throw new IOException("Failed to delete file: " + messageDataFile.getAbsoluteFile());
+                            } else {
+                                minMessageFileName += MESSAGES_PER_FILE;
+                                messageStoreNameFileMapping.remove(dataFileLong);
                             }
-                            messageStoreNameFileMapping.remove(dataFileLong);
+                        } else {
+                            break;
                         }
                     }
 
                     //Fix possible discrepancies.
                     if (!messageStoreNameFileMapping.isEmpty()) {
-                        long min = Long.MAX_VALUE;
-                        long max = 0;
-                        for (Map.Entry<Long, File> row : messageStoreNameFileMapping.entrySet()) {
-                            if (row.getKey() < min) {
-                                min = row.getKey();
-                            }
-
-                            if (row.getKey() > max) {
-                                max = row.getKey();
-                            }
-                        }
-
-                        boolean hasMissingDataFile = false;
-                        for (long i = min + MESSAGES_PER_FILE; i < max; i += MESSAGES_PER_FILE) {
-                            if (!messageStoreNameFileMapping.containsKey(i)) {
-                                hasMissingDataFile = true;
-                                File missingFile = new File(localMessageStoreDirectory, String.valueOf(i));
-                                LOGGER.error("Message data file {} is missing.", missingFile.getCanonicalPath());
-                            }
-                        }
-
-                        if (hasMissingDataFile) {
-                            LOGGER.error("Some of the message data files are missing. Please recover the existing messages manually!");
-                            throw new RuntimeException("Some message data files are missing, unable to recover automatically");
-                        }
-
-                        if (readIndexLong < min) {
-                            readIndex.set(min);
+                        if (readIndexLong < minMessageFileName) {
+                            readIndex.set(minMessageFileName - 1);
                             readOffSet.set(0);
                         }
 
-                        if (writeIndexLong < max || writeIndexLong > max + MESSAGES_PER_FILE) {
-                            writeIndex.set(max);
+                        if (writeIndexLong < maxMessageFileName
+                                || writeIndexLong > maxMessageFileName + MESSAGES_PER_FILE) {
+                            writeIndex.set(maxMessageFileName - 1);
                             writeOffSet.set(0);
-                            recoverWriteAheadData(messageStoreNameFileMapping.get(max));
+                            recoverWriteAheadData(messageStoreNameFileMapping.get(maxMessageFileName));
                         }
                     } else {
-                        //Reset all indexes and offsets to 0.
+                        //Reset all indexes and offsets to 0 if there is any discrepancy and there is no message
+                        // data file at the same tile.
                         if (readIndex.longValue() != writeIndex.longValue()
                                 || readOffSet.longValue() != writeOffSet.longValue()) {
                             readIndex.set(0);
                             readOffSet.set(0);
                             writeIndex.set(0);
                             writeOffSet.set(0);
+                            messageStoreNameFileMapping.clear();
                         }
                     }
 
@@ -298,60 +279,116 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
             } catch (FileNotFoundException e) {
                 LOGGER.error("Initializing default local store fails.", e);
+                throw e;
             } catch (IOException e) {
                 LOGGER.error("Initializing default local store fails.", e);
+                throw e;
             } finally {
                 if (null != inputStream) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        //ignore.
-                    }
+                    inputStream.close();
                 }
             }
         } else {
-            //There is no configuration file
-            String[] dirtyFiles = localMessageStoreDirectory.list();
-            if (null != dirtyFiles && dirtyFiles.length > 0) {
-                for (String dirtyFile : dirtyFiles) {
-                    File dirtyFileToDelete = new File(localMessageStoreDirectory, dirtyFile);
-                    if (!dirtyFileToDelete.delete()) {
-                        LOGGER.error("Unable to clean {} due to failure of deleting {}",
-                                localMessageStoreDirectory.getAbsolutePath(), dirtyFileToDelete.getAbsolutePath());
-                    }
-                }
+            //There is no configuration file.
+            String[] dataFiles = getMessageDataFiles();
+            if (!isMessageDataComplete(dataFiles)) {
+                throw new RuntimeException("Message data files are corrupted and unable to recover automatically");
+            }
+
+            if (dataFiles.length > 0) {
+                readIndex.set(Long.parseLong(dataFiles[0]) - 1);
+                readOffSet.set(0);
+
+                final int len = dataFiles.length;
+                writeIndex.set(Long.parseLong(dataFiles[len - 1]) - 1);
+                writeOffSet.set(0);
+                recoverWriteAheadData(new File(localMessageStoreDirectory, dataFiles[len - 1]));
             }
         }
     }
 
+    private String[] getMessageDataFiles() {
+       String[] dataFiles = localMessageStoreDirectory.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.matches("\\d+");
+            }
+        });
+
+        Arrays.sort(dataFiles, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return Long.parseLong(o1) < Long.parseLong(o2) ? -1 : 1;
+            }
+        });
+
+        return dataFiles;
+    }
+
+    /**
+     * This method checks if there are missing message data files.
+     * @param dataFiles sorted message data file names in ascending order.
+     * @return true if there is no missing message data file; false otherwise.
+     */
+    private boolean isMessageDataComplete(String[] dataFiles) {
+        if (null == dataFiles || 0 == dataFiles.length) {
+            return true;
+        }
+
+        long[] dataFileLongArray = new long[dataFiles.length];
+        boolean complete = true;
+        int i = 0;
+        for (String dataFile: dataFiles) {
+            dataFileLongArray[i] = Long.parseLong(dataFile);
+            if (i > 0 && dataFileLongArray[i] != (dataFileLongArray[i - 1] + MESSAGES_PER_FILE)) {
+                for (long j = dataFileLongArray[i - 1] + MESSAGES_PER_FILE; j < dataFileLongArray[i]; j += MESSAGES_PER_FILE) {
+                    LOGGER.error("Found missing message data file:"+ localMessageStoreDirectory.getAbsolutePath()
+                            + File.separator + String.valueOf(j));
+                }
+                complete = false;
+            }
+            i++;
+        }
+        return complete;
+    }
+
     private void recoverWriteAheadData(File dataFile) throws IOException {
         RandomAccessFile randomAccessFile = new RandomAccessFile(dataFile, "r");
-        while (true) {
-            if (writeOffSet.longValue() + 4 + 4 > randomAccessFile.length()) {
-                break;
+        try {
+            int recoveredMessageNumber = 0;
+            while (recoveredMessageNumber++ < MESSAGES_PER_FILE) {
+                if (writeOffSet.longValue() + 4 + 4 > randomAccessFile.length()) {
+                    break;
+                }
+
+                int messageSize = randomAccessFile.readInt();
+                int magicCode = randomAccessFile.readInt();
+                if (magicCode != MAGIC_CODE) {
+                    break;
+                }
+
+                if (writeOffSet.longValue() + 4 + 4 + messageSize > randomAccessFile.length()) {
+                    break;
+                }
+
+                byte[] messageData = new byte[messageSize];
+                randomAccessFile.readFully(messageData);
+
+                try {
+                    JSON.parseObject(messageData, StashableMessage.class);
+                } catch (Exception e) {
+                    break;
+                }
+
+                writeIndex.incrementAndGet();
+                if (writeIndex.longValue() % MESSAGES_PER_FILE == 0) {
+                    writeOffSet.set(0);
+                } else {
+                    writeOffSet.addAndGet(4 + 4 + messageSize);
+                }
             }
-
-            int messageSize = randomAccessFile.readInt();
-            int magicCode = randomAccessFile.readInt();
-            if (magicCode != MAGIC_CODE) {
-                break;
-            }
-
-            if (writeOffSet.longValue() + 4 + 4 + messageSize > randomAccessFile.length()) {
-                break;
-            }
-
-            byte[] messageData = new byte[messageSize];
-            randomAccessFile.readFully(messageData);
-
-            try {
-                JSON.parseObject(messageData, StashableMessage.class);
-            } catch (Exception e) {
-                break;
-            }
-
-            writeIndex.incrementAndGet();
-            writeOffSet.addAndGet(4 + 4 + messageSize);
+        } finally {
+            randomAccessFile.close();
         }
     }
 
@@ -599,13 +636,16 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 readIndex.incrementAndGet();
                 readOffSet.addAndGet(4 + 4 + messageSize); //message_size_int + magic_code_int + messageSize.
 
-                if (readIndex.longValue() % MESSAGES_PER_FILE == 0 && currentReadFile.exists()) {
+                if (readIndex.longValue() % MESSAGES_PER_FILE == 0) {
+                    readOffSet.set(0L);
                     readRandomAccessFile.close();
                     readRandomAccessFile = null;
-                    readOffSet.set(0L);
                     messageStoreNameFileMapping.remove((readIndex.longValue() - 1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                    if (!currentReadFile.delete()) {
-                        LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
+
+                    if (currentReadFile.exists()) {
+                        if (!currentReadFile.delete()) {
+                            LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
+                        }
                     }
                 }
             }

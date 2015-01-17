@@ -12,6 +12,7 @@ import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -70,7 +71,7 @@ public class CacheableConsumer {
      * Constructor with consumer group name.
      * @param consumerGroupName consumer group name.
      */
-    public CacheableConsumer(String consumerGroupName) {
+    public CacheableConsumer(String consumerGroupName) throws IOException {
 
         if (null == consumerGroupName || consumerGroupName.trim().isEmpty()) {
             throw new RuntimeException("ConsumerGroupName cannot be null or empty.");

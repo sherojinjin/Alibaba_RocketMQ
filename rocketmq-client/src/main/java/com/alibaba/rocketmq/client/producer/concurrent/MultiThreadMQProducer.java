@@ -10,6 +10,7 @@ import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -53,7 +54,7 @@ public class MultiThreadMQProducer {
 
     private MessageSender messageSender;
 
-    public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
+    public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) throws IOException {
         if (null == configuration) {
             throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
         }
