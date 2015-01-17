@@ -651,6 +651,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             if (!lock.tryLock()) {
                 lock.lockInterruptibly();
             }
+            LOGGER.debug(Thread.currentThread().getName() + " holds the lock.");
 
             int messageToRead = Math.min(getNumberOfMessageStashed(), n);
             StashableMessage[] messages = new StashableMessage[messageToRead];
@@ -720,18 +721,14 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             if (messageRead < messageToRead) {
                 StashableMessage[] result = new StashableMessage[messageRead];
                 System.arraycopy(messages, 0, result, 0, messageRead);
-                LOGGER.error("IO Error! Number of messages read is less than expected!");
+                LOGGER.warn("IO Error! Number of messages read is less than expected!");
                 return result;
             } else {
                 return messages;
             }
 
-        } catch (InterruptedException e) {
-            LOGGER.error("Pop message error", e);
-        } catch (FileNotFoundException e) {
-            LOGGER.error("Pop message error", e);
-        } catch (IOException e) {
-            LOGGER.error("Pop message error", e);
+        } catch (Exception e) {
+            LOGGER.error("Pop message fails.", e);
             LOGGER.error("readIndex:" + readIndex.longValue() + ", writeIndex:" + writeIndex.longValue()
                     + ", readOffset:" + readOffSet.longValue() + ", writeOffset:" + writeOffSet.longValue());
         } finally {
@@ -742,8 +739,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     LOGGER.error("Unexpected IO error", e);
                 }
             }
-
             lock.unlock();
+            LOGGER.debug(Thread.currentThread().getName() + " release the lock.");
         }
         return null;
     }
