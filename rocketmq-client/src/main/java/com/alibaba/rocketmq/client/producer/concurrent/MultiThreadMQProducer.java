@@ -75,7 +75,7 @@ public class MultiThreadMQProducer {
         semaphore = new CustomizableSemaphore(semaphoreCapacity, true);
 
         for (int i = 0; i < NUMBER_OF_EMBEDDED_PRODUCERS; i++) {
-            DefaultMQProducer defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup());
+            DefaultMQProducer defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup() + "_" + (i + 1));
 
             //Configure default producer.
             defaultMQProducer.setDefaultTopicQueueNums(configuration.getDefaultTopicQueueNumber());
