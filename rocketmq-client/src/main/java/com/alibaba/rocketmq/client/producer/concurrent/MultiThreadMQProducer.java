@@ -233,6 +233,11 @@ public class MultiThreadMQProducer {
     }
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
+        //Release assigned token.
+        semaphore.release();
+
+        localMessageStore.stash(msg);
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
         } else if (e instanceof MQClientException && e.getMessage().contains("timeout")) {
@@ -241,11 +246,6 @@ public class MultiThreadMQProducer {
                 LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
             }
         }
-
-        //Release assigned token.
-        semaphore.release();
-
-        localMessageStore.stash(msg);
     }
 
     public void send(final Message msg) {
