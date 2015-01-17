@@ -77,7 +77,7 @@ public class DefaultLocalMessageStoreTest {
                     try {
                         while (!stop) {
                             if (random.nextBoolean()) {
-                                Thread.sleep(100);
+                                Thread.sleep(500);
                             } else {
                                 int n = random.nextInt(10);
                                 for (int i = 0; i < n; i++) {
