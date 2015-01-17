@@ -147,6 +147,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         } else {
             if (!abortFile.createNewFile()) {
                 LOGGER.error("Failed to create abort file");
+            } else {
+                LOGGER.info("Abort file created: " + abortFile.getAbsolutePath());
             }
         }
     }
@@ -156,6 +158,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         if (abortFile.exists()) {
             if (!abortFile.delete()) {
                 LOGGER.error("Failed to delete abort file");
+            } else {
+                LOGGER.info("Abort file deleted");
             }
         } else {
             LOGGER.error("Abort file does not exist");
@@ -194,10 +198,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 if (!needToRecoverData) {
-                    needToRecoverData = verifyIndexes(dataFiles);
+                    needToRecoverData = !verifyIndexes(dataFiles);
                 }
 
                 if (needToRecoverData) {
+                    LOGGER.info("Begin to recover data.");
                     long readIndexLong = readIndex.longValue();
                     long writeIndexLong = writeIndex.longValue();
 
@@ -254,7 +259,10 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     }
 
                     updateConfig();
-                    deleteAbortFile();
+                    if (isLastShutdownAbort()) {
+                        deleteAbortFile();
+                    }
+                    LOGGER.info("Data Recovery completes.");
                 }
 
                 File lastWrittenFileName = messageStoreNameFileMapping
@@ -283,6 +291,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
             }
         } else {
+            LOGGER.info("Begin to recover data as there is no configuration file");
             //There is no configuration file.
             String[] dataFiles = getMessageDataFiles();
             if (!isMessageDataContinuous(dataFiles)) {
@@ -297,7 +306,18 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 writeIndex.set(Long.parseLong(dataFiles[len - 1]) - 1);
                 writeOffSet.set(0);
                 recoverWriteAheadData(new File(localMessageStoreDirectory, dataFiles[len - 1]));
+
+                for (String dataFile : dataFiles) {
+                    messageStoreNameFileMapping.putIfAbsent(Long.parseLong(dataFile),
+                            new File(localMessageStoreDirectory, dataFile));
+                }
             }
+
+            if (isLastShutdownAbort()) {
+                deleteAbortFile();
+            }
+
+            LOGGER.info("Data recovery completes.");
         }
     }
 
@@ -584,15 +604,15 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private void checkFileToRead(File file) throws IOException {
         if (null == file) {
-            throw new IllegalArgumentException("File to recover cannot be null");
+            throw new IllegalArgumentException("File to read cannot be null");
         }
 
         if (!file.exists()) {
-            throw new FileNotFoundException("File to recover does not exist");
+            throw new FileNotFoundException("File to read does not exist");
         }
 
         if (!file.canRead()) {
-            throw new IOException("No write permission to " + file.getAbsolutePath());
+            throw new IOException("No read permission to " + file.getAbsolutePath());
         }
     }
 
