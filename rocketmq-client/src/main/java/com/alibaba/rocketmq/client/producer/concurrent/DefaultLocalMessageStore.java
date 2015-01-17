@@ -200,8 +200,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                             new File(localMessageStoreDirectory, dataFile));
                 }
 
-                if (!isMessageDataComplete(dataFiles)) {
+                if (!isMessageDataContinuous(dataFiles)) {
                     throw new RuntimeException("Message data files are corrupted and unable to recover automatically");
+                }
+
+                if (!needToRecoverData) {
+                    needToRecoverData = verifyIndexes(dataFiles);
                 }
 
                 if (needToRecoverData) {
@@ -291,7 +295,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         } else {
             //There is no configuration file.
             String[] dataFiles = getMessageDataFiles();
-            if (!isMessageDataComplete(dataFiles)) {
+            if (!isMessageDataContinuous(dataFiles)) {
                 throw new RuntimeException("Message data files are corrupted and unable to recover automatically");
             }
 
@@ -325,18 +329,42 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
         return dataFiles;
     }
 
+    private boolean verifyIndexes(String[] dataFiles) {
+        boolean indexesValid = true;
+
+        if (0 == dataFiles.length) {
+            return true;
+        }
+
+        long min = Long.parseLong(dataFiles[0]);
+
+        if (readIndex.longValue() < min || readIndex.longValue() > min + MESSAGES_PER_FILE) {
+            indexesValid = false;
+            LOGGER.error("Read index found invalid");
+        }
+
+        long max = Long.parseLong(dataFiles[dataFiles.length - 1]);
+
+        if (writeIndex.longValue() < max || writeIndex.longValue() > max + MESSAGES_PER_FILE) {
+            indexesValid = false;
+            LOGGER.error("Write index found invalid");
+        }
+
+        return indexesValid;
+    }
+
     /**
      * This method checks if there are missing message data files.
      * @param dataFiles sorted message data file names in ascending order.
      * @return true if there is no missing message data file; false otherwise.
      */
-    private boolean isMessageDataComplete(String[] dataFiles) {
+    private boolean isMessageDataContinuous(String[] dataFiles) {
         if (null == dataFiles || 0 == dataFiles.length) {
             return true;
         }
 
         long[] dataFileLongArray = new long[dataFiles.length];
-        boolean complete = true;
+        boolean continuous = true;
         int i = 0;
         for (String dataFile: dataFiles) {
             dataFileLongArray[i] = Long.parseLong(dataFile);
@@ -345,11 +373,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     LOGGER.error("Found missing message data file:"+ localMessageStoreDirectory.getAbsolutePath()
                             + File.separator + String.valueOf(j));
                 }
-                complete = false;
+                continuous = false;
             }
             i++;
         }
-        return complete;
+        return continuous;
     }
 
     private void recoverWriteAheadData(File dataFile) throws IOException {
