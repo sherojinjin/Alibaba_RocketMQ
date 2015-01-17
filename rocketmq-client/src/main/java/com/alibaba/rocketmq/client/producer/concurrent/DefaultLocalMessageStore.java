@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
@@ -65,13 +66,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private LinkedBlockingQueue<StashableMessage> messageQueue = new LinkedBlockingQueue<StashableMessage>(50000);
 
-    private ScheduledExecutorService flushConfigPeriodicallyByTimeExecutorService;
-
-    private ScheduledExecutorService flushConfigPeriodicallyByMessageNumberExecutorService;
+    private ScheduledExecutorService flushMessageExecutorService;
 
     private volatile boolean ready = false;
 
-    private static final int MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE = 1000;
+    private static final int FLUSH_MESSAGE_THRESHOLD = 1000;
 
     private static final int UPDATE_CONFIG_PER_FLUSHING_NUMBER_OF_MESSAGE = 500;
 
@@ -112,27 +111,17 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             init(false);
         }
 
-        flushConfigPeriodicallyByTimeExecutorService = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryImpl("LocalMessageStoreFlushConfigServicePeriodicallyByTime"));
-
-        flushConfigPeriodicallyByTimeExecutorService.scheduleWithFixedDelay(new Runnable() {
+        ThreadFactory threadFactory = new ThreadFactoryImpl("LocalMessageStoreFlushMessageExecutorService");
+        flushMessageExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        flushMessageExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                flush();
-            }
-        }, 0, 1000 * 10, TimeUnit.MILLISECONDS);
-
-        flushConfigPeriodicallyByMessageNumberExecutorService = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryImpl("LocalMessageStoreFlushConfigServicePeriodicallyByMessageNumber"));
-
-        flushConfigPeriodicallyByMessageNumberExecutorService.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                if (messageQueue.size() > MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE) {
+                //We do not flush all message down to disk every time, with the purpose of boosting popping message speed.
+                if (messageQueue.size() > FLUSH_MESSAGE_THRESHOLD) {
                     flush();
                 }
             }
-        }, 1000 * 3, 1000 * 3, TimeUnit.MILLISECONDS);
+        }, 0, 1000 * 5, TimeUnit.MILLISECONDS);
 
         ready = true;
 
@@ -276,6 +265,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 if (null != lastWrittenFileName) {
+                    checkFileToWrite(lastWrittenFileName);
                     writeRandomAccessFile = new RandomAccessFile(lastWrittenFileName, ACCESS_FILE_MODE);
                     if (writeOffSet.longValue() > 0) {
                         writeRandomAccessFile.seek(writeOffSet.longValue());
@@ -381,6 +371,9 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     }
 
     private void recoverWriteAheadData(File dataFile) throws IOException {
+        checkFileToRead(dataFile);
+
+
         RandomAccessFile randomAccessFile = new RandomAccessFile(dataFile, "r");
         int recoveredMessageNumber = 0;
         try {
@@ -524,9 +517,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         (currentWriteIndex - 1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
                     //we need to create a new file.
                     File newMessageStoreFile = new File(localMessageStoreDirectory, String.valueOf(currentWriteIndex));
-                    if (!newMessageStoreFile.createNewFile()) {
+                    if (newMessageStoreFile.exists()) {
+                        LOGGER.warn("IO Alarm!! File to create already exists! Its content will be overridden!");
+                    } else if (!newMessageStoreFile.createNewFile()) {
                         throw new RuntimeException("Unable to create new local message store file");
                     }
+                    checkFileToWrite(newMessageStoreFile);
                     messageStoreNameFileMapping.putIfAbsent(currentWriteIndex, newMessageStoreFile);
 
                     //close previous file.
@@ -540,7 +536,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 if (null == writeRandomAccessFile) {
                     File currentWritingDataFile = messageStoreNameFileMapping
                             .get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-
+                    checkFileToWrite(currentWritingDataFile);
                     writeRandomAccessFile = new RandomAccessFile(currentWritingDataFile, ACCESS_FILE_MODE);
                 }
 
@@ -563,15 +559,40 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
 
             updateConfig();
-        } catch (InterruptedException e) {
-            LOGGER.error("Flush messages error", e);
-        } catch (IOException e) {
-            LOGGER.error("Flush messages error", e);
         } catch (Exception e) {
             LOGGER.error("Flush messages error", e);
         } finally {
             LOGGER.info("Local message store flushes completely.");
             lock.unlock();
+        }
+    }
+
+    private void checkFileToWrite(File file) throws IOException {
+        if (null == file) {
+            throw new IllegalArgumentException("File under writing is being null.");
+        }
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("File " + file.getAbsolutePath()
+                    + " being written to is not found.");
+        }
+
+        if (!file.canWrite()) {
+            throw new IOException("No write permission to " + file.getAbsolutePath());
+        }
+    }
+
+    private void checkFileToRead(File file) throws IOException {
+        if (null == file) {
+            throw new IllegalArgumentException("File to recover cannot be null");
+        }
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("File to recover does not exist");
+        }
+
+        if (!file.canRead()) {
+            throw new IOException("No write permission to " + file.getAbsolutePath());
         }
     }
 
@@ -595,7 +616,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             throw new RuntimeException("Message store is not ready. You may have closed it already.");
         }
 
-
         //In case we need more messages, read from local files.
         RandomAccessFile readRandomAccessFile = null;
         try {
@@ -609,7 +629,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             if (messageToRead == 0) {
                 return messages;
             }
-
             int messageRead = 0;
 
             //First retrieve messages from message queue, beginning from head side, which is held in memory.
@@ -622,18 +641,13 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 message = messageQueue.poll();
             }
 
-
             File currentReadFile = null;
             while (messageRead < messageToRead && readIndex.longValue() <= writeIndex.longValue()) {
                 if (null == readRandomAccessFile) {
                     currentReadFile = messageStoreNameFileMapping
                             .get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                    if (null == currentReadFile || !currentReadFile.exists()) {
-                        throw new RuntimeException("Data file corrupted");
-                    }
-
+                    checkFileToRead(currentReadFile);
                     readRandomAccessFile = new RandomAccessFile(currentReadFile, ACCESS_FILE_MODE);
-
                     if (readOffSet.longValue() > 0) {
                         readRandomAccessFile.seek(readOffSet.longValue());
                     }
@@ -643,10 +657,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     LOGGER.error("Data inconsistent!");
                     break;
                 }
-
                 int messageSize = readRandomAccessFile.readInt();
-
-
                 int magicCode = readRandomAccessFile.readInt();
                 if (magicCode != MAGIC_CODE) {
                     LOGGER.error("Data inconsistent!");
@@ -658,9 +669,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 }
 
                 byte[] data = new byte[messageSize];
-
                 readRandomAccessFile.readFully(data);
-
                 messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
                 readIndex.incrementAndGet();
                 readOffSet.addAndGet(4 + 4 + messageSize); //message_size_int + magic_code_int + messageSize.
@@ -719,11 +728,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     public void close() throws InterruptedException {
         if (ready) {
             flush(true);
-            flushConfigPeriodicallyByTimeExecutorService.shutdown();
-            flushConfigPeriodicallyByMessageNumberExecutorService.shutdown();
-
-            flushConfigPeriodicallyByTimeExecutorService.awaitTermination(30, TimeUnit.SECONDS);
-            flushConfigPeriodicallyByMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+            flushMessageExecutorService.shutdown();
+            flushMessageExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         }
 
         ready = false;
