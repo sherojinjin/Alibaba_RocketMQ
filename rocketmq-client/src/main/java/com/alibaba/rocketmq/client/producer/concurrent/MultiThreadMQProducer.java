@@ -11,7 +11,13 @@ import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MultiThreadMQProducer {
@@ -24,7 +30,9 @@ public class MultiThreadMQProducer {
 
     private final ScheduledExecutorService resendFailureMessagePoolExecutor;
 
-    private final DefaultMQProducer defaultMQProducer;
+    private static final int NUMBER_OF_EMBEDDED_PRODUCERS = 4;
+
+    private final List<DefaultMQProducer> defaultMQProducers = new ArrayList<DefaultMQProducer>();
 
     private SendCallback sendCallback;
 
@@ -48,7 +56,7 @@ public class MultiThreadMQProducer {
 
     private int count;
 
-    private MessageQueueSelector messageQueueSelector;
+    private final List<MessageQueueSelector> messageQueueSelectors = new ArrayList<MessageQueueSelector>();
 
     private LinkedBlockingQueue<Message> messageQueue;
 
@@ -66,15 +74,22 @@ public class MultiThreadMQProducer {
 
         semaphore = new CustomizableSemaphore(semaphoreCapacity, true);
 
-        defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup());
+        for (int i = 0; i < NUMBER_OF_EMBEDDED_PRODUCERS; i++) {
+            DefaultMQProducer defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup());
 
-        //Configure default producer.
-        defaultMQProducer.setDefaultTopicQueueNums(configuration.getDefaultTopicQueueNumber());
-        defaultMQProducer.setRetryTimesWhenSendFailed(configuration.getRetryTimesBeforeSendingFailureClaimed());
-        defaultMQProducer.setSendMsgTimeout(configuration.getSendMessageTimeOutInMilliSeconds());
+            //Configure default producer.
+            defaultMQProducer.setDefaultTopicQueueNums(configuration.getDefaultTopicQueueNumber());
+            defaultMQProducer.setRetryTimesWhenSendFailed(configuration.getRetryTimesBeforeSendingFailureClaimed());
+            defaultMQProducer.setSendMsgTimeout(configuration.getSendMessageTimeOutInMilliSeconds());
+
+            defaultMQProducers.add(defaultMQProducer);
+        }
 
         try {
-            defaultMQProducer.start();
+            for (DefaultMQProducer defaultMQProducer : defaultMQProducers) {
+                defaultMQProducer.start();
+            }
+
             started = true;
         } catch (MQClientException e) {
             throw new RuntimeException("Unable to create producer instance", e);
@@ -92,7 +107,9 @@ public class MultiThreadMQProducer {
 
         startMonitorTPS();
 
-        messageQueueSelector = new SelectMessageQueueByDataCenter(defaultMQProducer);
+        for (DefaultMQProducer defaultMQProducer : defaultMQProducers) {
+            messageQueueSelectors.add(new SelectMessageQueueByDataCenter(defaultMQProducer));
+        }
 
         messageQueue = new LinkedBlockingQueue<Message>(MAX_NUMBER_OF_MESSAGE_IN_QUEUE);
 
@@ -303,7 +320,9 @@ public class MultiThreadMQProducer {
         messageSender.stop();
 
         //Stop defaultMQProducer.
-        defaultMQProducer.shutdown();
+        for (DefaultMQProducer defaultMQProducer : defaultMQProducers) {
+            defaultMQProducer.shutdown();
+        }
 
         Message message = null;
         while (messageQueue.size() > 0) {
@@ -353,16 +372,18 @@ public class MultiThreadMQProducer {
 
 
     class MessageSender implements Runnable {
-        private boolean running = true;
 
+        private boolean running = true;
+        private long roundRobinCounter = 0;
         @Override
         public void run() {
             while (running) {
                 Message message = null;
                 try {
                     message = messageQueue.take();
-                    defaultMQProducer.send(message, messageQueueSelector, null,
-                            new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, message));
+                    int loopRemain = (int)((roundRobinCounter++) % NUMBER_OF_EMBEDDED_PRODUCERS);
+                    defaultMQProducers.get(loopRemain).send(message, messageQueueSelectors.get(loopRemain), null,
+                                    new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, message));
                 } catch (Exception e) {
                     if (null != message) {
                         handleSendMessageFailure(message, e);
