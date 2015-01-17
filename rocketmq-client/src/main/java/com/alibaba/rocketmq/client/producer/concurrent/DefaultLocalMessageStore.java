@@ -524,10 +524,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
         }
 
+        boolean isFlushingSuccessful = true;
         try {
             if (!lock.tryLock()) {
                 lock.lockInterruptibly();
             }
+            LOGGER.debug(Thread.currentThread().getName() + " holds the lock");
             Message message = messageQueue.poll();
             int numberOfMessageToCommit = 0;
 
@@ -580,10 +582,17 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
             updateConfig();
         } catch (Exception e) {
-            LOGGER.error("Flush messages error", e);
+            isFlushingSuccessful = false;
+            LOGGER.error("Flushing messages fails.", e);
         } finally {
-            LOGGER.info("Local message store flushes completely.");
             lock.unlock();
+            LOGGER.debug(Thread.currentThread().getName() + " releases the lock.");
+
+            if (isFlushingSuccessful) {
+                LOGGER.info("Flushing messages completes successfully.");
+            } else {
+                LOGGER.warn("Flushing messages aborts due to error.");
+            }
         }
     }
 
