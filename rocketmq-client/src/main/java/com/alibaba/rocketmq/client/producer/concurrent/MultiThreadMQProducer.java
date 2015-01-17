@@ -249,11 +249,47 @@ public class MultiThreadMQProducer {
     }
 
     public void send(final Message msg) {
-        send(new Message[] { msg });
+        send(msg, false);
     }
 
     public void send(final Message[] messages) {
         send(messages, false);
+    }
+
+    protected void send(Message message, boolean hasToken) {
+        if (hasToken) {
+            try {
+                if (messageQueue.remainingCapacity() > 0) {
+                    if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
+                        semaphore.release();
+                        localMessageStore.stash(message);
+                    }
+                } else {
+                    semaphore.release();
+                    localMessageStore.stash(message);
+                }
+            } catch (InterruptedException e) {
+                handleSendMessageFailure(message, e);
+            }
+        } else {
+            if (semaphore.tryAcquire()) {
+                try {
+                    if (messageQueue.remainingCapacity() > 0) {
+                        if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
+                            semaphore.release();
+                            localMessageStore.stash(message);
+                        }
+                    } else {
+                        semaphore.release();
+                        localMessageStore.stash(message);
+                    }
+                } catch (InterruptedException e) {
+                    handleSendMessageFailure(message, e);
+                }
+            } else {
+                localMessageStore.stash(message);
+            }
+        }
     }
 
     /**
@@ -268,44 +304,8 @@ public class MultiThreadMQProducer {
             return;
         }
 
-        if (hasTokens) {
-            for (Message message : messages) {
-                try {
-                    if (messageQueue.remainingCapacity() > 0) {
-                        if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
-                            semaphore.release();
-                            localMessageStore.stash(message);
-                        }
-                    } else {
-                        semaphore.release();
-                        localMessageStore.stash(message);
-                    }
-                } catch (InterruptedException e) {
-                    handleSendMessageFailure(message, e);
-                }
-            }
-        } else {
-            if (semaphore.tryAcquire(messages.length)) {
-                for (Message message : messages) {
-                    try {
-                        if (messageQueue.remainingCapacity() > 0) {
-                            if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
-                                semaphore.release();
-                                localMessageStore.stash(message);
-                            }
-                        } else {
-                            semaphore.release();
-                            localMessageStore.stash(message);
-                        }
-                    } catch (InterruptedException e) {
-                        handleSendMessageFailure(message, e);
-                    }
-                }
-            } else {
-                for (Message message : messages) {
-                    localMessageStore.stash(message);
-                }
-            }
+        for (Message message : messages) {
+            send(message, hasTokens);
         }
     }
 

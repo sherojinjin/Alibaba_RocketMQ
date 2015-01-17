@@ -64,13 +64,17 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private ReentrantLock lock = new ReentrantLock();
 
-    private LinkedBlockingQueue<StashableMessage> messageQueue = new LinkedBlockingQueue<StashableMessage>(50000);
+    private static final int QUEUE_CAPACITY = 50000;
+
+    private LinkedBlockingQueue<StashableMessage> messageQueue = new LinkedBlockingQueue<StashableMessage>(QUEUE_CAPACITY);
+
+    private static final int HIGH_QUEUE_LEVEL = (int)(QUEUE_CAPACITY * 0.8);
+
+    private static final int LOW_QUEUE_LEVEL = (int)(QUEUE_CAPACITY * 0.3);
 
     private ScheduledExecutorService flushMessageExecutorService;
 
     private volatile boolean ready = false;
-
-    private static final int FLUSH_MESSAGE_THRESHOLD = 1000;
 
     private static final int UPDATE_CONFIG_PER_FLUSHING_NUMBER_OF_MESSAGE = 500;
 
@@ -117,11 +121,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             @Override
             public void run() {
                 //We do not flush all message down to disk every time, with the purpose of boosting popping message speed.
-                if (messageQueue.size() > FLUSH_MESSAGE_THRESHOLD) {
+                if (messageQueue.size() > HIGH_QUEUE_LEVEL) {
                     flush();
                 }
             }
-        }, 0, 1000 * 5, TimeUnit.MILLISECONDS);
+        }, 0, 1000, TimeUnit.MILLISECONDS);
 
         ready = true;
 
@@ -499,12 +503,13 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     /**
      * Flush messages into hard disk.
      *
-     * @param skipAvailableDiskSpaceCheck Indicate if available disk space check should be skipped.
+     * @param force Flush messages forcefully or not. true to flush all messages to disk, ignoring disk usage ratio
+     *              warning.
      */
-    private void flush(boolean skipAvailableDiskSpaceCheck) {
+    private void flush(boolean force) {
         LOGGER.info("Local message store starts to flush.");
 
-        if (!skipAvailableDiskSpaceCheck) {
+        if (!force) {
             float usableDiskSpaceRatio = getUsableDiskSpacePercent();
             if (usableDiskSpaceRatio < 1 - DISK_HIGH_WATER_LEVEL) {
                 long current = System.currentTimeMillis();
@@ -580,6 +585,11 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     updateConfig();
                 }
 
+                if (!force) {
+                    if (messageQueue.size() < LOW_QUEUE_LEVEL) {
+                        break;
+                    }
+                }
                 //Prepare for next round.
                 message = messageQueue.poll();
             }
@@ -649,88 +659,77 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             throw new RuntimeException("Message store is not ready. You may have closed it already.");
         }
 
+        int messageToRead = Math.min(getNumberOfMessageStashed(), n);
+        if (messageToRead < 1) {
+            return null;
+        }
+
+        StashableMessage[] messages = new StashableMessage[messageToRead];
+        int messageRead = 0;
+
+        //First retrieve messages from message queue, beginning from head side, which is held in memory.
+        StashableMessage message = messageQueue.poll();
+        while (null != message) {
+            messages[messageRead++] = message;
+            if (messageRead == messageToRead) { //We've already got all messages we want to pop.
+                return messages;
+            }
+            message = messageQueue.poll();
+        }
+
         //In case we need more messages, read from local files.
         RandomAccessFile readRandomAccessFile = null;
         try {
-            if (!lock.tryLock()) {
-                lock.lockInterruptibly();
-            }
-            LOGGER.debug(Thread.currentThread().getName() + " holds the lock.");
-
-            int messageToRead = Math.min(getNumberOfMessageStashed(), n);
-            StashableMessage[] messages = new StashableMessage[messageToRead];
-
-            if (messageToRead == 0) {
-                return messages;
-            }
-            int messageRead = 0;
-
-            //First retrieve messages from message queue, beginning from head side, which is held in memory.
-            StashableMessage message = messageQueue.poll();
-            while (null != message) {
-                messages[messageRead++] = message;
-                if (messageRead == messageToRead) { //We've already got all messages we want to pop.
-                    return messages;
-                }
-                message = messageQueue.poll();
-            }
-
-            File currentReadFile = null;
-            while (messageRead < messageToRead && readIndex.longValue() <= writeIndex.longValue()) {
-                if (null == readRandomAccessFile) {
-                    currentReadFile = messageStoreNameFileMapping
-                            .get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                    checkFileToRead(currentReadFile);
-                    readRandomAccessFile = new RandomAccessFile(currentReadFile, ACCESS_FILE_MODE);
-                    if (readOffSet.longValue() > 0) {
-                        readRandomAccessFile.seek(readOffSet.longValue());
+            //Popping messages from file requires lock.
+            if (lock.tryLock()) {
+                LOGGER.debug(Thread.currentThread().getName() + " holds the lock.");
+                File currentReadFile = null;
+                while (messageRead < messageToRead && readIndex.longValue() <= writeIndex.longValue()) {
+                    if (null == readRandomAccessFile) {
+                        currentReadFile = messageStoreNameFileMapping
+                                .get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                        checkFileToRead(currentReadFile);
+                        readRandomAccessFile = new RandomAccessFile(currentReadFile, ACCESS_FILE_MODE);
+                        if (readOffSet.longValue() > 0) {
+                            readRandomAccessFile.seek(readOffSet.longValue());
+                        }
                     }
-                }
 
-                if (readOffSet.longValue() + 4 + 4 > readRandomAccessFile.length()) {
-                    LOGGER.error("Data inconsistent!");
-                    break;
-                }
-                int messageSize = readRandomAccessFile.readInt();
-                int magicCode = readRandomAccessFile.readInt();
-                if (magicCode != MAGIC_CODE) {
-                    LOGGER.error("Data inconsistent!");
-                }
+                    if (readOffSet.longValue() + 4 + 4 > readRandomAccessFile.length()) {
+                        LOGGER.error("Data inconsistent!");
+                        break;
+                    }
+                    int messageSize = readRandomAccessFile.readInt();
+                    int magicCode = readRandomAccessFile.readInt();
+                    if (magicCode != MAGIC_CODE) {
+                        LOGGER.error("Data inconsistent!");
+                    }
 
-                if (readOffSet.longValue() + 4 + 4 + messageSize > readRandomAccessFile.length()) {
-                    LOGGER.error("Data inconsistent!");
-                    break;
-                }
+                    if (readOffSet.longValue() + 4 + 4 + messageSize > readRandomAccessFile.length()) {
+                        LOGGER.error("Data inconsistent!");
+                        break;
+                    }
 
-                byte[] data = new byte[messageSize];
-                readRandomAccessFile.readFully(data);
-                messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
-                readIndex.incrementAndGet();
-                readOffSet.addAndGet(4 + 4 + messageSize); //message_size_int + magic_code_int + messageSize.
+                    byte[] data = new byte[messageSize];
+                    readRandomAccessFile.readFully(data);
+                    messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
+                    readIndex.incrementAndGet();
+                    readOffSet.addAndGet(4 + 4 + messageSize); //message_size_int + magic_code_int + messageSize.
 
-                if (readIndex.longValue() % MESSAGES_PER_FILE == 0) {
-                    readOffSet.set(0L);
-                    readRandomAccessFile.close();
-                    readRandomAccessFile = null;
-                    messageStoreNameFileMapping.remove((readIndex.longValue() - 1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                    if (readIndex.longValue() % MESSAGES_PER_FILE == 0) {
+                        readOffSet.set(0L);
+                        readRandomAccessFile.close();
+                        readRandomAccessFile = null;
+                        messageStoreNameFileMapping.remove((readIndex.longValue() - 1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
 
-                    if (currentReadFile.exists()) {
-                        if (!currentReadFile.delete()) {
-                            LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
+                        if (currentReadFile.exists()) {
+                            if (!currentReadFile.delete()) {
+                                LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
+                            }
                         }
                     }
                 }
             }
-
-            if (messageRead < messageToRead) {
-                StashableMessage[] result = new StashableMessage[messageRead];
-                System.arraycopy(messages, 0, result, 0, messageRead);
-                LOGGER.warn("IO Error! Number of messages read is less than expected!");
-                return result;
-            } else {
-                return messages;
-            }
-
         } catch (Exception e) {
             LOGGER.error("Pop message fails.", e);
             LOGGER.error("readIndex:" + readIndex.longValue() + ", writeIndex:" + writeIndex.longValue()
@@ -746,7 +745,18 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             lock.unlock();
             LOGGER.debug(Thread.currentThread().getName() + " release the lock.");
         }
-        return null;
+
+        if (messageRead < 1) {
+            return null;
+        }
+
+        if (messageRead < messageToRead) {
+            StashableMessage[] result = new StashableMessage[messageRead];
+            System.arraycopy(messages, 0, result, 0, messageRead);
+            return result;
+        } else {
+            return messages;
+        }
     }
 
     public int getNumberOfMessageStashed() {

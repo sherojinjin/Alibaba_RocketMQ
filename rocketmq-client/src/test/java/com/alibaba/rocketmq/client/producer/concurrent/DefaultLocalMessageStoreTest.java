@@ -45,7 +45,7 @@ public class DefaultLocalMessageStoreTest {
     @Test
     public void testPop() throws InterruptedException {
         Message[] messages = defaultLocalMessageStore.pop(2);
-        while (messages.length > 0) {
+        while (null != messages && messages.length > 0) {
             for (Message msg : messages) {
                 System.out.println(msg.getTopic());
             }
