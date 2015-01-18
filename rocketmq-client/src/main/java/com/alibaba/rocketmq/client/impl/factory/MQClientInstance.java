@@ -330,9 +330,7 @@ public class MQClientInstance {
 
 
     private void persistAllConsumerOffset() {
-        Iterator<Entry<String, MQConsumerInner>> it = this.consumerTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, MQConsumerInner> entry = it.next();
+        for (Entry<String, MQConsumerInner> entry : this.consumerTable.entrySet()) {
             MQConsumerInner impl = entry.getValue();
             impl.persistConsumerOffset();
         }
@@ -375,10 +373,7 @@ public class MQClientInstance {
         if (topicRouteData != null //
                 && topicRouteData.getFilterServerTable() != null
                 && !topicRouteData.getFilterServerTable().isEmpty()) {
-            Iterator<Entry<String, List<String>>> it =
-                    topicRouteData.getFilterServerTable().entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<String, List<String>> next = it.next();
+            for (Entry<String, List<String>> next : topicRouteData.getFilterServerTable().entrySet()) {
                 List<String> value = next.getValue();
                 for (final String fsAddr : value) {
                     try {
@@ -403,9 +398,7 @@ public class MQClientInstance {
 
 
     private void uploadFilterClassSource() {
-        Iterator<Entry<String, MQConsumerInner>> it = this.consumerTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, MQConsumerInner> next = it.next();
+        for (Entry<String, MQConsumerInner> next : this.consumerTable.entrySet()) {
             MQConsumerInner consumer = next.getValue();
             // 只支持PushConsumer
             if (ConsumeType.CONSUME_PASSIVELY == consumer.consumeType()) {
@@ -436,9 +429,7 @@ public class MQClientInstance {
             return;
         }
 
-        Iterator<Entry<String, HashMap<Long, String>>> it = this.brokerAddrTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, HashMap<Long, String>> entry = it.next();
+        for (Entry<String, HashMap<Long, String>> entry : this.brokerAddrTable.entrySet()) {
             String brokerName = entry.getKey();
             HashMap<Long, String> oneTable = entry.getValue();
             if (oneTable != null) {
@@ -507,9 +498,7 @@ public class MQClientInstance {
 
         // Consumer对象
         {
-            Iterator<Entry<String, MQConsumerInner>> it = this.consumerTable.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<String, MQConsumerInner> entry = it.next();
+            for (Entry<String, MQConsumerInner> entry : this.consumerTable.entrySet()) {
                 MQConsumerInner impl = entry.getValue();
                 if (impl != null) {
                     Set<SubscriptionData> subList = impl.subscriptions();
@@ -524,9 +513,7 @@ public class MQClientInstance {
 
         // Producer
         {
-            Iterator<Entry<String, MQProducerInner>> it = this.producerTable.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<String, MQProducerInner> entry = it.next();
+            for (Entry<String, MQProducerInner> entry : this.producerTable.entrySet()) {
                 MQProducerInner impl = entry.getValue();
                 if (impl != null) {
                     Set<String> lst = impl.getPublishTopicList();
@@ -836,9 +823,7 @@ public class MQClientInstance {
 
 
     private void unregisterClient(final String producerGroup, final String consumerGroup) {
-        Iterator<Entry<String, HashMap<Long, String>>> it = this.brokerAddrTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, HashMap<Long, String>> entry = it.next();
+        for (Entry<String, HashMap<Long, String>> entry : this.brokerAddrTable.entrySet()) {
             String brokerName = entry.getKey();
             HashMap<Long, String> oneTable = entry.getValue();
 
@@ -1074,9 +1059,7 @@ public class MQClientInstance {
             // consumerRequest 处理结束并销毁
             ConcurrentHashMap<MessageQueue, ProcessQueue> processQueueTable =
                     consumer.getRebalanceImpl().getProcessQueueTable();
-            Iterator<MessageQueue> itr = processQueueTable.keySet().iterator();
-            while (itr.hasNext()) {
-                MessageQueue mq = itr.next();
+            for (MessageQueue mq : processQueueTable.keySet()) {
                 if (topic.equals(mq.getTopic())) {
                     ProcessQueue pq = processQueueTable.get(mq);
                     pq.setDropped(true);
@@ -1090,7 +1073,7 @@ public class MQClientInstance {
                 MessageQueue mq = iterator.next();
                 consumer.updateConsumeOffset(mq, offsetTable.get(mq));
                 log.info("[reset-offset] reset offsetTable. topic={}, group={}, mq={}, offset={}",
-                        new Object[]{topic, group, mq, offsetTable.get(mq)});
+                        topic, group, mq, offsetTable.get(mq));
             }
             consumer.getOffsetStore().persistAll(offsetTable.keySet());
 
@@ -1107,7 +1090,7 @@ public class MQClientInstance {
                 MessageQueue mq = iterator.next();
                 consumer.updateConsumeOffset(mq, offsetTable.get(mq));
                 log.info("[reset-offset] reset offsetTable. topic={}, group={}, mq={}, offset={}",
-                        new Object[]{topic, group, mq, offsetTable.get(mq)});
+                        topic, group, mq, offsetTable.get(mq));
             }
             consumer.getOffsetStore().persistAll(offsetTable.keySet());
 
@@ -1186,9 +1169,7 @@ public class MQClientInstance {
 
 
     public void adjustThreadPool() {
-        Iterator<Entry<String, MQConsumerInner>> it = this.consumerTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, MQConsumerInner> entry = it.next();
+        for (Entry<String, MQConsumerInner> entry : this.consumerTable.entrySet()) {
             MQConsumerInner impl = entry.getValue();
             if (impl != null) {
                 try {
