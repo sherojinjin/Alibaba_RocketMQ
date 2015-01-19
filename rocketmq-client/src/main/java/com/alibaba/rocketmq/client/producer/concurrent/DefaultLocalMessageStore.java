@@ -1,6 +1,7 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.rocketmq.client.ClientStatus;
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
@@ -74,7 +75,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private ScheduledExecutorService flushMessageExecutorService;
 
-    private volatile boolean ready = false;
+    private volatile ClientStatus status = ClientStatus.CREATED;
 
     private static final int UPDATE_CONFIG_PER_FLUSHING_NUMBER_OF_MESSAGE = 500;
 
@@ -105,7 +106,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
         if (!localMessageStoreDirectory.exists()) {
             if (!localMessageStoreDirectory.mkdirs()) {
-                throw new RuntimeException("Local message store directory does not exist and unable to create one");
+                throw new IOException("Local message store directory does not exist and unable to create one");
             }
         }
 
@@ -127,7 +128,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
-        ready = true;
+        status = ClientStatus.ACTIVE;
 
         try {
             createAbortFile();
@@ -400,8 +401,6 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private void recoverWriteAheadData(File dataFile) throws IOException {
         checkFileToRead(dataFile);
-
-
         RandomAccessFile randomAccessFile = new RandomAccessFile(dataFile, "r");
         int recoveredMessageNumber = 0;
         try {
@@ -479,7 +478,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
      */
     @Override
     public void stash(Message message) {
-        if (!ready) {
+        if (ClientStatus.CLOSED == status || ClientStatus.CREATED == status) {
             throw new RuntimeException("Message store is not ready. You may have closed it already.");
         }
 
@@ -655,8 +654,13 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             throw new IllegalArgumentException("n should be positive");
         }
 
-        if (!ready) {
-            throw new RuntimeException("Message store is not ready. You may have closed it already.");
+        switch (status) {
+            case CREATED:
+                throw new RuntimeException("Message store is not ready. You may have closed it already.");
+            case SUSPENDED:
+                return null;
+            default:
+                break;
         }
 
         int messageToRead = Math.min(getNumberOfMessageStashed(), n);
@@ -766,20 +770,22 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     }
 
     public void close() throws InterruptedException {
-        if (ready) {
-            flush(true);
-            flushMessageExecutorService.shutdown();
-            flushMessageExecutorService.awaitTermination(30, TimeUnit.SECONDS);
-        }
-
-        ready = false;
-
+        status = ClientStatus.CLOSED;
+        flush(true);
+        flushMessageExecutorService.shutdown();
+        flushMessageExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         deleteAbortFile();
-
         LOGGER.info("Default local message store shuts down completely");
     }
 
-    public boolean isReady() {
-        return ready;
+    public void suspend() {
+        if (ClientStatus.ACTIVE == status) {
+            flush(true);
+            status = ClientStatus.SUSPENDED;
+        }
+    }
+
+    public void resume() {
+        status = ClientStatus.ACTIVE;
     }
 }

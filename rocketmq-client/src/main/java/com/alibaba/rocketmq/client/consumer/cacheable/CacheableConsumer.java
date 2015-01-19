@@ -1,5 +1,6 @@
 package com.alibaba.rocketmq.client.consumer.cacheable;
 
+import com.alibaba.rocketmq.client.ClientStatus;
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.rebalance.AllocateMessageQueueByDataCenter;
 import com.alibaba.rocketmq.client.exception.MQClientException;
@@ -41,7 +42,7 @@ public class CacheableConsumer {
 
     private List<DefaultMQPushConsumer> defaultMQPushConsumers = new ArrayList<DefaultMQPushConsumer>();
 
-    private boolean started;
+    private ClientStatus status = ClientStatus.CREATED;
 
     private MessageModel messageModel = MessageModel.CLUSTERING;
 
@@ -77,41 +78,45 @@ public class CacheableConsumer {
      * Constructor with consumer group name.
      * @param consumerGroupName consumer group name.
      */
-    public CacheableConsumer(String consumerGroupName) throws IOException {
+    public CacheableConsumer(String consumerGroupName) {
+        try {
+            if (null == consumerGroupName || consumerGroupName.trim().isEmpty()) {
+                throw new RuntimeException("ConsumerGroupName cannot be null or empty.");
+            }
 
-        if (null == consumerGroupName || consumerGroupName.trim().isEmpty()) {
-            throw new RuntimeException("ConsumerGroupName cannot be null or empty.");
+            this.consumerGroupName = consumerGroupName;
+            this.topicHandlerMap = new ConcurrentHashMap<String, MessageHandler>();
+
+            for (int i = 0; i < NUMBER_OF_CONSUMER; i++) {
+                DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer(consumerGroupName);
+                defaultMQPushConsumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueByDataCenter(defaultMQPushConsumer));
+                defaultMQPushConsumer.setInstanceName(getInstanceName());
+                defaultMQPushConsumer.setMessageModel(messageModel);
+                defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
+                defaultMQPushConsumer.setPullBatchSize(DEFAULT_PULL_BATCH_SIZE);
+                defaultMQPushConsumer.setConsumeMessageBatchMaxSize(DEFAULT_CONSUME_MESSAGE_MAX_BATCH_SIZE);
+                defaultMQPushConsumers.add(defaultMQPushConsumer);
+            }
+
+            executorWorkerService = new ThreadPoolExecutor(
+                    corePoolSizeForWorkTasks,
+                    maximumPoolSizeForWorkTasks,
+                    0,
+                    TimeUnit.NANOSECONDS,
+                    new LinkedBlockingQueue<Runnable>(maximumPoolSizeForWorkTasks),
+                    new ThreadFactoryImpl("ConsumerWorkerThread"),
+                    new ThreadPoolExecutor.CallerRunsPolicy());
+
+            frontController = new FrontController(topicHandlerMap, executorWorkerService, localMessageStore);
+            localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
+        } catch (IOException e) {
+            LOGGER.error("Fatal error", e);
+            throw new RuntimeException("Fatal error while instantiating CacheableConsumer");
         }
-
-        this.consumerGroupName = consumerGroupName;
-        this.topicHandlerMap = new ConcurrentHashMap<String, MessageHandler>();
-        localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
-
-        for (int i = 0; i < NUMBER_OF_CONSUMER; i++) {
-            DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer(consumerGroupName);
-            defaultMQPushConsumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueByDataCenter(defaultMQPushConsumer));
-            defaultMQPushConsumer.setInstanceName(getInstanceName());
-            defaultMQPushConsumer.setMessageModel(messageModel);
-            defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
-            defaultMQPushConsumer.setPullBatchSize(DEFAULT_PULL_BATCH_SIZE);
-            defaultMQPushConsumer.setConsumeMessageBatchMaxSize(DEFAULT_CONSUME_MESSAGE_MAX_BATCH_SIZE);
-            defaultMQPushConsumers.add(defaultMQPushConsumer);
-        }
-
-        executorWorkerService = new ThreadPoolExecutor(
-                corePoolSizeForWorkTasks,
-                maximumPoolSizeForWorkTasks,
-                0,
-                TimeUnit.NANOSECONDS,
-                new LinkedBlockingQueue<Runnable>(maximumPoolSizeForWorkTasks),
-                new ThreadFactoryImpl("ConsumerWorkerThread"),
-                new ThreadPoolExecutor.CallerRunsPolicy());
-
-        frontController = new FrontController(topicHandlerMap, executorWorkerService, localMessageStore);
     }
 
     public CacheableConsumer registerMessageHandler(MessageHandler messageHandler) throws MQClientException {
-        if (started) {
+        if (status != ClientStatus.CREATED) {
             throw new IllegalStateException("Please register before start");
         }
 
@@ -159,13 +164,9 @@ public class CacheableConsumer {
             defaultMQPushConsumer.registerMessageListener(frontController);
             defaultMQPushConsumer.start();
         }
-
         startPopThread();
-
-        started = true;
-
         addShutdownHook();
-
+        status = ClientStatus.ACTIVE;
         LOGGER.debug("DefaultMQPushConsumer starts.");
     }
 
@@ -190,7 +191,7 @@ public class CacheableConsumer {
     }
 
     public boolean isStarted() {
-        return started;
+        return status == ClientStatus.ACTIVE;
     }
 
     public void setCorePoolSizeForWorkTasks(int corePoolSizeForWorkTasks) {
@@ -204,7 +205,7 @@ public class CacheableConsumer {
     public void setMessageModel(MessageModel messageModel) {
         this.messageModel = messageModel;
 
-        if (started) {
+        if (status != ClientStatus.CREATED) {
             throw new RuntimeException("Please set message model before start");
         }
 
@@ -218,7 +219,7 @@ public class CacheableConsumer {
     public void setConsumeFromWhere(ConsumeFromWhere consumeFromWhere) {
         this.consumeFromWhere = consumeFromWhere;
 
-        if (started) {
+        if (status != ClientStatus.CREATED) {
             throw new RuntimeException("Please set consume-from-where before start");
         }
 
@@ -232,7 +233,7 @@ public class CacheableConsumer {
     public void setConsumeMessageMaxBatchSize(int consumeMessageMaxBatchSize) {
         this.consumeMessageMaxBatchSize = consumeMessageMaxBatchSize;
 
-        if (started) {
+        if (status != ClientStatus.CREATED) {
             throw new RuntimeException("Please set consumeMessageMaxBatchSize before start");
         }
 
@@ -253,7 +254,7 @@ public class CacheableConsumer {
 
     public void setPullBatchSize(int pullBatchSize) {
         this.pullBatchSize = pullBatchSize;
-        if (started) {
+        if (status != ClientStatus.CREATED) {
             throw new RuntimeException("Please set pullBatchSize before start");
         }
 
@@ -273,6 +274,7 @@ public class CacheableConsumer {
      * @throws InterruptedException If unable to shut down within 1 minute.
      */
     public void shutdown() throws InterruptedException {
+        status = ClientStatus.CLOSED;
         try {
             stopReceiving();
         } catch (InterruptedException e) {
@@ -281,7 +283,7 @@ public class CacheableConsumer {
 
         try {
             //Shut down local message store.
-            if (null != localMessageStore && localMessageStore.isReady()) {
+            if (null != localMessageStore) {
                 localMessageStore.close();
             }
         } catch (InterruptedException e) {
@@ -290,7 +292,7 @@ public class CacheableConsumer {
     }
 
     protected void stopReceiving() throws InterruptedException {
-        if (started) {
+        if (status == ClientStatus.ACTIVE || status == ClientStatus.SUSPENDED) {
             //Stop pulling messages from broker server.
             for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
                 defaultMQPushConsumer.shutdown();
@@ -316,8 +318,35 @@ public class CacheableConsumer {
                     messageExt = messageQueue.poll();
                 }
             }
-            LOGGER.info("Local message saving completes.");
-            started = false;
+            status = ClientStatus.CLOSED;
+            LOGGER.info("Local messages saving completes.");
+        }
+    }
+
+    public boolean isSuspended() {
+        return ClientStatus.SUSPENDED == status;
+    }
+
+    public void suspend() {
+        if (isSuspended()) {
+            return;
+        }
+
+        for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+            defaultMQPushConsumer.suspend();
+        }
+
+        localMessageStore.suspend();
+        status = ClientStatus.SUSPENDED;
+    }
+
+    public void resume() {
+        if (isSuspended()) {
+            status = ClientStatus.ACTIVE;
+            localMessageStore.resume();
+            for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+                defaultMQPushConsumer.resume();
+            }
         }
     }
 }

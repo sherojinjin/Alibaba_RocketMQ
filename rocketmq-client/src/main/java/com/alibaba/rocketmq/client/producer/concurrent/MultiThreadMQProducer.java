@@ -10,7 +10,6 @@ import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -64,37 +63,58 @@ public class MultiThreadMQProducer {
 
     private volatile long waitResponseTimeoutCounter = 0;
 
-    public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) throws IOException {
-        if (null == configuration) {
-            throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
-        }
-
-        resendFailureMessagePoolExecutor = Executors
-                .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
-
-        semaphoreCapacity = configuration.getInitialNumberOfMessagePermits();
-
-        semaphore = new CustomizableSemaphore(semaphoreCapacity, true);
-
-        for (int i = 0; i < NUMBER_OF_EMBEDDED_PRODUCERS; i++) {
-            DefaultMQProducer defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup() + "_" + (i + 1));
-
-            //Configure default producer.
-            defaultMQProducer.setDefaultTopicQueueNums(configuration.getDefaultTopicQueueNumber());
-            defaultMQProducer.setRetryTimesWhenSendFailed(configuration.getRetryTimesBeforeSendingFailureClaimed());
-            defaultMQProducer.setSendMsgTimeout(configuration.getSendMessageTimeOutInMilliSeconds());
-
-            defaultMQProducers.add(defaultMQProducer);
-        }
+    public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
 
         try {
+            if (null == configuration) {
+                throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
+            }
+
+            resendFailureMessagePoolExecutor = Executors
+                    .newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ResendFailureMessageService"));
+
+            semaphoreCapacity = configuration.getInitialNumberOfMessagePermits();
+
+            semaphore = new CustomizableSemaphore(semaphoreCapacity, true);
+
+            for (int i = 0; i < NUMBER_OF_EMBEDDED_PRODUCERS; i++) {
+                DefaultMQProducer defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup() + "_" + (i + 1));
+
+                //Configure default producer.
+                defaultMQProducer.setDefaultTopicQueueNums(configuration.getDefaultTopicQueueNumber());
+                defaultMQProducer.setRetryTimesWhenSendFailed(configuration.getRetryTimesBeforeSendingFailureClaimed());
+                defaultMQProducer.setSendMsgTimeout(configuration.getSendMessageTimeOutInMilliSeconds());
+
+                defaultMQProducers.add(defaultMQProducer);
+            }
+
             for (DefaultMQProducer defaultMQProducer : defaultMQProducers) {
                 defaultMQProducer.start();
             }
 
+            localMessageStore = new DefaultLocalMessageStore(configuration.getProducerGroup());
+
+            startResendFailureMessageService(configuration.getResendFailureMessageDelay());
+
+            startMonitorTPS();
+
+            for (DefaultMQProducer defaultMQProducer : defaultMQProducers) {
+                messageQueueSelectors.add(new SelectMessageQueueByDataCenter(defaultMQProducer));
+            }
+
+            messageQueue = new LinkedBlockingQueue<Message>(MAX_NUMBER_OF_MESSAGE_IN_QUEUE);
+
+            addShutdownHook();
+
+            messageSender = new MessageSender();
+
+            Thread messageSendingThread = new Thread(messageSender);
+            messageSendingThread.setName("MessageSendingService");
+            messageSendingThread.start();
             started = true;
-        } catch (MQClientException e) {
-            throw new RuntimeException("Unable to create producer instance", e);
+        } catch (Exception e) {
+            LOGGER.error("Fatal error while instantiating MultiThreadMQProducer", e);
+            throw new RuntimeException("Initialization error", e);
         } finally {
             if (started) {
                 LOGGER.debug("Client starts successfully");
@@ -102,26 +122,6 @@ public class MultiThreadMQProducer {
                 LOGGER.error("Client starts with error.");
             }
         }
-
-        localMessageStore = new DefaultLocalMessageStore(configuration.getProducerGroup());
-
-        startResendFailureMessageService(configuration.getResendFailureMessageDelay());
-
-        startMonitorTPS();
-
-        for (DefaultMQProducer defaultMQProducer : defaultMQProducers) {
-            messageQueueSelectors.add(new SelectMessageQueueByDataCenter(defaultMQProducer));
-        }
-
-        messageQueue = new LinkedBlockingQueue<Message>(MAX_NUMBER_OF_MESSAGE_IN_QUEUE);
-
-        addShutdownHook();
-
-        messageSender = new MessageSender();
-
-        Thread messageSendingThread = new Thread(messageSender);
-        messageSendingThread.setName("MessageSendingService");
-        messageSendingThread.start();
     }
 
     private void addShutdownHook() {
@@ -342,7 +342,7 @@ public class MultiThreadMQProducer {
         }
 
         //Refresh local message store configuration file.
-        if (null != localMessageStore && localMessageStore.isReady()) {
+        if (null != localMessageStore) {
             localMessageStore.close();
             localMessageStore = null;
         }
@@ -381,7 +381,6 @@ public class MultiThreadMQProducer {
 
 
     class MessageSender implements Runnable {
-
         private boolean running = true;
         private long roundRobinCounter = 0;
         @Override

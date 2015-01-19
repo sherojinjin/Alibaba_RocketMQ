@@ -27,6 +27,4 @@ public interface LocalMessageStore {
      * Close this message store.
      */
     void close() throws InterruptedException;
-
-    boolean isReady();
 }

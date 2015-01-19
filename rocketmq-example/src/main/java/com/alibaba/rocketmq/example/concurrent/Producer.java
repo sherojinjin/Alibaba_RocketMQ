@@ -6,7 +6,6 @@ import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -27,7 +26,7 @@ public class Producer {
         Arrays.fill(messageBody, (byte) 'x');
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         int count = 0;
         if (args.length > 0) {
             count = Integer.parseInt(args[0]);

@@ -50,7 +50,7 @@ public class MultiThreadMQProducerConfiguration {
         return this;
     }
 
-    public MultiThreadMQProducer build() throws IOException {
+    public MultiThreadMQProducer build() {
         if (!isReadyToBuild()) {
             throw new RuntimeException(reportMissingConfiguration());
         }
