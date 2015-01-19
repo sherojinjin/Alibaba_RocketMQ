@@ -10,7 +10,14 @@ import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 
-import java.util.concurrent.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MultiThreadMQProducer {
@@ -23,7 +30,9 @@ public class MultiThreadMQProducer {
 
     private final ScheduledExecutorService resendFailureMessagePoolExecutor;
 
-    private final DefaultMQProducer defaultMQProducer;
+    private static final int NUMBER_OF_EMBEDDED_PRODUCERS = 4;
+
+    private final List<DefaultMQProducer> defaultMQProducers = new ArrayList<DefaultMQProducer>();
 
     private SendCallback sendCallback;
 
@@ -47,13 +56,15 @@ public class MultiThreadMQProducer {
 
     private int count;
 
-    private MessageQueueSelector messageQueueSelector;
+    private final List<MessageQueueSelector> messageQueueSelectors = new ArrayList<MessageQueueSelector>();
 
     private LinkedBlockingQueue<Message> messageQueue;
 
     private MessageSender messageSender;
 
-    public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) {
+    private volatile long waitResponseTimeoutCounter = 0;
+
+    public MultiThreadMQProducer(MultiThreadMQProducerConfiguration configuration) throws IOException {
         if (null == configuration) {
             throw new IllegalArgumentException("MultiThreadMQProducerConfiguration cannot be null");
         }
@@ -65,15 +76,22 @@ public class MultiThreadMQProducer {
 
         semaphore = new CustomizableSemaphore(semaphoreCapacity, true);
 
-        defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup());
+        for (int i = 0; i < NUMBER_OF_EMBEDDED_PRODUCERS; i++) {
+            DefaultMQProducer defaultMQProducer = new DefaultMQProducer(configuration.getProducerGroup() + "_" + (i + 1));
 
-        //Configure default producer.
-        defaultMQProducer.setDefaultTopicQueueNums(configuration.getDefaultTopicQueueNumber());
-        defaultMQProducer.setRetryTimesWhenSendFailed(configuration.getRetryTimesBeforeSendingFailureClaimed());
-        defaultMQProducer.setSendMsgTimeout(configuration.getSendMessageTimeOutInMilliSeconds());
+            //Configure default producer.
+            defaultMQProducer.setDefaultTopicQueueNums(configuration.getDefaultTopicQueueNumber());
+            defaultMQProducer.setRetryTimesWhenSendFailed(configuration.getRetryTimesBeforeSendingFailureClaimed());
+            defaultMQProducer.setSendMsgTimeout(configuration.getSendMessageTimeOutInMilliSeconds());
+
+            defaultMQProducers.add(defaultMQProducer);
+        }
 
         try {
-            defaultMQProducer.start();
+            for (DefaultMQProducer defaultMQProducer : defaultMQProducers) {
+                defaultMQProducer.start();
+            }
+
             started = true;
         } catch (MQClientException e) {
             throw new RuntimeException("Unable to create producer instance", e);
@@ -91,7 +109,9 @@ public class MultiThreadMQProducer {
 
         startMonitorTPS();
 
-        messageQueueSelector = new SelectMessageQueueByDataCenter(defaultMQProducer);
+        for (DefaultMQProducer defaultMQProducer : defaultMQProducers) {
+            messageQueueSelectors.add(new SelectMessageQueueByDataCenter(defaultMQProducer));
+        }
 
         messageQueue = new LinkedBlockingQueue<Message>(MAX_NUMBER_OF_MESSAGE_IN_QUEUE);
 
@@ -213,20 +233,63 @@ public class MultiThreadMQProducer {
     }
 
     public void handleSendMessageFailure(Message msg, Throwable e) {
-        LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
-
         //Release assigned token.
         semaphore.release();
 
         localMessageStore.stash(msg);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
+        } else if (e instanceof MQClientException && e.getMessage().contains("timeout")) {
+            waitResponseTimeoutCounter++;
+            if (waitResponseTimeoutCounter % 1000 == 0) {
+                LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
+            }
+        }
     }
 
     public void send(final Message msg) {
-        send(new Message[] { msg });
+        send(msg, false);
     }
 
     public void send(final Message[] messages) {
         send(messages, false);
+    }
+
+    protected void send(Message message, boolean hasToken) {
+        if (hasToken) {
+            try {
+                if (messageQueue.remainingCapacity() > 0) {
+                    if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
+                        semaphore.release();
+                        localMessageStore.stash(message);
+                    }
+                } else {
+                    semaphore.release();
+                    localMessageStore.stash(message);
+                }
+            } catch (InterruptedException e) {
+                handleSendMessageFailure(message, e);
+            }
+        } else {
+            if (semaphore.tryAcquire()) {
+                try {
+                    if (messageQueue.remainingCapacity() > 0) {
+                        if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
+                            semaphore.release();
+                            localMessageStore.stash(message);
+                        }
+                    } else {
+                        semaphore.release();
+                        localMessageStore.stash(message);
+                    }
+                } catch (InterruptedException e) {
+                    handleSendMessageFailure(message, e);
+                }
+            } else {
+                localMessageStore.stash(message);
+            }
+        }
     }
 
     /**
@@ -241,44 +304,8 @@ public class MultiThreadMQProducer {
             return;
         }
 
-        if (hasTokens) {
-            for (Message message : messages) {
-                try {
-                    if (messageQueue.remainingCapacity() > 0) {
-                        if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
-                            semaphore.release();
-                            localMessageStore.stash(message);
-                        }
-                    } else {
-                        semaphore.release();
-                        localMessageStore.stash(message);
-                    }
-                } catch (InterruptedException e) {
-                    handleSendMessageFailure(message, e);
-                }
-            }
-        } else {
-            if (semaphore.tryAcquire(messages.length)) {
-                for (Message message : messages) {
-                    try {
-                        if (messageQueue.remainingCapacity() > 0) {
-                            if (!messageQueue.offer(message, 50, TimeUnit.MILLISECONDS)) {
-                                semaphore.release();
-                                localMessageStore.stash(message);
-                            }
-                        } else {
-                            semaphore.release();
-                            localMessageStore.stash(message);
-                        }
-                    } catch (InterruptedException e) {
-                        handleSendMessageFailure(message, e);
-                    }
-                }
-            } else {
-                for (Message message : messages) {
-                    localMessageStore.stash(message);
-                }
-            }
+        for (Message message : messages) {
+            send(message, hasTokens);
         }
     }
 
@@ -302,7 +329,9 @@ public class MultiThreadMQProducer {
         messageSender.stop();
 
         //Stop defaultMQProducer.
-        defaultMQProducer.shutdown();
+        for (DefaultMQProducer defaultMQProducer : defaultMQProducers) {
+            defaultMQProducer.shutdown();
+        }
 
         Message message = null;
         while (messageQueue.size() > 0) {
@@ -352,15 +381,17 @@ public class MultiThreadMQProducer {
 
 
     class MessageSender implements Runnable {
-        private boolean running = true;
 
+        private boolean running = true;
+        private long roundRobinCounter = 0;
         @Override
         public void run() {
             while (running) {
                 Message message = null;
                 try {
                     message = messageQueue.take();
-                    defaultMQProducer.send(message, messageQueueSelector, null,
+                    int loopRemain = (int)((roundRobinCounter++) % NUMBER_OF_EMBEDDED_PRODUCERS);
+                    defaultMQProducers.get(loopRemain).send(message, messageQueueSelectors.get(loopRemain), null,
                             new SendMessageCallback(MultiThreadMQProducer.this, sendCallback, message));
                 } catch (Exception e) {
                     if (null != message) {

@@ -1,5 +1,7 @@
 package com.alibaba.rocketmq.client.producer.concurrent;
 
+import java.io.IOException;
+
 public class MultiThreadMQProducerConfiguration {
 
     private String producerGroup;
@@ -48,7 +50,7 @@ public class MultiThreadMQProducerConfiguration {
         return this;
     }
 
-    public MultiThreadMQProducer build() {
+    public MultiThreadMQProducer build() throws IOException {
         if (!isReadyToBuild()) {
             throw new RuntimeException(reportMissingConfiguration());
         }

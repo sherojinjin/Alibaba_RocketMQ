@@ -412,12 +412,12 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                                 pullRequest.getConsumerGroup(), pullRequest.getMessageQueue().getTopic(),
                                 pullResult.getMsgFoundList().size());
 
-                            boolean dispathToConsume = processQueue.putMessage(pullResult.getMsgFoundList());
+                            boolean dispatchToConsume = processQueue.putMessage(pullResult.getMsgFoundList());
                             DefaultMQPushConsumerImpl.this.consumeMessageService.submitConsumeRequest(//
                                 pullResult.getMsgFoundList(), //
                                 processQueue, //
                                 pullRequest.getMessageQueue(), //
-                                dispathToConsume);
+                                dispatchToConsume);
 
                             // 流控
                             if (DefaultMQPushConsumerImpl.this.defaultMQPushConsumer.getPullInterval() > 0) {
@@ -477,7 +477,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                                     DefaultMQPushConsumerImpl.this.offsetStore.persist(pullRequest
                                         .getMessageQueue());
 
-                                    // 第五步、丢弃当前PullRequest，并且从Rebalabce结果里删除，等待下次Rebalance时，取纠正后的Offset
+                                    // 第五步、丢弃当前PullRequest，并且从Rebalance结果里删除，等待下次Rebalance时，取纠正后的Offset
                                     DefaultMQPushConsumerImpl.this.rebalanceImpl
                                         .removeProcessQueue(pullRequest.getMessageQueue());
 
@@ -510,9 +510,8 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
         boolean commitOffsetEnable = false;
         long commitOffsetValue = 0L;
         if (MessageModel.CLUSTERING == this.defaultMQPushConsumer.getMessageModel()) {
-            commitOffsetValue =
-                    this.offsetStore.readOffset(pullRequest.getMessageQueue(),
-                        ReadOffsetType.READ_FROM_MEMORY);
+            commitOffsetValue = this.offsetStore.readOffset(pullRequest.getMessageQueue(),
+                    ReadOffsetType.READ_FROM_MEMORY);
             if (commitOffsetValue > 0) {
                 commitOffsetEnable = true;
             }
@@ -520,8 +519,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
 
         String subExpression = null;
         boolean classFilter = false;
-        SubscriptionData sd =
-                this.rebalanceImpl.getSubscriptionInner().get(pullRequest.getMessageQueue().getTopic());
+        SubscriptionData sd = this.rebalanceImpl.getSubscriptionInner().get(pullRequest.getMessageQueue().getTopic());
         if (sd != null) {
             if (this.defaultMQPushConsumer.isPostSubscriptionWhenPull() && !sd.isClassFilterMode()) {
                 subExpression = sd.getSubString();

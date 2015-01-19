@@ -68,7 +68,7 @@ public abstract class RebalanceImpl {
     public abstract ConsumeType consumeType();
 
 
-    public void unlock(final MessageQueue mq, final boolean oneway) {
+    public void unlock(final MessageQueue mq, final boolean oneWay) {
         FindBrokerResult findBrokerResult =
                 this.mQClientFactory.findBrokerAddressInSubscribe(mq.getBrokerName(), MixAll.MASTER_ID, true);
         if (findBrokerResult != null) {
@@ -79,7 +79,7 @@ public abstract class RebalanceImpl {
 
             try {
                 this.mQClientFactory.getMQClientAPIImpl().unlockBatchMQ(findBrokerResult.getBrokerAddr(),
-                    requestBody, 1000, oneway);
+                    requestBody, 1000, oneWay);
                 log.warn("unlock messageQueue. group:{}, clientId:{}, mq:{}",//
                     this.consumerGroup, //
                     this.mQClientFactory.getClientId(), //
@@ -92,7 +92,7 @@ public abstract class RebalanceImpl {
     }
 
 
-    public void unlockAll(final boolean oneway) {
+    public void unlockAll(final boolean oneWay) {
         HashMap<String, Set<MessageQueue>> brokerMqs = this.buildProcessQueueTableByBrokerName();
 
         for (final Map.Entry<String, Set<MessageQueue>> entry : brokerMqs.entrySet()) {
@@ -112,7 +112,7 @@ public abstract class RebalanceImpl {
 
                 try {
                     this.mQClientFactory.getMQClientAPIImpl().unlockBatchMQ(findBrokerResult.getBrokerAddr(),
-                        requestBody, 1000, oneway);
+                        requestBody, 1000, oneWay);
 
                     for (MessageQueue mq : mqs) {
                         ProcessQueue processQueue = this.processQueueTable.get(mq);
@@ -186,9 +186,7 @@ public abstract class RebalanceImpl {
     public void lockAll() {
         HashMap<String, Set<MessageQueue>> brokerMqs = this.buildProcessQueueTableByBrokerName();
 
-        Iterator<Entry<String, Set<MessageQueue>>> it = brokerMqs.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, Set<MessageQueue>> entry = it.next();
+        for (Entry<String, Set<MessageQueue>> entry : brokerMqs.entrySet()) {
             final String brokerName = entry.getKey();
             final Set<MessageQueue> mqs = entry.getValue();
 
@@ -206,7 +204,7 @@ public abstract class RebalanceImpl {
                 try {
                     Set<MessageQueue> lockOKMQSet =
                             this.mQClientFactory.getMQClientAPIImpl().lockBatchMQ(
-                                findBrokerResult.getBrokerAddr(), requestBody, 1000);
+                                    findBrokerResult.getBrokerAddr(), requestBody, 1000);
 
                     // 锁定成功的队列
                     for (MessageQueue mq : lockOKMQSet) {
@@ -227,12 +225,11 @@ public abstract class RebalanceImpl {
                             if (processQueue != null) {
                                 processQueue.setLocked(false);
                                 log.warn("the message queue locked Failed, Group: {} {}", this.consumerGroup,
-                                    mq);
+                                        mq);
                             }
                         }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     log.error("lockBatchMQ exception, " + mqs, e);
                 }
             }
@@ -514,9 +511,7 @@ public abstract class RebalanceImpl {
 
 
     public void destroy() {
-        Iterator<Entry<MessageQueue, ProcessQueue>> it = this.processQueueTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<MessageQueue, ProcessQueue> next = it.next();
+        for (Entry<MessageQueue, ProcessQueue> next : this.processQueueTable.entrySet()) {
             next.getValue().setDropped(true);
         }
 

@@ -12,6 +12,7 @@ import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -50,7 +51,13 @@ public class CacheableConsumer {
 
     private static final int MAXIMUM_POOL_SIZE_FOR_WORK_TASKS = 50;
 
-    private static final int DEFAULT_PULL_MESSAGE_BATCH_SIZE = 256;
+    private static final int DEFAULT_PULL_BATCH_SIZE = 256;
+
+    private int pullBatchSize = DEFAULT_PULL_BATCH_SIZE;
+
+    private static final int DEFAULT_CONSUME_MESSAGE_MAX_BATCH_SIZE = 1;
+
+    private int consumeMessageMaxBatchSize = DEFAULT_CONSUME_MESSAGE_MAX_BATCH_SIZE;
 
     private int corePoolSizeForWorkTasks = CORE_POOL_SIZE_FOR_WORK_TASKS;
 
@@ -70,7 +77,7 @@ public class CacheableConsumer {
      * Constructor with consumer group name.
      * @param consumerGroupName consumer group name.
      */
-    public CacheableConsumer(String consumerGroupName) {
+    public CacheableConsumer(String consumerGroupName) throws IOException {
 
         if (null == consumerGroupName || consumerGroupName.trim().isEmpty()) {
             throw new RuntimeException("ConsumerGroupName cannot be null or empty.");
@@ -86,7 +93,8 @@ public class CacheableConsumer {
             defaultMQPushConsumer.setInstanceName(getInstanceName());
             defaultMQPushConsumer.setMessageModel(messageModel);
             defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
-            defaultMQPushConsumer.setPullBatchSize(DEFAULT_PULL_MESSAGE_BATCH_SIZE);
+            defaultMQPushConsumer.setPullBatchSize(DEFAULT_PULL_BATCH_SIZE);
+            defaultMQPushConsumer.setConsumeMessageBatchMaxSize(DEFAULT_CONSUME_MESSAGE_MAX_BATCH_SIZE);
             defaultMQPushConsumers.add(defaultMQPushConsumer);
         }
 
@@ -217,6 +225,41 @@ public class CacheableConsumer {
         for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
             if (null != defaultMQPushConsumer) {
                 defaultMQPushConsumer.setConsumeFromWhere(consumeFromWhere);
+            }
+        }
+    }
+
+    public void setConsumeMessageMaxBatchSize(int consumeMessageMaxBatchSize) {
+        this.consumeMessageMaxBatchSize = consumeMessageMaxBatchSize;
+
+        if (started) {
+            throw new RuntimeException("Please set consumeMessageMaxBatchSize before start");
+        }
+
+        for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+            if (null != defaultMQPushConsumer) {
+                defaultMQPushConsumer.setConsumeMessageBatchMaxSize(consumeMessageMaxBatchSize);
+            }
+        }
+    }
+
+    public int getConsumeMessageMaxBatchSize() {
+        return consumeMessageMaxBatchSize;
+    }
+
+    public int getPullBatchSize() {
+        return pullBatchSize;
+    }
+
+    public void setPullBatchSize(int pullBatchSize) {
+        this.pullBatchSize = pullBatchSize;
+        if (started) {
+            throw new RuntimeException("Please set pullBatchSize before start");
+        }
+
+        for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+            if (null != defaultMQPushConsumer) {
+                defaultMQPushConsumer.setPullBatchSize(pullBatchSize);
             }
         }
     }

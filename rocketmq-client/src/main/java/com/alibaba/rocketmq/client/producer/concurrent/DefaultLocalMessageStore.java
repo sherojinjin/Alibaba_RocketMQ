@@ -7,11 +7,26 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.StashableMessage;
 import org.slf4j.Logger;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Properties;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -20,6 +35,10 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private static final String DEFAULT_STORE_LOCATION = "/dianyi/data/";
 
     private static final String LOCAL_MESSAGE_STORE_FOLDER_NAME = ".localMessageStore";
+
+    private static final String ABORT_FILE_NAME = ".abort";
+
+    private static final String CONFIG_FILE_NAME = ".config";
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
@@ -45,15 +64,17 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private ReentrantLock lock = new ReentrantLock();
 
-    private LinkedBlockingQueue<StashableMessage> messageQueue = new LinkedBlockingQueue<StashableMessage>(50000);
+    private static final int QUEUE_CAPACITY = 50000;
 
-    private ScheduledExecutorService flushConfigPeriodicallyByTimeExecutorService;
+    private LinkedBlockingQueue<StashableMessage> messageQueue = new LinkedBlockingQueue<StashableMessage>(QUEUE_CAPACITY);
 
-    private ScheduledExecutorService flushConfigPeriodicallyByMessageNumberExecutorService;
+    private static final int HIGH_QUEUE_LEVEL = (int)(QUEUE_CAPACITY * 0.8);
+
+    private static final int LOW_QUEUE_LEVEL = (int)(QUEUE_CAPACITY * 0.3);
+
+    private ScheduledExecutorService flushMessageExecutorService;
 
     private volatile boolean ready = false;
-
-    private static final int MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE = 1000;
 
     private static final int UPDATE_CONFIG_PER_FLUSHING_NUMBER_OF_MESSAGE = 500;
 
@@ -67,7 +88,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     private static final String ACCESS_FILE_MODE = "rws";
 
-    public DefaultLocalMessageStore(String storeName) {
+    public DefaultLocalMessageStore(String storeName) throws IOException {
         //For convenience of development.
         if (DEFAULT_STORE_LOCATION.equals(storeLocation)) {
             File defaultStoreLocation = new File(DEFAULT_STORE_LOCATION);
@@ -88,40 +109,73 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
         }
 
-        loadConfig();
+        if (isLastShutdownAbort()) {
+            init(true);
+        } else {
+            init(false);
+        }
 
-        flushConfigPeriodicallyByTimeExecutorService = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryImpl("LocalMessageStoreFlushConfigServicePeriodicallyByTime"));
-
-        flushConfigPeriodicallyByTimeExecutorService.scheduleWithFixedDelay(new Runnable() {
+        ThreadFactory threadFactory = new ThreadFactoryImpl("LocalMessageStoreFlushMessageExecutorService");
+        flushMessageExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        flushMessageExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                flush();
-            }
-        }, 0, 10000, TimeUnit.MILLISECONDS);
-
-        flushConfigPeriodicallyByMessageNumberExecutorService = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryImpl("LocalMessageStoreFlushConfigServicePeriodicallyByMessageNumber"));
-
-        flushConfigPeriodicallyByMessageNumberExecutorService.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                if (messageQueue.size() > MAXIMUM_NUMBER_OF_DIRTY_MESSAGE_IN_QUEUE) {
+                //We do not flush all message down to disk every time, with the purpose of boosting popping message speed.
+                if (messageQueue.size() > HIGH_QUEUE_LEVEL) {
                     flush();
                 }
             }
-        }, 5000, 5000, TimeUnit.MILLISECONDS);
+        }, 0, 1000, TimeUnit.MILLISECONDS);
 
         ready = true;
 
+        try {
+            createAbortFile();
+        } catch (IOException e) {
+            LOGGER.error("Failed to create abort file.", e);
+            throw e;
+        }
+
         LOGGER.info("Local Message store starts to operate.");
+    }
+
+    private boolean isLastShutdownAbort() {
+        File abortFile = new File(localMessageStoreDirectory, ABORT_FILE_NAME);
+        return abortFile.exists();
+    }
+
+    private void createAbortFile() throws IOException {
+        File abortFile = new File(localMessageStoreDirectory, ABORT_FILE_NAME);
+        if (abortFile.exists()) {
+            LOGGER.error("Abort file already exists.");
+        } else {
+            if (!abortFile.createNewFile()) {
+                LOGGER.error("Failed to create abort file");
+            } else {
+                LOGGER.info("Abort file created: " + abortFile.getAbsolutePath());
+            }
+        }
+    }
+
+    private void deleteAbortFile() {
+        File abortFile = new File(localMessageStoreDirectory, ABORT_FILE_NAME);
+        if (abortFile.exists()) {
+            if (!abortFile.delete()) {
+                LOGGER.error("Failed to delete abort file");
+            } else {
+                LOGGER.info("Abort file deleted");
+            }
+        } else {
+            LOGGER.error("Abort file does not exist");
+        }
     }
 
     /**
      * This method will execute on startup.
      */
-    private void loadConfig() {
-        configFile = new File(localMessageStoreDirectory, ".config");
+    private void init(boolean needToRecoverData) throws IOException {
+        configFile = new File(localMessageStoreDirectory, CONFIG_FILE_NAME);
+        String[] dataFiles = getMessageDataFiles();
         if (configFile.exists() && configFile.canRead()) {
             InputStream inputStream = null;
             try {
@@ -138,44 +192,253 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 readOffSet.set(null == properties.getProperty("readOffSet") ? 0L :
                         Long.parseLong(properties.getProperty("readOffSet")));
 
-                String[] dataFiles = localMessageStoreDirectory.list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        return (!".config".equals(name)) && name.matches("\\d+");
-                    }
-                });
-
                 for (String dataFile : dataFiles) {
                     messageStoreNameFileMapping.putIfAbsent(Long.parseLong(dataFile),
                             new File(localMessageStoreDirectory, dataFile));
+                }
+
+                if (!isMessageDataContinuous(dataFiles)) {
+                    throw new RuntimeException("Message data files are corrupted and unable to recover automatically");
+                }
+
+                if (!needToRecoverData) {
+                    needToRecoverData = !verifyIndexes(dataFiles);
+                }
+
+                if (needToRecoverData) {
+                    LOGGER.info("Begin to recover data.");
+                    long readIndexLong = readIndex.longValue();
+                    long writeIndexLong = writeIndex.longValue();
+
+                    long minMessageFileName = 0;
+                    long maxMessageFileName = 0;
+                    if (dataFiles.length > 0) {
+                        minMessageFileName = Long.parseLong(dataFiles[0]);
+                        maxMessageFileName = Long.parseLong(dataFiles[dataFiles.length - 1]);
+                    }
+
+                    //Fix possible discrepancies.
+                    if (!messageStoreNameFileMapping.isEmpty()) {
+                        if (readIndexLong < minMessageFileName) {
+                            readIndex.set(minMessageFileName - 1);
+                            readOffSet.set(0);
+                        }
+
+                        if (writeIndexLong < maxMessageFileName
+                                || writeIndexLong > maxMessageFileName + MESSAGES_PER_FILE) {
+                            writeIndex.set(maxMessageFileName - 1);
+                            writeOffSet.set(0);
+                            recoverWriteAheadData(messageStoreNameFileMapping.get(maxMessageFileName));
+                        }
+                    } else {
+                        //Reset all indexes and offsets to 0 if there is any discrepancy and there is no message
+                        // data file at the same tile.
+                        if (readIndex.longValue() != writeIndex.longValue()
+                                || readOffSet.longValue() != writeOffSet.longValue()) {
+                            readIndex.set(0);
+                            readOffSet.set(0);
+                            writeIndex.set(0);
+                            writeOffSet.set(0);
+                            messageStoreNameFileMapping.clear();
+                        }
+                    }
+
+                    updateConfig();
+                    if (isLastShutdownAbort()) {
+                        deleteAbortFile();
+                    }
+                    LOGGER.info("Data Recovery completes.");
                 }
 
                 File lastWrittenFileName = messageStoreNameFileMapping
                         .get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
 
                 if (null == lastWrittenFileName && writeIndex.longValue() % MESSAGES_PER_FILE != 0) {
-                    throw new RuntimeException("Data corrupted");
+                    throw new RuntimeException("The file being written to is missing");
                 }
 
                 if (null != lastWrittenFileName) {
+                    checkFileToWrite(lastWrittenFileName);
                     writeRandomAccessFile = new RandomAccessFile(lastWrittenFileName, ACCESS_FILE_MODE);
                     if (writeOffSet.longValue() > 0) {
                         writeRandomAccessFile.seek(writeOffSet.longValue());
                     }
                 }
             } catch (FileNotFoundException e) {
-                LOGGER.error("Load configuration error", e);
+                LOGGER.error("Initializing default local store fails.", e);
+                throw e;
             } catch (IOException e) {
-                LOGGER.error("Load configuration error", e);
+                LOGGER.error("Initializing default local store fails.", e);
+                throw e;
             } finally {
                 if (null != inputStream) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        //ignore.
-                    }
+                    inputStream.close();
                 }
             }
+        } else {
+            LOGGER.info("Begin to recover data as there is no configuration file");
+            //There is no configuration file.
+            if (!isMessageDataContinuous(dataFiles)) {
+                throw new RuntimeException("Message data files are corrupted and unable to recover automatically");
+            }
+
+            if (dataFiles.length > 0) {
+                readIndex.set(Long.parseLong(dataFiles[0]) - 1);
+                readOffSet.set(0);
+
+                final int len = dataFiles.length;
+                writeIndex.set(Long.parseLong(dataFiles[len - 1]) - 1);
+                writeOffSet.set(0);
+                recoverWriteAheadData(new File(localMessageStoreDirectory, dataFiles[len - 1]));
+
+                for (String dataFile : dataFiles) {
+                    messageStoreNameFileMapping.putIfAbsent(Long.parseLong(dataFile),
+                            new File(localMessageStoreDirectory, dataFile));
+                }
+            }
+            updateConfig();
+
+            if (isLastShutdownAbort()) {
+                deleteAbortFile();
+            }
+
+            LOGGER.info("Data recovery completes.");
+        }
+
+        cleanDeprecatedData();
+    }
+
+    private void cleanDeprecatedData() throws IOException {
+        String[] dataFiles = getMessageDataFiles();
+        //Remove possibly existing deprecated message data files.
+        LOGGER.info("Start cleaning deprecated message data files.");
+        for (String dataFile : dataFiles) {
+            long dataFileLong = Long.parseLong(dataFile);
+            if (dataFileLong < readIndex.longValue() - MESSAGES_PER_FILE) {
+                File messageDataFile = new File(localMessageStoreDirectory, dataFile);
+                if (messageDataFile.delete()) {
+                    messageStoreNameFileMapping.remove(dataFileLong);
+                } else {
+                    LOGGER.error("Failed to delete deprecated message data file: {}", messageDataFile.getCanonicalPath());
+                    throw new IOException("Failed to delete file: " + messageDataFile.getAbsoluteFile());
+                }
+            } else {
+                break;
+            }
+        }
+        LOGGER.info("Completion of cleaning deprecated message data files.");
+    }
+
+    private String[] getMessageDataFiles() {
+       String[] dataFiles = localMessageStoreDirectory.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.matches("\\d+");
+            }
+        });
+
+        Arrays.sort(dataFiles, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return Long.parseLong(o1) < Long.parseLong(o2) ? -1 : 1;
+            }
+        });
+
+        return dataFiles;
+    }
+
+    private boolean verifyIndexes(String[] dataFiles) {
+        boolean indexesValid = true;
+
+        if (0 == dataFiles.length) {
+            return true;
+        }
+
+        long min = Long.parseLong(dataFiles[0]);
+
+        if (readIndex.longValue() < min || readIndex.longValue() > min + MESSAGES_PER_FILE) {
+            indexesValid = false;
+            LOGGER.error("Read index found invalid");
+        }
+
+        long max = Long.parseLong(dataFiles[dataFiles.length - 1]);
+
+        if (writeIndex.longValue() < max || writeIndex.longValue() > max + MESSAGES_PER_FILE) {
+            indexesValid = false;
+            LOGGER.error("Write index found invalid");
+        }
+
+        return indexesValid;
+    }
+
+    /**
+     * This method checks if there are missing message data files.
+     * @param dataFiles sorted message data file names in ascending order.
+     * @return true if there is no missing message data file; false otherwise.
+     */
+    private boolean isMessageDataContinuous(String[] dataFiles) {
+        if (null == dataFiles || 0 == dataFiles.length) {
+            return true;
+        }
+
+        long[] dataFileLongArray = new long[dataFiles.length];
+        boolean continuous = true;
+        int i = 0;
+        for (String dataFile: dataFiles) {
+            dataFileLongArray[i] = Long.parseLong(dataFile);
+            if (i > 0 && dataFileLongArray[i] != (dataFileLongArray[i - 1] + MESSAGES_PER_FILE)) {
+                for (long j = dataFileLongArray[i - 1] + MESSAGES_PER_FILE; j < dataFileLongArray[i]; j += MESSAGES_PER_FILE) {
+                    LOGGER.error("Found missing message data file:"+ localMessageStoreDirectory.getAbsolutePath()
+                            + File.separator + String.valueOf(j));
+                }
+                continuous = false;
+            }
+            i++;
+        }
+        return continuous;
+    }
+
+    private void recoverWriteAheadData(File dataFile) throws IOException {
+        checkFileToRead(dataFile);
+
+
+        RandomAccessFile randomAccessFile = new RandomAccessFile(dataFile, "r");
+        int recoveredMessageNumber = 0;
+        try {
+            while (recoveredMessageNumber++ < MESSAGES_PER_FILE) {
+                if (writeOffSet.longValue() + 4 + 4 > randomAccessFile.length()) {
+                    break;
+                }
+
+                int messageSize = randomAccessFile.readInt();
+                int magicCode = randomAccessFile.readInt();
+                if (magicCode != MAGIC_CODE) {
+                    break;
+                }
+
+                if (writeOffSet.longValue() + 4 + 4 + messageSize > randomAccessFile.length()) {
+                    break;
+                }
+
+                byte[] messageData = new byte[messageSize];
+                randomAccessFile.readFully(messageData);
+
+                try {
+                    JSON.parseObject(messageData, StashableMessage.class);
+                } catch (Exception e) {
+                    break;
+                }
+
+                writeIndex.incrementAndGet();
+                if (writeIndex.longValue() % MESSAGES_PER_FILE == 0) {
+                    writeOffSet.set(0);
+                } else {
+                    writeOffSet.addAndGet(4 + 4 + messageSize);
+                }
+            }
+        } finally {
+            randomAccessFile.close();
+            LOGGER.warn("Recovered " + recoveredMessageNumber + " messages.");
         }
     }
 
@@ -239,14 +502,16 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
 
     /**
      * Flush messages into hard disk.
-     * @param skipAvailableDiskSpaceCheck Indicate if available disk space check should be skipped.
+     *
+     * @param force Flush messages forcefully or not. true to flush all messages to disk, ignoring disk usage ratio
+     *              warning.
      */
-    private void flush(boolean skipAvailableDiskSpaceCheck) {
+    private void flush(boolean force) {
         LOGGER.info("Local message store starts to flush.");
 
-        if (!skipAvailableDiskSpaceCheck) {
+        if (!force) {
             float usableDiskSpaceRatio = getUsableDiskSpacePercent();
-            if ( usableDiskSpaceRatio < 1 - DISK_HIGH_WATER_LEVEL) {
+            if (usableDiskSpaceRatio < 1 - DISK_HIGH_WATER_LEVEL) {
                 long current = System.currentTimeMillis();
 
                 if (current - lastWarnTime > 2000 || -1 == lastWarnTime) {
@@ -268,10 +533,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             }
         }
 
+        boolean isFlushingSuccessful = true;
         try {
             if (!lock.tryLock()) {
                 lock.lockInterruptibly();
             }
+            LOGGER.debug(Thread.currentThread().getName() + " holds the lock");
             Message message = messageQueue.poll();
             int numberOfMessageToCommit = 0;
 
@@ -281,9 +548,12 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         (currentWriteIndex - 1) / MESSAGES_PER_FILE > (currentWriteIndex - 2) / MESSAGES_PER_FILE) {
                     //we need to create a new file.
                     File newMessageStoreFile = new File(localMessageStoreDirectory, String.valueOf(currentWriteIndex));
-                    if (!newMessageStoreFile.createNewFile()) {
+                    if (newMessageStoreFile.exists()) {
+                        LOGGER.warn("IO Alarm!! File to create already exists! Its content will be overridden!");
+                    } else if (!newMessageStoreFile.createNewFile()) {
                         throw new RuntimeException("Unable to create new local message store file");
                     }
+                    checkFileToWrite(newMessageStoreFile);
                     messageStoreNameFileMapping.putIfAbsent(currentWriteIndex, newMessageStoreFile);
 
                     //close previous file.
@@ -297,7 +567,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                 if (null == writeRandomAccessFile) {
                     File currentWritingDataFile = messageStoreNameFileMapping
                             .get(writeIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-
+                    checkFileToWrite(currentWritingDataFile);
                     writeRandomAccessFile = new RandomAccessFile(currentWritingDataFile, ACCESS_FILE_MODE);
                 }
 
@@ -311,24 +581,61 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     writeOffSet.set(0L);
                 }
 
-                if(++numberOfMessageToCommit % UPDATE_CONFIG_PER_FLUSHING_NUMBER_OF_MESSAGE == 0) {
+                if (++numberOfMessageToCommit % UPDATE_CONFIG_PER_FLUSHING_NUMBER_OF_MESSAGE == 0) {
                     updateConfig();
                 }
 
+                if (!force) {
+                    if (messageQueue.size() < LOW_QUEUE_LEVEL) {
+                        break;
+                    }
+                }
                 //Prepare for next round.
                 message = messageQueue.poll();
             }
 
             updateConfig();
-        } catch (InterruptedException e) {
-            LOGGER.error("Flush messages error", e);
-        } catch (IOException e) {
-            LOGGER.error("Flush messages error", e);
         } catch (Exception e) {
-            LOGGER.error("Flush messages error", e);
+            isFlushingSuccessful = false;
+            LOGGER.error("Flushing messages fails.", e);
         } finally {
-            LOGGER.info("Local message store flushes completely.");
             lock.unlock();
+            LOGGER.debug(Thread.currentThread().getName() + " releases the lock.");
+
+            if (isFlushingSuccessful) {
+                LOGGER.info("Flushing messages completes successfully.");
+            } else {
+                LOGGER.warn("Flushing messages aborts due to error.");
+            }
+        }
+    }
+
+    private void checkFileToWrite(File file) throws IOException {
+        if (null == file) {
+            throw new IllegalArgumentException("File under writing is being null.");
+        }
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("File " + file.getAbsolutePath()
+                    + " being written to is not found.");
+        }
+
+        if (!file.canWrite()) {
+            throw new IOException("No write permission to " + file.getAbsolutePath());
+        }
+    }
+
+    private void checkFileToRead(File file) throws IOException {
+        if (null == file) {
+            throw new IllegalArgumentException("File to read cannot be null");
+        }
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("File to read does not exist");
+        }
+
+        if (!file.canRead()) {
+            throw new IOException("No read permission to " + file.getAbsolutePath());
         }
     }
 
@@ -352,99 +659,79 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             throw new RuntimeException("Message store is not ready. You may have closed it already.");
         }
 
+        int messageToRead = Math.min(getNumberOfMessageStashed(), n);
+        if (messageToRead < 1) {
+            return null;
+        }
+
+        StashableMessage[] messages = new StashableMessage[messageToRead];
+        int messageRead = 0;
+
+        //First retrieve messages from message queue, beginning from head side, which is held in memory.
+        StashableMessage message = messageQueue.poll();
+        while (null != message) {
+            messages[messageRead++] = message;
+            if (messageRead == messageToRead) { //We've already got all messages we want to pop.
+                return messages;
+            }
+            message = messageQueue.poll();
+        }
 
         //In case we need more messages, read from local files.
         RandomAccessFile readRandomAccessFile = null;
         try {
-            if (!lock.tryLock()) {
-                lock.lockInterruptibly();
-            }
-
-            int messageToRead = Math.min(getNumberOfMessageStashed(), n);
-            StashableMessage[] messages = new StashableMessage[messageToRead];
-
-            if (messageToRead == 0) {
-                return messages;
-            }
-
-            int messageRead = 0;
-
-            //First retrieve messages from message queue, beginning from head side, which is held in memory.
-            StashableMessage message = messageQueue.poll();
-            while (null != message) {
-                messages[messageRead++] = message;
-                if (messageRead == messageToRead) { //We've already got all messages we want to pop.
-                    return messages;
-                }
-                message = messageQueue.poll();
-            }
-
-
-            File currentReadFile = null;
-            while (messageRead < messageToRead && readIndex.longValue() <= writeIndex.longValue()) {
-                if (null == readRandomAccessFile) {
-                    currentReadFile = messageStoreNameFileMapping
-                            .get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                    if (null == currentReadFile || !currentReadFile.exists()) {
-                        throw new RuntimeException("Data file corrupted");
+            //Popping messages from file requires lock.
+            if (lock.tryLock()) {
+                LOGGER.debug(Thread.currentThread().getName() + " holds the lock.");
+                File currentReadFile = null;
+                while (messageRead < messageToRead && readIndex.longValue() <= writeIndex.longValue()) {
+                    if (null == readRandomAccessFile) {
+                        currentReadFile = messageStoreNameFileMapping
+                                .get(readIndex.longValue() / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
+                        checkFileToRead(currentReadFile);
+                        readRandomAccessFile = new RandomAccessFile(currentReadFile, ACCESS_FILE_MODE);
+                        if (readOffSet.longValue() > 0) {
+                            readRandomAccessFile.seek(readOffSet.longValue());
+                        }
                     }
 
-                    readRandomAccessFile = new RandomAccessFile(currentReadFile, ACCESS_FILE_MODE);
-
-                    if (readOffSet.longValue() > 0) {
-                        readRandomAccessFile.seek(readOffSet.longValue());
+                    if (readOffSet.longValue() + 4 + 4 > readRandomAccessFile.length()) {
+                        LOGGER.error("Data inconsistent!");
+                        break;
                     }
-                }
+                    int messageSize = readRandomAccessFile.readInt();
+                    int magicCode = readRandomAccessFile.readInt();
+                    if (magicCode != MAGIC_CODE) {
+                        LOGGER.error("Data inconsistent!");
+                    }
 
-                if(readOffSet.longValue() + 4 + 4 > readRandomAccessFile.length()) {
-                    break;
-                }
+                    if (readOffSet.longValue() + 4 + 4 + messageSize > readRandomAccessFile.length()) {
+                        LOGGER.error("Data inconsistent!");
+                        break;
+                    }
 
-                int messageSize = readRandomAccessFile.readInt();
+                    byte[] data = new byte[messageSize];
+                    readRandomAccessFile.readFully(data);
+                    messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
+                    readIndex.incrementAndGet();
+                    readOffSet.addAndGet(4 + 4 + messageSize); //message_size_int + magic_code_int + messageSize.
 
+                    if (readIndex.longValue() % MESSAGES_PER_FILE == 0) {
+                        readOffSet.set(0L);
+                        readRandomAccessFile.close();
+                        readRandomAccessFile = null;
+                        messageStoreNameFileMapping.remove((readIndex.longValue() - 1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
 
-                int magicCode = readRandomAccessFile.readInt();
-                if (magicCode != MAGIC_CODE) {
-                    LOGGER.error("Data inconsistent!");
-                }
-
-                if(readOffSet.longValue() + 4 + 4 + messageSize > readRandomAccessFile.length()) {
-                    break;
-                }
-
-                byte[] data = new byte[messageSize];
-
-                readRandomAccessFile.readFully(data);
-
-                messages[messageRead++] = JSON.parseObject(data, StashableMessage.class);
-                readIndex.incrementAndGet();
-                readOffSet.addAndGet(4 + 4 + messageSize); //message_size_int + magic_code_int + messageSize.
-
-                if (readIndex.longValue() % MESSAGES_PER_FILE == 0 && currentReadFile.exists()) {
-                    readRandomAccessFile.close();
-                    readRandomAccessFile = null;
-                    readOffSet.set(0L);
-                    messageStoreNameFileMapping.remove((readIndex.longValue() - 1) / MESSAGES_PER_FILE * MESSAGES_PER_FILE + 1);
-                    if (!currentReadFile.delete()) {
-                        LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
+                        if (currentReadFile.exists()) {
+                            if (!currentReadFile.delete()) {
+                                LOGGER.warn("Unable to delete used data file: {}", currentReadFile.getAbsolutePath());
+                            }
+                        }
                     }
                 }
             }
-
-            if (messageRead < messageToRead) {
-                StashableMessage[] result = new StashableMessage[messageRead];
-                System.arraycopy(messages, 0, result, 0, messageRead);
-                return result;
-            } else {
-                return messages;
-            }
-
-        } catch (InterruptedException e) {
-            LOGGER.error("Pop message error", e);
-        } catch (FileNotFoundException e) {
-            LOGGER.error("Pop message error", e);
-        } catch (IOException e) {
-            LOGGER.error("Pop message error", e);
+        } catch (Exception e) {
+            LOGGER.error("Pop message fails.", e);
             LOGGER.error("readIndex:" + readIndex.longValue() + ", writeIndex:" + writeIndex.longValue()
                     + ", readOffset:" + readOffSet.longValue() + ", writeOffset:" + writeOffSet.longValue());
         } finally {
@@ -455,10 +742,21 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     LOGGER.error("Unexpected IO error", e);
                 }
             }
-
             lock.unlock();
+            LOGGER.debug(Thread.currentThread().getName() + " release the lock.");
         }
-        return null;
+
+        if (messageRead < 1) {
+            return null;
+        }
+
+        if (messageRead < messageToRead) {
+            StashableMessage[] result = new StashableMessage[messageRead];
+            System.arraycopy(messages, 0, result, 0, messageRead);
+            return result;
+        } else {
+            return messages;
+        }
     }
 
     public int getNumberOfMessageStashed() {
@@ -470,14 +768,14 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     public void close() throws InterruptedException {
         if (ready) {
             flush(true);
-            flushConfigPeriodicallyByTimeExecutorService.shutdown();
-            flushConfigPeriodicallyByMessageNumberExecutorService.shutdown();
-
-            flushConfigPeriodicallyByTimeExecutorService.awaitTermination(30, TimeUnit.SECONDS);
-            flushConfigPeriodicallyByMessageNumberExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+            flushMessageExecutorService.shutdown();
+            flushMessageExecutorService.awaitTermination(30, TimeUnit.SECONDS);
         }
 
         ready = false;
+
+        deleteAbortFile();
+
         LOGGER.info("Default local message store shuts down completely");
     }
 

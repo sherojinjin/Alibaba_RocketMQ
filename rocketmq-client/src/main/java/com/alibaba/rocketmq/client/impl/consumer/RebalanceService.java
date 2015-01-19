@@ -32,20 +32,18 @@ public class RebalanceService extends ServiceThread {
     private final Logger log = ClientLogger.getLog();
     private final MQClientInstance mqClientFactory;
 
+    private static long WAIT_INTERVAL = 1000 * 10;
 
     public RebalanceService(MQClientInstance mqClientFactory) {
         this.mqClientFactory = mqClientFactory;
     }
-
-    private static long WaitInterval = 1000 * 10;
-
 
     @Override
     public void run() {
         log.info(this.getServiceName() + " service started");
 
         while (!this.isStopped()) {
-            this.waitForRunning(WaitInterval);
+            this.waitForRunning(WAIT_INTERVAL);
             this.mqClientFactory.doRebalance();
         }
 

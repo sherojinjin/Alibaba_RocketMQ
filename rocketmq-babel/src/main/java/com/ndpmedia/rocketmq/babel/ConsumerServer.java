@@ -10,11 +10,13 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 
+import java.io.IOException;
+
 public class ConsumerServer {
     private static final Logger LOGGER = ClientLogger.getLog();
     private static final int PORT = Integer.parseInt(System.getProperty("RocketMQConsumerPort", "10922"));
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         TServer server = null;
         try {
             TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
