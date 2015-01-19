@@ -3,7 +3,6 @@ package com.ndpmedia.rocketmq.babel;
 import com.alibaba.rocketmq.client.producer.concurrent.MultiThreadMQProducer;
 import org.apache.thrift.TException;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +10,7 @@ public class ProducerService implements Producer.Iface {
 
     private MultiThreadMQProducer producer;
 
-    public ProducerService() throws IOException {
+    public ProducerService() {
         producer = MultiThreadMQProducer.configure()
                 .configureProducerGroup(Helper.getConfig().getProperty("producer_group")).build();
 

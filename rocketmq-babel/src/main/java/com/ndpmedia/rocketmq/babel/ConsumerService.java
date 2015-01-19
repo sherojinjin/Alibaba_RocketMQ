@@ -8,7 +8,6 @@ import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -25,7 +24,7 @@ public class ConsumerService implements Consumer.Iface {
     private CustomCacheableConsumer consumer;
     private LinkedBlockingQueue<MessageExt> messageQueue = new LinkedBlockingQueue<MessageExt>(1024);
 
-    public ConsumerService() throws MQClientException, InterruptedException, IOException {
+    public ConsumerService() throws MQClientException, InterruptedException {
         Properties properties = Helper.getConfig();
         String consumerGroup = properties.getProperty("consumer_group");
         String topicInfo = properties.getProperty("topic_info");
