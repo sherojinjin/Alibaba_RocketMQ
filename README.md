@@ -13,7 +13,8 @@ RocketMQ是一款分布式、队列模型的消息中间件，具有以下特点
 ### 如何开始？`必读`
 * [下载最新版安装包](https://github.com/alibaba/RocketMQ/releases)
 * [向开发者索要最新文档](https://github.com/alibaba/RocketMQ/issues/1)
-* [`在阿里云上使用RocketMQ`](http://onsall.oss-cn-hangzhou.aliyuncs.com/ALIYUN_ONS_USER_GUIDE.pdf)，可以免去繁琐的部署运维、成本。
+* [`在阿里云上使用RocketMQ`](http://www.aliyun.com/product/ons)，可以免去繁琐的部署运维、成本。
+
 
 ----------
 
