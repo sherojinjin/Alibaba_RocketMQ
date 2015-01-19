@@ -20,7 +20,6 @@
         <security:intercept-url pattern="/cockpit/captcha-image.jsp" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
         <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
         <security:form-login authentication-failure-handler-ref="rocketMQUserLoginFailedHandler"
-                             default-target-url="/cockpit/home.jsp"
                              login-page="/cockpit/login.jsp"
                              authentication-failure-url="/cockpit/login.jsp?error=true"/>
         <!-- Use the comment out line in production -->
