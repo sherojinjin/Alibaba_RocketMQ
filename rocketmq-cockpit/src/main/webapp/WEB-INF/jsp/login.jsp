@@ -49,12 +49,11 @@ if (null != errMSG){
     <tr><td colspan='2' width="100%" ><span style="color:red"><%=msg%></span></td></tr>
     <tr><td width="20%">User:</td><td><input type='text' id="j_username" name='j_username' value=''></td></tr>
     <tr><td width="20%">Password:</td><td><input type='password' id="j_password" name='j_password'/></td></tr>
-<tr><td colspan='2' width="100%">
+<tr><td width="20%">
   <div class="chknumber">
-         <label>verification code：
-         <input name="kaptcha" type="text" id="kaptcha" maxlength="4" class="chknumber_input" />
-         </label>
-          <img src="/cockpit/captcha-image" width="55" height="20" id="kaptchaImage"  style="margin-bottom: -3px"/>
+         <label>verification code：</label></td>
+         <td><input name="kaptcha" type="text" id="kaptcha" maxlength="8" class="chknumber_input" />
+         <img src="/cockpit/captcha-image" width="140" height="40" id="kaptchaImage"  style="margin-bottom: -3px"/>
          <script type="text/javascript">
           $(function(){
               $('#kaptchaImage').click(function () {//生成验证码
