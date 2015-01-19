@@ -1,19 +1,19 @@
 package com.ndpmedia.rocketmq.consumer.impl;
 
 import com.alibaba.rocketmq.common.MQVersion;
-import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.UtilAll;
 import com.alibaba.rocketmq.common.admin.ConsumeStats;
 import com.alibaba.rocketmq.common.admin.OffsetWrapper;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.common.protocol.body.Connection;
 import com.alibaba.rocketmq.common.protocol.body.ConsumerConnection;
-import com.alibaba.rocketmq.common.protocol.body.TopicList;
 import com.alibaba.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
+import com.ndpmedia.rocketmq.cockpit.log.CockpitLogger;
 import com.ndpmedia.rocketmq.consumer.ConsumerManager;
 import com.ndpmedia.rocketmq.consumer.model.Consumer;
 import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,6 +21,8 @@ import java.util.*;
 @Service("consumerManager")
 public class ConsumerManagerImpl implements ConsumerManager
 {
+    private final Logger logger = CockpitLogger.getLogger();
+
     @Override
     public List<Consumer> findConsumersByGroupName(String groupName)
     {
@@ -36,14 +38,15 @@ public class ConsumerManagerImpl implements ConsumerManager
 
             // 打印连接
             int i = 1;
-            for (Connection conn : cc.getConnectionSet()) {
+            for (Connection conn : cc.getConnectionSet())
+            {
                 Consumer consumer = new Consumer();
                 consumer.setClientAddr(conn.getClientAddr());
                 consumer.setClientId(conn.getClientId());
                 consumer.setLanguage(conn.getLanguage());
                 consumer.setVersion(conn.getVersion());
                 consumers.add(consumer);
-                System.out.printf("%03d  %-32s %-22s %-8s %s\n",//
+                logger.debug("%03d  %-32s %-22s %-8s %s\n",//
                         i++,//
                         conn.getClientId(),//
                         conn.getClientAddr(),//
@@ -53,13 +56,13 @@ public class ConsumerManagerImpl implements ConsumerManager
             }
 
             // 打印订阅关系
-            System.out.println("\nBelow is subscription:");
+            logger.debug("\nBelow is subscription:");
             Iterator<Map.Entry<String, SubscriptionData>> it = cc.getSubscriptionTable().entrySet().iterator();
             i = 1;
             while (it.hasNext()) {
                 Map.Entry<String, SubscriptionData> entry = it.next();
                 SubscriptionData sd = entry.getValue();
-                System.out.printf("%03d  Topic: %-40s SubExpression: %s\n",//
+                logger.debug("%03d  Topic: %-40s SubExpression: %s\n",//
                         i++,//
                         sd.getTopic(),//
                         sd.getSubString()//
@@ -67,10 +70,10 @@ public class ConsumerManagerImpl implements ConsumerManager
             }
 
             // 打印其他订阅参数
-            System.out.println("");
-            System.out.printf("ConsumeType: %s\n", cc.getConsumeType());
-            System.out.printf("MessageModel: %s\n", cc.getMessageModel());
-            System.out.printf("ConsumeFromWhere: %s\n", cc.getConsumeFromWhere());
+            logger.debug("");
+            logger.debug("ConsumeType: %s\n", cc.getConsumeType());
+            logger.debug("MessageModel: %s\n", cc.getMessageModel());
+            logger.debug("ConsumeFromWhere: %s\n", cc.getConsumeFromWhere());
         }
         catch(Exception e)
         {
@@ -129,20 +132,15 @@ public class ConsumerManagerImpl implements ConsumerManager
 
                 progressList.add(new ConsumerProgress(mq, offsetWrapper, diff));
 
-                System.out.printf("%-32s  %-32s  %-4d  %-20d  %-20d  %d\n",
-                        UtilAll.frontStringAtLeast(mq.getTopic(), 32),//
-                        UtilAll.frontStringAtLeast(mq.getBrokerName(), 32),
-                        mq.getQueueId(),
-                        offsetWrapper.getBrokerOffset(),
-                        offsetWrapper.getConsumerOffset(),
-                        diff
-                );
+                logger.debug("%-32s  %-32s  %-4d  %-20d  %-20d  %d\n", UtilAll.frontStringAtLeast(mq.getTopic(), 32),//
+                        UtilAll.frontStringAtLeast(mq.getBrokerName(), 32), mq.getQueueId(),
+                        offsetWrapper.getBrokerOffset(), offsetWrapper.getConsumerOffset(), diff);
             }
 
             progressList.add(new ConsumerProgress(null, null, diffTotal));
-            System.out.println("");
-            System.out.printf("Consume TPS: %d\n", consumeStats.getConsumeTps());
-            System.out.printf("Diff Total: %d\n", diffTotal);
+            logger.debug("");
+            logger.debug("Consume TPS: %d\n", consumeStats.getConsumeTps());
+            logger.debug("Diff Total: %d\n", diffTotal);
 
         }
         catch (Exception e) {

@@ -1,7 +1,9 @@
 package com.ndpmedia.rocketmq.authentication;
 
+import com.ndpmedia.rocketmq.cockpit.log.CockpitLogger;
 import com.ndpmedia.rocketmq.cockpit.util.LoginConstant;
 import com.ndpmedia.rocketmq.io.FileManager;
+import org.slf4j.Logger;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
@@ -18,7 +20,10 @@ public class RocketMQUserLoginFailedHandler extends SimpleUrlAuthenticationFailu
 {
     private static Properties config;
 
-    static{
+    private final Logger logger = CockpitLogger.getLogger();
+
+    static
+    {
         config = FileManager.getConfig();
     }
 
@@ -37,10 +42,10 @@ public class RocketMQUserLoginFailedHandler extends SimpleUrlAuthenticationFailu
         }
         catch (NumberFormatException e)
         {
-            System.out.println(" please check your properties.");
+            logger.warn("[config.properties] please check your properties.");
         }
 
-        System.out.println("login failed , this user [" + username + "] already retry " + retryTime);
+        logger.warn("[login] login failed , this user [" + username + "] already retry " + retryTime);
         request.getSession().setAttribute(username, retryTime + ONE);
         if (retryTime >= retryTimeMAX)
         {

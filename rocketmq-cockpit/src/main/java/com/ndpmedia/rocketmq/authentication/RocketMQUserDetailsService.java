@@ -30,7 +30,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
         UserDetails user = null;
         try
         {
-            System.out.println(" try to login ====username===== " + username);
+            logger.debug("[login] try to login ====username===== " + username);
             Map<String, Object> map = getUser(username);
 
             if (map == null )
@@ -38,7 +38,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
                 throw new Exception(" this user need register first :" + username);
             }
 
-            logger.debug(" try to login ====getUser====== " + map.get("username") + " " + map.get("password"));
+            logger.debug("[login] try to login ====getUser====== " + map.get("username") + " " + map.get("password"));
 
             // 用户名、密码、是否启用、是否被锁定、是否过期、权限
             user = new User(username, map.get("password").toString(), true, true, true, true,
@@ -47,7 +47,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
         }
         catch (Exception e)
         {
-            logger.error(" log faied !" + e.getMessage());
+            logger.warn(" log faied !" + e.getMessage());
             throw new UsernameNotFoundException(" log faied !" + e.getMessage());
         }
 

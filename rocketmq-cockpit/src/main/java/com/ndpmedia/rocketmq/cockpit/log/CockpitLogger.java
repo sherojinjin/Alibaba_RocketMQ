@@ -23,14 +23,14 @@ public class CockpitLogger
     private static Logger createLogger(String logName)
     {
         String logConfigFilePath = System
-                .getProperty("rocketmq.client.log.configFile", System.getenv("ROCKETMQ_CLIENT_LOG_CONFIGFILE"));
-        Boolean isloadconfig = Boolean.parseBoolean(System.getProperty("rocketmq.client.log.loadconfig", "true"));
+                .getProperty("rocketmq.cockpit.log.configFile", System.getenv("ROCKETMQ_COCKPIT_LOG_CONFIGFILE"));
+        Boolean isloadconfig = Boolean.parseBoolean(System.getProperty("rocketmq.cockpit.log.loadconfig", "true"));
 
         final String log4j_resource_file = System
-                .getProperty("rocketmq.client.log4j.resource.fileName", "log4j_rocketmq_cockpit.xml");
+                .getProperty("rocketmq.cockpit.log4j.resource.fileName", "log4j_rocketmq_cockpit.xml");
 
         final String logback_resource_file = System
-                .getProperty("rocketmq.client.logback.resource.fileName", "logback_rocketmq_cockpit.xml");
+                .getProperty("rocketmq.cockpit.logback.resource.fileName", "logback_rocketmq_cockpit.xml");
 
         if (isloadconfig)
         {
