@@ -1,3 +1,4 @@
+rocketmq-babel/logs*
 rocketmq-broker/.classpath
 rocketmq-broker/.project
 rocketmq-broker/.settings/org.eclipse.jdt.core.prefs

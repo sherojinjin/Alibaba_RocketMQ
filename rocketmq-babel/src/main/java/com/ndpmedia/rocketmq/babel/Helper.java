@@ -18,7 +18,7 @@ public final class Helper {
         InputStream inputStream = null;
         try {
             ClassLoader classLoader = ConsumerService.class.getClassLoader();
-            inputStream = classLoader.getResourceAsStream("rocketmq_client_setting.properties");
+            inputStream = classLoader.getResourceAsStream("sample_rocketmq_client_setting.properties");
             if (null != inputStream) {
                 properties.load(inputStream);
             } else {
