@@ -149,13 +149,11 @@ public class CacheableConsumer {
 
         //We may have only one embedded consumer for broadcasting scenario.
         if (MessageModel.BROADCASTING == messageModel) {
-
             int i = 0;
             DefaultMQPushConsumer defaultMQPushConsumer = defaultMQPushConsumers.get(i);
-            while (null == defaultMQPushConsumer) {
-                defaultMQPushConsumer = defaultMQPushConsumers.get(++i);
+            while (null == defaultMQPushConsumer && i < defaultMQPushConsumers.size()) {
+                defaultMQPushConsumer = defaultMQPushConsumers.get(i++);
             }
-
             defaultMQPushConsumers.clear();
             defaultMQPushConsumers.add(defaultMQPushConsumer);
         }
