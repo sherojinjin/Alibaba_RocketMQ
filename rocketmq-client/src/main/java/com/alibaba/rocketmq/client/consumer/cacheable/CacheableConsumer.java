@@ -323,25 +323,23 @@ public class CacheableConsumer {
         }
     }
 
-    public boolean isSuspended() {
-        return ClientStatus.SUSPENDED == status;
-    }
-
     public void suspend() {
-        if (isSuspended()) {
+        if (ClientStatus.SUSPENDED == status) {
             return;
         }
 
-        for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
-            defaultMQPushConsumer.suspend();
-        }
+        if (ClientStatus.ACTIVE == status) {
+            for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {
+                defaultMQPushConsumer.suspend();
+            }
 
-        localMessageStore.suspend();
-        status = ClientStatus.SUSPENDED;
+            localMessageStore.suspend();
+            status = ClientStatus.SUSPENDED;
+        }
     }
 
     public void resume() {
-        if (isSuspended()) {
+        if (ClientStatus.SUSPENDED == status) {
             status = ClientStatus.ACTIVE;
             localMessageStore.resume();
             for (DefaultMQPushConsumer defaultMQPushConsumer : defaultMQPushConsumers) {

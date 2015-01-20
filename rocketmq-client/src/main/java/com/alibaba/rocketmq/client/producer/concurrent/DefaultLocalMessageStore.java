@@ -787,6 +787,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     }
 
     public void resume() {
-        status = ClientStatus.ACTIVE;
+        if (ClientStatus.SUSPENDED == status) {
+            status = ClientStatus.ACTIVE;
+        }
     }
 }
