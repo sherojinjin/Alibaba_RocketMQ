@@ -177,7 +177,17 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
     private void init(boolean needToRecoverData) throws IOException {
         configFile = new File(localMessageStoreDirectory, CONFIG_FILE_NAME);
         String[] dataFiles = getMessageDataFiles();
-        if (configFile.exists() && configFile.canRead()) {
+        if (configFile.exists()) {
+            if (!configFile.canRead()) {
+                LOGGER.error("Unable to read {}. No read permission.", configFile.getAbsolutePath());
+                throw new IOException("No read permission to " + configFile.getAbsolutePath());
+            }
+
+            if (!configFile.canWrite()) {
+                LOGGER.error("Unable to write {}. No write permission.", configFile.getAbsolutePath());
+                throw new IOException("No write permission to " + configFile.getAbsolutePath());
+            }
+
             InputStream inputStream = null;
             try {
                 inputStream = new FileInputStream(configFile);
