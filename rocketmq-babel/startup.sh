@@ -17,4 +17,4 @@ do
 done
 echo $LIB_JARS
 #JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/Home"
-nohup $JAVA_HOME/bin/java $JAVA_OPTS -Dworkdir=./  -classpath.:target/classes:$LIB_JARS $APP_MAIN > $APP_LOG/nohup.log &
+nohup $JAVA_HOME/bin/java $JAVA_OPTS -Dworkdir=./  -classpath target/classes:$LIB_JARS $APP_MAIN > $APP_LOG/$1.nohup.log &
