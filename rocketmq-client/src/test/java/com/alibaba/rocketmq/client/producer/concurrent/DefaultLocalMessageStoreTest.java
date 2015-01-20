@@ -57,8 +57,8 @@ public class DefaultLocalMessageStoreTest {
 
     @Test
     public void testStressStash() throws InterruptedException {
-        int numberOfStashingThread = 31;
-        int numberOfPoppingThread = 1;
+        int numberOfStashingThread = 62;
+        int numberOfPoppingThread = 2;
         ExecutorService service = Executors.newFixedThreadPool(numberOfPoppingThread + numberOfStashingThread);
         final CountDownLatch l = new CountDownLatch(numberOfPoppingThread + numberOfStashingThread);
         final Random random = new Random();
@@ -77,7 +77,7 @@ public class DefaultLocalMessageStoreTest {
                     try {
                         while (!stop) {
                             if (random.nextBoolean()) {
-                                Thread.sleep(500);
+                                Thread.sleep(50);
                             } else {
                                 int n = random.nextInt(10);
                                 for (int i = 0; i < n; i++) {
@@ -112,14 +112,14 @@ public class DefaultLocalMessageStoreTest {
                     while (!stop) {
                         Message[] messages = defaultLocalMessageStore.pop(200);
                         if (messages == null || messages.length == 0) {
-                            if (++badLoop > 10) {
+                            if (++badLoop > 1000) {
                                 System.out.println("Too many bad loops, going to exit.");
                                 stop = true;
                                 break;
                             }
                             try {
                                 System.out.println("Empty loop. Going to sleep 1000ms.");
-                                Thread.sleep(1000);
+                                Thread.sleep(1000 * 2);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
