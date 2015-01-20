@@ -13,7 +13,7 @@ libdir=`ls target/lib`
 i=0
 for file in $libdir
 do
-    if [ i == 0 ]; then LIB_JARS="target/lib/"$LIB_JARS; else LIB_JARS="target/lib/"$LIB_JARS":$file"; fi;i=$(($i+1))
+    if [ i == 0 ]; then LIB_JARS="target/lib/"$file; else LIB_JARS="target/lib/"$file":$LIB_JARS"; fi;i=$(($i+1))
 done
 echo $LIB_JARS
 #JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/Home"
