@@ -48,6 +48,6 @@ rocketmq-tools/target/.gitignore
 target/mvn-eclipse-cache.properties
 *.class
 target/
-
+log*
 .idea
 *.iml

@@ -16,5 +16,6 @@ do
     if [ i == 0 ]; then LIB_JARS="target/lib/"$file; else LIB_JARS="target/lib/"$file":$LIB_JARS"; fi;i=$(($i+1))
 done
 echo $LIB_JARS
-#JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/Home"
+JAVA_HOME=$JAVA_HOME
+if [ ! -d "$JAVA_HOME" ]; then JAVA_HOME="/usr"; else echo "$JAVA_HOME"; fi;
 nohup $JAVA_HOME/bin/java $JAVA_OPTS -Dworkdir=./  -classpath target/classes:$LIB_JARS $APP_MAIN > $APP_LOG/$1.nohup.log &
