@@ -319,6 +319,7 @@ public class MultiThreadMQProducer {
      * @throws InterruptedException if unable to shutdown within 1 minute.
      */
     public void shutdown() throws InterruptedException {
+        LOGGER.info("MultiThreadMQProducer starts to shutdown.");
         //No more messages from client or local message store.
         semaphore.drainPermits();
 
@@ -346,6 +347,8 @@ public class MultiThreadMQProducer {
             localMessageStore.close();
             localMessageStore = null;
         }
+
+        LOGGER.info("MultiThreadMQProducer shuts down completely.");
     }
 
     public CustomizableSemaphore getSemaphore() {
