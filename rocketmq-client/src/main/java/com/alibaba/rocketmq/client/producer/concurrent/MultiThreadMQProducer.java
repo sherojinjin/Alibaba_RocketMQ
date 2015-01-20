@@ -128,12 +128,13 @@ public class MultiThreadMQProducer {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
+                LOGGER.info("Multi-thread MQ Producer shutdown hook invoked.");
                 try {
                     shutdown();
                 } catch (InterruptedException e) {
                     LOGGER.error("ShutdownHook error.", e);
                 }
-                LOGGER.info("Multi-thread MQ Producer shutdown hook invoked.");
+                LOGGER.info("Multi-thread MQ Producer shutdown completes.");
             }
         });
     }

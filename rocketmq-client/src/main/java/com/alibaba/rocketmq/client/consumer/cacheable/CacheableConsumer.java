@@ -272,6 +272,7 @@ public class CacheableConsumer {
      * @throws InterruptedException If unable to shut down within 1 minute.
      */
     public void shutdown() throws InterruptedException {
+        LOGGER.info("Start to shutdown");
         status = ClientStatus.CLOSED;
         try {
             stopReceiving();
@@ -287,6 +288,7 @@ public class CacheableConsumer {
         } catch (InterruptedException e) {
             LOGGER.error("Failed to stop", e);
         }
+        LOGGER.info("Shutdown completes");
     }
 
     protected void stopReceiving() throws InterruptedException {
