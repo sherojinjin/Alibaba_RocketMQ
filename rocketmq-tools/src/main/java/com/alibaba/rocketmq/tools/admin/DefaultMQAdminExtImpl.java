@@ -35,7 +35,15 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.common.namesrv.NamesrvUtil;
 import com.alibaba.rocketmq.common.protocol.ResponseCode;
-import com.alibaba.rocketmq.common.protocol.body.*;
+import com.alibaba.rocketmq.common.protocol.body.ClusterInfo;
+import com.alibaba.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
+import com.alibaba.rocketmq.common.protocol.body.ConsumerConnection;
+import com.alibaba.rocketmq.common.protocol.body.ConsumerRunningInfo;
+import com.alibaba.rocketmq.common.protocol.body.GroupList;
+import com.alibaba.rocketmq.common.protocol.body.KVTable;
+import com.alibaba.rocketmq.common.protocol.body.ProducerConnection;
+import com.alibaba.rocketmq.common.protocol.body.QueueTimeSpan;
+import com.alibaba.rocketmq.common.protocol.body.TopicList;
 import com.alibaba.rocketmq.common.protocol.header.UpdateConsumerOffsetRequestHeader;
 import com.alibaba.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import com.alibaba.rocketmq.common.protocol.route.BrokerData;
@@ -44,14 +52,27 @@ import com.alibaba.rocketmq.common.subscription.SubscriptionGroupConfig;
 import com.alibaba.rocketmq.remoting.RPCHook;
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
-import com.alibaba.rocketmq.remoting.exception.*;
+import com.alibaba.rocketmq.remoting.exception.RemotingCommandException;
+import com.alibaba.rocketmq.remoting.exception.RemotingConnectException;
+import com.alibaba.rocketmq.remoting.exception.RemotingException;
+import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
+import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
 import com.alibaba.rocketmq.tools.admin.api.MessageTrack;
 import com.alibaba.rocketmq.tools.admin.api.TrackType;
 import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
 
 /**
@@ -332,7 +353,7 @@ public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
             String addr = bd.selectBrokerAddr();
             if (addr != null) {
                 return this.mqClientInstance.getMQClientAPIImpl().getProducerConnectionList(addr,
-                    producerGroup, 300);
+                    producerGroup, 3000);
             }
         }
 
