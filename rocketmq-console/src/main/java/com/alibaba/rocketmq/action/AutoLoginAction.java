@@ -51,7 +51,7 @@ public class AutoLoginAction {
             e.printStackTrace();
         } finally {
             if (!hasLoggedIn) {
-                response.sendRedirect(request.getProtocol() + "://" + request.getServerName() + ":"
+                response.sendRedirect(request.getScheme() + "://" + request.getServerName() + ":"
                         + request.getServerPort() + "/");
             }
         }
