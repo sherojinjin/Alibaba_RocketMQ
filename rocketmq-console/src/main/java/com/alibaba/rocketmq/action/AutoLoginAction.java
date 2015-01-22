@@ -12,11 +12,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,7 +34,9 @@ public class AutoLoginAction {
     private AuthenticationManager myAuthenticationManager;
 
     @RequestMapping(value = "/login.do", method = {RequestMethod.GET, RequestMethod.POST})
-    public ModelAndView login(HttpServletRequest request, HttpServletResponse response) {
+    public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        boolean hasLoggedIn = false;
         try {
             UsernamePasswordAuthenticationToken token = getToken(request);
 
@@ -44,11 +46,15 @@ public class AutoLoginAction {
             SecurityContextHolder.getContext().setAuthentication(authenticatedUser);
 
             request.getRequestDispatcher("../cluster/list.do").forward(request, response);
+            hasLoggedIn = true;
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (!hasLoggedIn) {
+                response.sendRedirect(request.getProtocol() + "://" + request.getServerName() + ":"
+                        + request.getServerPort() + "/");
+            }
         }
-
-        return new ModelAndView("forward:/");
     }
 
 
