@@ -54,7 +54,11 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
 
     public static String getIpAddr(HttpServletRequest request)
     {
-        String ip = request.getHeader("x-forwarded-for");
+        String ip = getServerIP(request);
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
+        {
+            ip = request.getHeader("x-forwarded-for");
+        }
         if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
         {
             ip = request.getHeader("Proxy-Client-IP");
@@ -74,6 +78,13 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
         }
 
         return ip;
+    }
+
+    private static String getServerIP(HttpServletRequest request)
+    {
+        StringBuffer url = request.getRequestURL();
+        System.out.println(url);
+        return url.toString();
     }
 
     public static Cookie getCookie(HttpServletRequest request, String key, String value)
