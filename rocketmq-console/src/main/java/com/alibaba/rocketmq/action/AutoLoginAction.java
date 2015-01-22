@@ -1,5 +1,6 @@
 package com.alibaba.rocketmq.action;
 
+import com.alibaba.rocketmq.remoting.netty.SslHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +18,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -27,16 +27,15 @@ import java.util.List;
  */
 @Controller
 @RequestMapping("/authority")
-public class AutoLoginAction
-{
+public class AutoLoginAction {
+
+    private static final String COOKIE_ENCRYPTION_KEY = "C0ckp1t";
     @Autowired
     private AuthenticationManager myAuthenticationManager;
 
     @RequestMapping(value = "/login.do", method = {RequestMethod.GET, RequestMethod.POST})
-    public ModelAndView login(HttpServletRequest request, HttpServletResponse response)
-    {
-        try
-        {
+    public ModelAndView login(HttpServletRequest request, HttpServletResponse response) {
+        try {
             UsernamePasswordAuthenticationToken token = getToken(request);
 
             token.setDetails(new WebAuthenticationDetails(request));
@@ -45,9 +44,7 @@ public class AutoLoginAction
             SecurityContextHolder.getContext().setAuthentication(authenticatedUser);
 
             request.getRequestDispatcher("../cluster/list.do").forward(request, response);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -55,44 +52,43 @@ public class AutoLoginAction
     }
 
 
-    private Collection<GrantedAuthority> getAuthority(String role)
-    {
+    private Collection<GrantedAuthority> getAuthority(String role) {
         List<GrantedAuthority> authList = new ArrayList<GrantedAuthority>();
-        if (role.contains(";"))
-        {
+        if (role.contains(";")) {
             String[] roles = role.split(";");
             for (String ro : roles)
                 authList.add(new SimpleGrantedAuthority(ro));
-        }
-        else
-        {
+        } else {
             authList.add(new SimpleGrantedAuthority(role));
         }
         return authList;
     }
 
-    private UsernamePasswordAuthenticationToken getToken(HttpServletRequest request)
-    {
+    private UsernamePasswordAuthenticationToken getToken(HttpServletRequest request) throws Exception {
         String uid = null;
         String password = null;
 
         Collection<? extends GrantedAuthority> authorities = null;
 
         Cookie[] cookies = request.getCookies();
-        for (Cookie c : cookies)
-        {
-            System.out.println(c.getName() + " [request.getRemoteHost()] " + c.getValue());
-            if (c.getName().contains("username"))
-            {
-                uid = c.getValue();
+        for (Cookie c : cookies) {
+            if ("JSESSIONID".equals(c.getName())) {
+                continue;
             }
-            if (c.getName().contains("password"))
-            {
-                password = c.getValue();
+
+            String value = new String(SslHelper.decrypt(COOKIE_ENCRYPTION_KEY, c.getValue()));
+            System.out.println(c.getName() + " [request.getRemoteHost()] " + value);
+
+            if (c.getName().contains("username")) {
+                uid = value;
             }
-            if (c.getName().contains("authority"))
-            {
-                authorities = getAuthority(c.getValue());
+
+            if (c.getName().contains("password")) {
+                password = value;
+            }
+
+            if (c.getName().contains("authority")) {
+                authorities = getAuthority(value);
             }
         }
 
@@ -102,13 +98,11 @@ public class AutoLoginAction
         return token;
     }
 
-    public AuthenticationManager getMyAuthenticationManager()
-    {
+    public AuthenticationManager getMyAuthenticationManager() {
         return myAuthenticationManager;
     }
 
-    public void setMyAuthenticationManager(AuthenticationManager myAuthenticationManager)
-    {
+    public void setMyAuthenticationManager(AuthenticationManager myAuthenticationManager) {
         this.myAuthenticationManager = myAuthenticationManager;
     }
 }

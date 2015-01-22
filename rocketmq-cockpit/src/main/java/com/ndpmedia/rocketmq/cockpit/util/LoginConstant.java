@@ -32,4 +32,6 @@ public interface LoginConstant extends Constant
     String PROPERTIES_KEY_JDBC_DRIVER = "jdbc.driverClassName";
 
     String PROPERTIES_KEY_JDBC_URL = "";
+
+    String COOKIE_ENCRYPTION_KEY = "C0ckp1t";
 }

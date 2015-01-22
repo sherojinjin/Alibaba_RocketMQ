@@ -6,7 +6,12 @@ import com.ndpmedia.rocketmq.cockpit.util.LoginConstant;
 import com.ndpmedia.rocketmq.io.FileManager;
 import org.slf4j.Logger;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -17,27 +22,23 @@ import java.util.Properties;
 /**
  * personal filter.just for check retry times.
  */
-public class RocketMQLoginFilter implements Filter, LoginConstant
-{
+public class RocketMQLoginFilter implements Filter, LoginConstant {
     private static Properties config;
 
     private final Logger logger = CockpitLogger.getLogger();
 
-    static
-    {
+    static {
         config = FileManager.getConfig();
     }
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException
-    {
+    public void init(FilterConfig filterConfig) throws ServletException {
 
     }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException
-    {
+            throws IOException, ServletException {
         logger.debug("[personal filter]check verification code and retry times. ");
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
@@ -45,16 +46,14 @@ public class RocketMQLoginFilter implements Filter, LoginConstant
 
         session.removeAttribute(LOGIN_SESSION_ERROR_KEY);
 
-        if (checkRetryTimes(request))
-        {
+        if (checkRetryTimes(request)) {
             logger.warn("[personal filter] retry too many times !");
             session.setAttribute(LOGIN_SESSION_ERROR_KEY, LOGIN_TOO_MANY_TIMES_MSG);
             request.getRequestDispatcher(LOGIN_PAGE_PATH).forward(request, response);
             return;
         }
 
-        if (checkVerificationCode(request))
-        {
+        if (checkVerificationCode(request)) {
             logger.warn("[personal filter] verification code is not right !");
             session.setAttribute(LOGIN_SESSION_ERROR_KEY, LOGIN_VERIFICATION_CODE_WRONG);
             request.getRequestDispatcher(LOGIN_PAGE_PATH).forward(request, response);
@@ -65,34 +64,28 @@ public class RocketMQLoginFilter implements Filter, LoginConstant
     }
 
     @Override
-    public void destroy()
-    {
+    public void destroy() {
 
     }
 
     /**
-     *  check how many times try to login.
+     * check how many times try to login.
+     *
      * @param request
-     * @return  if login too many times,return true;
+     * @return if login too many times,return true;
      */
-    private boolean checkRetryTimes(HttpServletRequest request)
-    {
+    private boolean checkRetryTimes(HttpServletRequest request) {
         HttpSession session = request.getSession();
         String username = request.getParameter(LOGIN_PARAMETER_USERNAME);
-        if (null != session && null != session.getAttribute(username))
-        {
+        if (null != session && null != session.getAttribute(username)) {
             int retryTime = Integer.parseInt("" + session.getAttribute(username));
             int retryTimeMAX = FIVE;
-            try
-            {
+            try {
                 retryTimeMAX = Integer.parseInt(config.getProperty(PROPERTIES_KEY_LOGIN_RETRY_TIME));
-            }
-            catch (NumberFormatException e)
-            {
+            } catch (NumberFormatException e) {
                 logger.warn("[config.properties]please check your properties.");
             }
-            if (retryTime >= retryTimeMAX)
-            {
+            if (retryTime >= retryTimeMAX) {
                 return true;
             }
         }
@@ -100,18 +93,16 @@ public class RocketMQLoginFilter implements Filter, LoginConstant
     }
 
     /**
-     *  check the input verification code
+     * check the input verification code
+     *
      * @param request
-     * @return  verify ok return false;
+     * @return verify ok return false;
      */
-    private boolean checkVerificationCode(HttpServletRequest request)
-    {
+    private boolean checkVerificationCode(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        try
-        {
+        try {
             Enumeration<String> s = request.getParameterNames();
-            while (s.hasMoreElements())
-            {
+            while (s.hasMoreElements()) {
                 String temp = s.nextElement();
                 System.out.println("[name]:" + temp + "[values]:" + request.getParameter(temp));
             }
@@ -119,13 +110,11 @@ public class RocketMQLoginFilter implements Filter, LoginConstant
             if (null == kaptcha || kaptcha.isEmpty())
                 return false;
             System.out.println(LOGIN_PARAMETER_KAPTCHA + " [=] " + kaptcha);
-            String code = (String)session.getAttribute(Constants.KAPTCHA_SESSION_KEY);
+            String code = (String) session.getAttribute(Constants.KAPTCHA_SESSION_KEY);
             System.out.println(Constants.KAPTCHA_SESSION_KEY + " [=] " + code);
             if (kaptcha.equals(code))
                 return false;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.warn("[personal filter] try to check verification code failed !");
         }
         return true;
