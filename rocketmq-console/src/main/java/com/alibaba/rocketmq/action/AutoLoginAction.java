@@ -13,12 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,7 +37,6 @@ public class AutoLoginAction
     {
         try
         {
-
             UsernamePasswordAuthenticationToken token = getToken(request);
 
             token.setDetails(new WebAuthenticationDetails(request));
@@ -53,7 +51,7 @@ public class AutoLoginAction
             e.printStackTrace();
         }
 
-        return null;
+        return new ModelAndView("forward:/");
     }
 
 

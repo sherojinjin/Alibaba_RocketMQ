@@ -9,7 +9,6 @@ import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -23,8 +22,6 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws ServletException, IOException
     {
-        HttpSession session = request.getSession();
-
         Cookie[] cookies = request.getCookies();
 
         for (Cookie c : cookies)
@@ -37,11 +34,14 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
 
         Collection<? extends GrantedAuthority> c = authentication.getAuthorities();
         StringBuffer grant = new StringBuffer();
+        int flag = 0;
         for (GrantedAuthority g : c)
         {
+            if (flag > 0)
+                grant.append(";");
             System.out.println(g.getAuthority());
             grant.append(g.getAuthority());
-            grant.append(";");
+            flag++;
         }
 
         Cookie auth = getCookie(request, LOGIN_PARAMETER_AUTHORITY, grant.toString());
@@ -95,7 +95,7 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
         cookie.setPath("/");
         cookie.setDomain(getIpAddr(request));
         cookie.setHttpOnly(true);
-        System.out.println(cookie.toString());
+        System.out.println(cookie.getName() + " -[]- " + cookie.getValue());
         return cookie;
     }
 }
