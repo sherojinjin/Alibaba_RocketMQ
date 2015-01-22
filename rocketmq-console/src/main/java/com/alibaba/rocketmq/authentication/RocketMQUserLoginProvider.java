@@ -1,4 +1,4 @@
-package com.alibaba.rocketmq.action;
+package com.alibaba.rocketmq.authentication;
 
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -10,7 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
- * Created by Administrator on 2015/1/20.
+ * personal provider.
+ *
  */
 public class RocketMQUserLoginProvider extends AbstractUserDetailsAuthenticationProvider
 {

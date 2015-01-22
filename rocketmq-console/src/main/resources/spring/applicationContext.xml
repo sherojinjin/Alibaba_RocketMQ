@@ -51,11 +51,7 @@
 		<security:authentication-provider ref="rocketMQUserLoginProvider" />
 	</security:authentication-manager>
 
-	<bean id="rocketMQUserLoginFilter" class="com.alibaba.rocketmq.action.RocketMQUserLoginFilter">
-
-	</bean>
-
-	<bean id="rocketMQUserLoginProvider" class="com.alibaba.rocketmq.action.RocketMQUserLoginProvider" />
+	<bean id="rocketMQUserLoginProvider" class="com.alibaba.rocketmq.authentication.RocketMQUserLoginProvider" />
 
 
 	<bean id="configureInitializer" class="com.alibaba.rocketmq.config.ConfigureInitializer" init-method="init">

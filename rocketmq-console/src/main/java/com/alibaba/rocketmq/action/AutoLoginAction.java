@@ -23,7 +23,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by Administrator on 2015/1/20.
+ * console auto login.
+ * must login in cockpit .
  */
 @Controller
 @RequestMapping("/authority")
@@ -35,39 +36,10 @@ public class AutoLoginAction
     @RequestMapping(value = "/login.do", method = {RequestMethod.GET, RequestMethod.POST})
     public ModelAndView login(HttpServletRequest request, HttpServletResponse response)
     {
-        ServletContext servletContext = request.getServletContext();
-
-        HttpSession session = null;
-        String uid = null;
-        String password = null;
-
-        Collection<? extends GrantedAuthority> authorities = null;
-
         try
         {
-            Cookie[] cookies = request.getCookies();
-            for (Cookie c : cookies)
-            {
-                System.out.println(c.getName() + " [request.getRemoteHost()] " + c.getValue());
-                if (c.getName().contains("username"))
-                {
-                    uid = c.getValue();
-                }
-                if (c.getName().contains("password"))
-                {
-                    password = c.getValue();
-                }
-                if (c.getName().contains("authority"))
-                {
-                    authorities = getAuthority(c.getValue());
-                }
-            }
 
-            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(uid, password,
-                    authorities);
-
-            // generate session if one doesn't exist
-            request.getSession();
+            UsernamePasswordAuthenticationToken token = getToken(request);
 
             token.setDetails(new WebAuthenticationDetails(request));
             Authentication authenticatedUser = myAuthenticationManager.authenticate(token);
@@ -75,17 +47,17 @@ public class AutoLoginAction
             SecurityContextHolder.getContext().setAuthentication(authenticatedUser);
 
             request.getRequestDispatcher("../cluster/list.do").forward(request, response);
-
         }
         catch (Exception e)
         {
-
+            e.printStackTrace();
         }
+
         return null;
     }
 
 
-    public Collection<GrantedAuthority> getAuthority(String role)
+    private Collection<GrantedAuthority> getAuthority(String role)
     {
         List<GrantedAuthority> authList = new ArrayList<GrantedAuthority>();
         if (role.contains(";"))
@@ -99,6 +71,37 @@ public class AutoLoginAction
             authList.add(new SimpleGrantedAuthority(role));
         }
         return authList;
+    }
+
+    private UsernamePasswordAuthenticationToken getToken(HttpServletRequest request)
+    {
+        String uid = null;
+        String password = null;
+
+        Collection<? extends GrantedAuthority> authorities = null;
+
+        Cookie[] cookies = request.getCookies();
+        for (Cookie c : cookies)
+        {
+            System.out.println(c.getName() + " [request.getRemoteHost()] " + c.getValue());
+            if (c.getName().contains("username"))
+            {
+                uid = c.getValue();
+            }
+            if (c.getName().contains("password"))
+            {
+                password = c.getValue();
+            }
+            if (c.getName().contains("authority"))
+            {
+                authorities = getAuthority(c.getValue());
+            }
+        }
+
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(uid, password,
+                authorities);
+
+        return token;
     }
 
     public AuthenticationManager getMyAuthenticationManager()

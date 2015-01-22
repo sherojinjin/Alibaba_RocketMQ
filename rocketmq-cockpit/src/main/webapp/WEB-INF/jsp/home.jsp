@@ -14,5 +14,9 @@
         <li><a href="cockpit/broker/">Broker Status</a></li>
     </ul>
 
+    <h1>Console Home</h1>
+    <ul>
+        <li><a href="console/">Manage</a></li>
+    </ul>
 </body>
 </html>

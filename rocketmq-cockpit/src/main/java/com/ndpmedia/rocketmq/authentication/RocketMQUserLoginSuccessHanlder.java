@@ -16,7 +16,8 @@ import java.util.Collection;
 /**
  * try to save user login session.
  */
-public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthenticationSuccessHandler implements LoginConstant
+public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthenticationSuccessHandler
+        implements LoginConstant
 {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -26,7 +27,7 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
 
         Cookie[] cookies = request.getCookies();
 
-        for (Cookie c:cookies)
+        for (Cookie c : cookies)
         {
             System.out.println(c.getName() + " [request.getRemoteHost()] " + c.getValue());
         }
@@ -36,7 +37,7 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
 
         Collection<? extends GrantedAuthority> c = authentication.getAuthorities();
         StringBuffer grant = new StringBuffer();
-        for (GrantedAuthority g:c)
+        for (GrantedAuthority g : c)
         {
             System.out.println(g.getAuthority());
             grant.append(g.getAuthority());
@@ -51,20 +52,27 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
         super.onAuthenticationSuccess(request, response, authentication);
     }
 
-    public static String getIpAddr(HttpServletRequest request) {
+    public static String getIpAddr(HttpServletRequest request)
+    {
         String ip = request.getHeader("x-forwarded-for");
-        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
+        {
             ip = request.getHeader("Proxy-Client-IP");
         }
-        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
+        {
             ip = request.getHeader("WL-Proxy-Client-IP");
         }
-        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip))
+        {
             ip = request.getRemoteAddr();
         }
+        //当使用本地域名访问时，获取到的IP系特殊IP 0:0:0:0:0:0:0:1
         if (ip.startsWith("0:0:0:0:"))
+        {
             ip = "localhost";
-        System.out.println(ip);
+        }
+
         return ip;
     }
 
