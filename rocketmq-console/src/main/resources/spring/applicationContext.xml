@@ -26,26 +26,36 @@
 	<security:http pattern="/rocketmq/**" security="none" />
 
 	<security:http auto-config="true">
-
 		<!-- Use the comment out line in production -->
 
 		<!--
           <security:intercept-url pattern="/**" access="ROLE_ADMIN" requires-channel="https" />
           -->
+		<security:intercept-url pattern="/console/index.html" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+		<security:intercept-url pattern="/authority/login.do" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+		<security:intercept-url pattern="/console/authority/login.do" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
 		<security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
-		<security:session-management>
-			<security:concurrency-control max-sessions="1" />
+		<security:form-login login-page="/authority/login.do" />
+		<security:session-management >
+			<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false" />
 		</security:session-management>
 	</security:http>
 
 
-	<security:authentication-manager>
+	<security:authentication-manager alias="myAuthenticationManager">
 		<security:authentication-provider>
 			<security:user-service>
 				<security:user name="root" authorities="ROLE_ADMIN" password="password" />
 			</security:user-service>
 		</security:authentication-provider>
+		<security:authentication-provider ref="rocketMQUserLoginProvider" />
 	</security:authentication-manager>
+
+	<bean id="rocketMQUserLoginFilter" class="com.alibaba.rocketmq.action.RocketMQUserLoginFilter">
+
+	</bean>
+
+	<bean id="rocketMQUserLoginProvider" class="com.alibaba.rocketmq.action.RocketMQUserLoginProvider" />
 
 
 	<bean id="configureInitializer" class="com.alibaba.rocketmq.config.ConfigureInitializer" init-method="init">

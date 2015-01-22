@@ -77,4 +77,7 @@
         <servlet-name>mvc</servlet-name>
         <url-pattern>/cockpit/*</url-pattern>
     </servlet-mapping>
+
+    <distributable />
+
 </web-app>

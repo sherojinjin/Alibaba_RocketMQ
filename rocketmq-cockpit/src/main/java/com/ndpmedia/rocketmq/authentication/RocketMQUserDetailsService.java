@@ -42,7 +42,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
 
             // 用户名、密码、是否启用、是否被锁定、是否过期、权限
             user = new User(username, map.get("password").toString(), true, true, true, true,
-                    getAuthority("ROLE_ADMIN"));
+                    getAuthority(map.get("role").toString()));
             
         }
         catch (Exception e)

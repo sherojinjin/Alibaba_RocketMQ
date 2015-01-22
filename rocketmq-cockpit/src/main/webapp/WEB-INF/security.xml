@@ -19,8 +19,11 @@
         <security:intercept-url pattern="/cockpit/login.jsp" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
         <security:intercept-url pattern="/cockpit/captcha-image.jsp" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
         <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
+        <security:intercept-url pattern="/**/broker" access="ROLE_USER"/>
+        <security:intercept-url pattern="/" access="ROLE_USER"/>
         <security:form-login authentication-failure-handler-ref="rocketMQUserLoginFailedHandler"
-                             login-page="/cockpit/login.jsp"
+                             authentication-success-handler-ref="rocketMQUserLoginSuccessHandler"
+                             login-page="/cockpit/login.jsp" default-target-url="/cockpit/home.jsp"
                              authentication-failure-url="/cockpit/login.jsp?error=true"/>
         <!-- Use the comment out line in production -->
         <!--
@@ -40,6 +43,7 @@
     </security:authentication-manager>
 
     <bean id="rocketMQLoginFilter" class="com.ndpmedia.rocketmq.authentication.RocketMQLoginFilter" />
+    <bean id="rocketMQUserLoginSuccessHandler" class="com.ndpmedia.rocketmq.authentication.RocketMQUserLoginSuccessHanlder" />
     <!--
             通过 RocketMQUserDetailsService,Spring会控制用户的访问级别.
             也可以理解成:以后我们和数据库操作就是通过RocketMQUserDetailsService来进行关联.

@@ -17,5 +17,10 @@ INSERT INTO ip_mapping(inner_ip, public_ip) VALUES ('10.3.36.11', '54.67.77.111'
 INSERT INTO ip_mapping(inner_ip, public_ip) VALUES ('10.1.36.12', '54.174.184.203');
 INSERT INTO ip_mapping(inner_ip, public_ip) VALUES ('10.1.36.11', '54.173.209.191');
 
-INSERT INTO cockpit_user(username, password) VALUES ('root', '320734fbb627d6884a1284acbdaa5db9');
-INSERT INTO cockpit_user(username, password) VALUES ('xutao', '23dc3038d25ef09f3ad7c0552b40ef9f');
+INSERT INTO cockpit_user(username, password, role) VALUES ('root', '320734fbb627d6884a1284acbdaa5db9', 'ROLE_ADMIN');
+INSERT INTO cockpit_user(username, password, role) VALUES ('xutao', '23dc3038d25ef09f3ad7c0552b40ef9f', 'ROLE_USER');
+
+INSERT INTO cockpit_role(name) VALUES('ROLE_ADMIN');
+INSERT INTO cockpit_role(name) VALUES('ROLE_USER');
+
+INSERT INTO cockpit_rel_user_role(user_id, role_id) VALUES();

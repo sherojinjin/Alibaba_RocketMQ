@@ -15,9 +15,17 @@ public interface LoginConstant extends Constant
 
     String LOGIN_PARAMETER_PASSWORD = "j_password";
 
+    String LOGIN_PARAMETER_AUTHORITY = "j_authority";
+
     String LOGIN_PARAMETER_KAPTCHA = "kaptcha";
 
     String LOGIN_PAGE_PATH = "/cockpit/login.jsp";
+
+    String LOGIN_SSO_KEY_USERNAME = "SSO_USER_DETAIL_USERNAME";
+
+    String LOGIN_SSO_KEY_PASSWORD = "SSO_USER_DETAIL_PASSWORD";
+
+    String LOGIN_SSO_KEY_AUTHORITY = "SSO_USER_DETAIL_AUTHORITY";
 
     String PROPERTIES_KEY_LOGIN_RETRY_TIME = "login_retry_time" ;
 
