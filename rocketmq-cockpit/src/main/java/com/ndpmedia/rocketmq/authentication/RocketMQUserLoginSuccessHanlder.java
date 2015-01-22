@@ -83,8 +83,10 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
     private static String getServerIP(HttpServletRequest request)
     {
         StringBuffer url = request.getRequestURL();
-        System.out.println(url);
-        return url.toString();
+        String temp = url.toString().replace("http://", "");
+        temp = temp.substring(0, temp.indexOf("/"));
+        System.out.println(temp);
+        return temp;
     }
 
     public static Cookie getCookie(HttpServletRequest request, String key, String value)
