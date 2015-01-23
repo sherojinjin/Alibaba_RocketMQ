@@ -33,7 +33,9 @@ public class ProcessMessageTask implements Runnable {
             int result = messageHandler.handle(message);
             if (0 == result) {
                 cacheableConsumer.getStatistics().addValue(System.currentTimeMillis() - start);
+                cacheableConsumer.getSuccessCounter().incrementAndGet();
             } else if (result > 0) {
+                cacheableConsumer.getFailureCounter().incrementAndGet();
                 StashableMessage stashableMessage = message.buildStashableMessage();
                 stashableMessage.putUserProperty(NEXT_TIME_KEY, String.valueOf(System.currentTimeMillis() + result));
                 LOGGER.info("Stashing message[msgId=" + message.getMsgId() + "] for later retry in " + result + " ms.");

@@ -83,6 +83,14 @@ public class CacheableConsumer {
 
     private SynchronizedDescriptiveStatistics statistics;
 
+    private volatile long previousSuccessCount = 0;
+
+    private volatile long previousFailureCount = 0;
+
+    private AtomicLong successCounter = new AtomicLong(0L);
+
+    private AtomicLong failureCounter = new AtomicLong(0L);
+
     private static String getInstanceName() {
         return BASE_INSTANCE_NAME + RemotingUtil.getLocalAddress(false) + "_" + CONSUMER_NAME_COUNTER.incrementAndGet();
     }
@@ -147,6 +155,13 @@ public class CacheableConsumer {
                     LOGGER.info("Number of messages pending to send is: {}", messageQueue.size());
                     LOGGER.info("Number of messages under processing is: {}", inProgressMessageQueue.size());
                     LOGGER.info("Number of messages Stashed is: {}", localMessageStore.getNumberOfMessageStashed());
+
+                    long currentSuccessCount = successCounter.get();
+                    long currentFailureCount = failureCounter.get();
+                    LOGGER.info("Success TPS: " + (currentSuccessCount - previousSuccessCount) / 30.0);
+                    LOGGER.info("Failure TPS: " + (currentFailureCount - previousFailureCount) / 30.0);
+                    previousSuccessCount = currentSuccessCount;
+                    previousFailureCount = currentFailureCount;
                 }
             }, 30, 30, TimeUnit.SECONDS);
         } catch (IOException e) {
@@ -329,6 +344,14 @@ public class CacheableConsumer {
 
     public ThreadPoolExecutor getExecutorWorkerService() {
         return executorWorkerService;
+    }
+
+    public AtomicLong getSuccessCounter() {
+        return successCounter;
+    }
+
+    public AtomicLong getFailureCounter() {
+        return failureCounter;
     }
 
     /**
