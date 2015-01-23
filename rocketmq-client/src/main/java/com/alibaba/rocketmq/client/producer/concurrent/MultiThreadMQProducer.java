@@ -246,6 +246,8 @@ public class MultiThreadMQProducer {
             if (waitResponseTimeoutCounter % 1000 == 0) {
                 LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception:", e);
             }
+        } else {
+            LOGGER.error("#handleSendMessageFailure: Send message failed. Enter re-send logic. Exception: ", e);
         }
     }
 

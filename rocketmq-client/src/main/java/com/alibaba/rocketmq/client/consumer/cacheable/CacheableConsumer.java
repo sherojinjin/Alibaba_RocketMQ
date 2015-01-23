@@ -133,7 +133,7 @@ public class CacheableConsumer {
                             statistics.getMax(),
                             statistics.getMean());
                     LOGGER.info("Business Processing Performance Percentile Report: \n 5% {}ms,\n 10% {}ms,\n 20% {}ms," +
-                                    "\n 40% {}ms,\n 50% {}ms,\n 80% {}ms,\n 90% {}ms,\n 95% {},\n 100% {}ms",
+                                    "\n 40% {}ms,\n 50% {}ms,\n 80% {}ms,\n 90% {}ms,\n 95% {}ms,\n 100% {}ms",
                             statistics.getPercentile(5),
                             statistics.getPercentile(10),
                             statistics.getPercentile(20),
