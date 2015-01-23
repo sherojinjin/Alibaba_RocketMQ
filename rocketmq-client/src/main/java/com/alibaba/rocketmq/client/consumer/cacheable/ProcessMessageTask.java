@@ -23,6 +23,8 @@ public class ProcessMessageTask implements Runnable {
 
     private LinkedBlockingQueue<MessageExt> messageQueue;
 
+    private LinkedBlockingQueue<MessageExt> inProgressMessageQueue;
+
     private static final AtomicLong LOG_COUNTER = new AtomicLong(0L);
 
     private static final long LOG_PERFORMANCE_INTERVAL = 1000L;
@@ -30,12 +32,15 @@ public class ProcessMessageTask implements Runnable {
     public ProcessMessageTask(MessageExt message, //Message to process.
                               MessageHandler messageHandler, //Message handler.
                               DefaultLocalMessageStore localMessageStore, //Local message store.
-                              LinkedBlockingQueue<MessageExt> messageQueue //Buffered message queue.
+                              LinkedBlockingQueue<MessageExt> messageQueue, //Buffered message queue.
+                              LinkedBlockingQueue<MessageExt> inProgressMessageQueue
+
     ) {
         this.message = message;
         this.messageHandler = messageHandler;
         this.localMessageStore = localMessageStore;
         this.messageQueue = messageQueue;
+        this.inProgressMessageQueue = inProgressMessageQueue;
     }
 
     @Override
@@ -50,22 +55,18 @@ public class ProcessMessageTask implements Runnable {
             }
 
             int result = messageHandler.handle(message);
+            inProgressMessageQueue.remove(message);
 
             if (logPerformance) {
                 LOGGER.info("Business processing takes " + (System.currentTimeMillis() - start) + " ms");
-            }
-
-            //Remove the message from in-progress queue.
-            if (null != messageQueue && messageQueue.contains(message)) {
-                messageQueue.remove(message);
-                LOGGER.info("Now " + messageQueue.size() + " messages in queue.");
+                LOGGER.info("Now " + messageQueue.size() + " messages in queue pending to process.");
+                LOGGER.info("Now " + inProgressMessageQueue.size() + " messages under processing.");
             }
 
             if (result > 0) {
                 StashableMessage stashableMessage = message.buildStashableMessage();
                 stashableMessage.putUserProperty(NEXT_TIME_KEY, String.valueOf(System.currentTimeMillis() + result));
-                LOGGER.info("Stashing message[msgId=" + message.getMsgId() + "] for later retry in " + result
-                        + " ms.");
+                LOGGER.info("Stashing message[msgId=" + message.getMsgId() + "] for later retry in " + result + " ms.");
                 localMessageStore.stash(stashableMessage);
                 LOGGER.info("Message stashed.");
             }

@@ -25,17 +25,21 @@ public class FrontController implements MessageListenerConcurrently {
 
     private LinkedBlockingQueue<MessageExt> messageQueue;
 
-    private static final int MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED = 20000;
+    private LinkedBlockingQueue<MessageExt> inProgressMessageQueue;
 
     private JobSubmitter jobSubmitter = null;
 
     public FrontController(final ConcurrentHashMap<String, MessageHandler> topicHandlerMap,
                            final ThreadPoolExecutor executorWorkerService,
-                           final DefaultLocalMessageStore localMessageStore) {
+                           final DefaultLocalMessageStore localMessageStore,
+                           final LinkedBlockingQueue<MessageExt> messageQueue,
+                           final LinkedBlockingQueue<MessageExt> inProgressMessageQueue) {
         this.topicHandlerMap = topicHandlerMap;
         this.executorWorkerService = executorWorkerService;
         this.localMessageStore = localMessageStore;
-        messageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
+        this.messageQueue = messageQueue;
+        this.inProgressMessageQueue = inProgressMessageQueue;
+
         jobSubmitter = new JobSubmitter();
         Thread jobSubmitterThread = new Thread(jobSubmitter);
         jobSubmitterThread.setName("JobSubmitter");
@@ -46,16 +50,18 @@ public class FrontController implements MessageListenerConcurrently {
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> messages,
                                                     ConsumeConcurrentlyContext context) {
+        if (null == messages) {
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+
         for (MessageExt message : messages) {
-            try {
-                if (messageQueue.remainingCapacity() > 0) {
+            if (null != message) {
+                try {
                     messageQueue.put(message);
-                } else {
-                    localMessageStore.stash(message);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to put message into message queue", e);
+                    return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                 }
-            } catch (Exception e) {
-                LOGGER.error("Failed to put message into message queue", e);
-                return ConsumeConcurrentlyStatus.RECONSUME_LATER;
             }
         }
 
@@ -82,8 +88,9 @@ public class FrontController implements MessageListenerConcurrently {
                 try {
                     MessageExt message = messageQueue.take(); //Block if there is no message in the queue.
                     final MessageHandler messageHandler = topicHandlerMap.get(message.getTopic());
-                    ProcessMessageTask task =
-                            new ProcessMessageTask(message, messageHandler, localMessageStore, messageQueue);
+                    ProcessMessageTask task = new ProcessMessageTask(message, messageHandler, localMessageStore,
+                            messageQueue, inProgressMessageQueue);
+                    inProgressMessageQueue.put(message);
                     executorWorkerService.submit(task);
                 } catch (Exception e) {
                     LOGGER.error("Error while submitting ProcessMessageTask", e);

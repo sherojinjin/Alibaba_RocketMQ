@@ -70,6 +70,12 @@ public class CacheableConsumer {
 
     private FrontController frontController;
 
+    private static final int MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED = 20000;
+
+    private LinkedBlockingQueue<MessageExt> messageQueue;
+
+    private LinkedBlockingQueue<MessageExt> inProgressMessageQueue;
+
     private static String getInstanceName() {
         return BASE_INSTANCE_NAME + RemotingUtil.getLocalAddress(false) + "_" + CONSUMER_NAME_COUNTER.incrementAndGet();
     }
@@ -107,7 +113,10 @@ public class CacheableConsumer {
                     new ThreadFactoryImpl("ConsumerWorkerThread"),
                     new ThreadPoolExecutor.CallerRunsPolicy());
 
-            frontController = new FrontController(topicHandlerMap, executorWorkerService, localMessageStore);
+            messageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
+            inProgressMessageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
+            frontController = new FrontController(topicHandlerMap, executorWorkerService, localMessageStore,
+                    messageQueue, inProgressMessageQueue);
             localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
         } catch (IOException e) {
             LOGGER.error("Fatal error", e);
@@ -318,6 +327,15 @@ public class CacheableConsumer {
                     messageExt = messageQueue.poll();
                 }
             }
+
+            if (inProgressMessageQueue.size() > 0) {
+                MessageExt messageExt = inProgressMessageQueue.poll();
+                while (null != messageExt) {
+                    localMessageStore.stash(messageExt);
+                    messageExt = inProgressMessageQueue.poll();
+                }
+            }
+
             status = ClientStatus.CLOSED;
             LOGGER.info("Local messages saving completes.");
         }

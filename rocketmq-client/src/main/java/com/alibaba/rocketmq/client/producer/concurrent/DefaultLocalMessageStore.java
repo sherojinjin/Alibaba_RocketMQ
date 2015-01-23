@@ -126,9 +126,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                     flush();
                 }
             }
-        }, 0, 1000, TimeUnit.MILLISECONDS);
-
-        status = ClientStatus.ACTIVE;
+        }, 500, 1000, TimeUnit.MILLISECONDS);
 
         try {
             createAbortFile();
@@ -136,7 +134,7 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
             LOGGER.error("Failed to create abort file.", e);
             throw e;
         }
-
+        status = ClientStatus.ACTIVE;
         LOGGER.info("Local Message store starts to operate.");
     }
 
@@ -743,6 +741,8 @@ public class DefaultLocalMessageStore implements LocalMessageStore {
                         }
                     }
                 }
+
+                updateConfig();
             }
         } catch (Exception e) {
             LOGGER.error("Pop message fails.", e);
