@@ -1,7 +1,7 @@
 package com.ndpmedia.rocketmq.cockpit.util;
 
 /**
- * Created by Administrator on 2015/1/14.
+ *  constant for login action.
  */
 public interface LoginConstant extends Constant
 {
