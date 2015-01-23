@@ -26,7 +26,7 @@ public class ExampleCacheableConsumer {
         @Override
         public int handle(MessageExt message) {
             try {
-                Thread.sleep(random.nextInt(100));
+                Thread.sleep(random.nextInt(10));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
