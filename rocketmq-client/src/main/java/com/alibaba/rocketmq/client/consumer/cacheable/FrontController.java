@@ -4,47 +4,21 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.client.log.ClientLogger;
-import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.message.MessageExt;
-import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class FrontController implements MessageListenerConcurrently {
 
     private static final Logger LOGGER = ClientLogger.getLog();
 
-    private final ConcurrentHashMap<String, MessageHandler> topicHandlerMap;
+    private final CacheableConsumer cacheableConsumer;
 
-    private final ThreadPoolExecutor executorWorkerService;
+    private JobSubmitter jobSubmitter;
 
-    private DefaultLocalMessageStore localMessageStore;
-
-    private LinkedBlockingQueue<MessageExt> messageQueue;
-
-    private LinkedBlockingQueue<MessageExt> inProgressMessageQueue;
-
-    private JobSubmitter jobSubmitter = null;
-
-    private SynchronizedDescriptiveStatistics statistics;
-
-    public FrontController(final ConcurrentHashMap<String, MessageHandler> topicHandlerMap,
-                           final ThreadPoolExecutor executorWorkerService,
-                           final DefaultLocalMessageStore localMessageStore,
-                           final LinkedBlockingQueue<MessageExt> messageQueue,
-                           final LinkedBlockingQueue<MessageExt> inProgressMessageQueue,
-                           final SynchronizedDescriptiveStatistics statistics) {
-        this.topicHandlerMap = topicHandlerMap;
-        this.executorWorkerService = executorWorkerService;
-        this.localMessageStore = localMessageStore;
-        this.messageQueue = messageQueue;
-        this.inProgressMessageQueue = inProgressMessageQueue;
-        this.statistics = statistics;
-
+    public FrontController(CacheableConsumer cacheableConsumer) {
+        this.cacheableConsumer = cacheableConsumer;
         jobSubmitter = new JobSubmitter();
         Thread jobSubmitterThread = new Thread(jobSubmitter);
         jobSubmitterThread.setName("JobSubmitter");
@@ -62,7 +36,7 @@ public class FrontController implements MessageListenerConcurrently {
         for (MessageExt message : messages) {
             if (null != message) {
                 try {
-                    messageQueue.put(message);
+                    cacheableConsumer.getMessageQueue().put(message);
                 } catch (Exception e) {
                     LOGGER.error("Failed to put message into message queue", e);
                     return ConsumeConcurrentlyStatus.RECONSUME_LATER;
@@ -71,10 +45,6 @@ public class FrontController implements MessageListenerConcurrently {
         }
 
         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-    }
-
-    public LinkedBlockingQueue<MessageExt> getMessageQueue() {
-        return messageQueue;
     }
 
     public void stopSubmittingJob() {
@@ -91,12 +61,12 @@ public class FrontController implements MessageListenerConcurrently {
         public void run() {
             while (running) {
                 try {
-                    MessageExt message = messageQueue.take(); //Block if there is no message in the queue.
-                    final MessageHandler messageHandler = topicHandlerMap.get(message.getTopic());
-                    ProcessMessageTask task = new ProcessMessageTask(message, messageHandler, localMessageStore,
-                            messageQueue, inProgressMessageQueue, statistics);
-                    inProgressMessageQueue.put(message);
-                    executorWorkerService.submit(task);
+                    //Block if there is no message in the queue.
+                    MessageExt message = cacheableConsumer.getMessageQueue().take();
+                    final MessageHandler messageHandler = cacheableConsumer.getTopicHandlerMap().get(message.getTopic());
+                    ProcessMessageTask task = new ProcessMessageTask(message, messageHandler, cacheableConsumer);
+                    cacheableConsumer.getInProgressMessageQueue().put(message);
+                    cacheableConsumer.getExecutorWorkerService().submit(task);
                 } catch (Exception e) {
                     LOGGER.error("Error while submitting ProcessMessageTask", e);
                 }

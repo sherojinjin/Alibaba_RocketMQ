@@ -123,10 +123,8 @@ public class CacheableConsumer {
             messageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
             inProgressMessageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
             statistics = new SynchronizedDescriptiveStatistics(5000);
-            frontController = new FrontController(topicHandlerMap, executorWorkerService, localMessageStore,
-                    messageQueue, inProgressMessageQueue, statistics);
             localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
-
+            frontController = new FrontController(this);
             scheduledStatisticsReportExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -146,6 +144,9 @@ public class CacheableConsumer {
                             statistics.getPercentile(95),
                             statistics.getPercentile(100)
                     );
+                    LOGGER.info("Number of messages pending to send is: {}", messageQueue.size());
+                    LOGGER.info("Number of messages under processing is: {}", inProgressMessageQueue.size());
+                    LOGGER.info("Number of messages Stashed is: {}", localMessageStore.getNumberOfMessageStashed());
                 }
             }, 30, 30, TimeUnit.SECONDS);
         } catch (IOException e) {
@@ -223,7 +224,7 @@ public class CacheableConsumer {
     }
 
     private void startPopThread() {
-        DelayTask delayTask = new DelayTask(topicHandlerMap, localMessageStore, frontController.getMessageQueue());
+        DelayTask delayTask = new DelayTask(topicHandlerMap, localMessageStore, messageQueue);
         scheduledExecutorDelayService.scheduleWithFixedDelay(delayTask, 2, 2, TimeUnit.SECONDS);
     }
 
@@ -306,6 +307,30 @@ public class CacheableConsumer {
         return consumerGroupName;
     }
 
+    public DefaultLocalMessageStore getLocalMessageStore() {
+        return localMessageStore;
+    }
+
+    public LinkedBlockingQueue<MessageExt> getMessageQueue() {
+        return messageQueue;
+    }
+
+    public LinkedBlockingQueue<MessageExt> getInProgressMessageQueue() {
+        return inProgressMessageQueue;
+    }
+
+    public SynchronizedDescriptiveStatistics getStatistics() {
+        return statistics;
+    }
+
+    public ConcurrentHashMap<String, MessageHandler> getTopicHandlerMap() {
+        return topicHandlerMap;
+    }
+
+    public ThreadPoolExecutor getExecutorWorkerService() {
+        return executorWorkerService;
+    }
+
     /**
      * This method shuts down this client properly.
      * @throws InterruptedException If unable to shut down within 1 minute.
@@ -348,7 +373,6 @@ public class CacheableConsumer {
             frontController.stopSubmittingJob();
 
             //Stash back all those that is not properly handled.
-            LinkedBlockingQueue<MessageExt> messageQueue = frontController.getMessageQueue();
             LOGGER.info(messageQueue.size() + " messages to save into local message store due to system shutdown.");
             if (messageQueue.size() > 0) {
                 MessageExt messageExt = messageQueue.poll();
