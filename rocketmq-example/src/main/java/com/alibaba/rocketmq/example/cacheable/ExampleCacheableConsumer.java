@@ -8,20 +8,12 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class ExampleCacheableConsumer {
 
-    private static final AtomicLong COUNTER = new AtomicLong();
-
     static class ExampleMessageHandler extends MessageHandler {
-        Random random = new Random();
-        private long lastTimeStamp;
-
-        private long lastConsumptionNumber;
-
-        public ExampleMessageHandler(long lastTimeStamp) {
-            this.lastTimeStamp = lastTimeStamp;
+        private Random random = new Random();
+        public ExampleMessageHandler() {
         }
 
         /**
@@ -33,11 +25,10 @@ public class ExampleCacheableConsumer {
          */
         @Override
         public int handle(MessageExt message) {
-            if (COUNTER.incrementAndGet() % 10000 == 0) {
-                System.out.println("By far, this consumer has consumed: " + COUNTER.longValue() + " messages.");
-                System.out.println("Current TPS: " + (COUNTER.longValue() - lastConsumptionNumber) * 1000.0F / (System.currentTimeMillis() - lastTimeStamp));
-                lastConsumptionNumber = COUNTER.longValue();
-                lastTimeStamp = System.currentTimeMillis();
+            try {
+                Thread.sleep(random.nextInt(100));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             return 0;
         }
@@ -46,7 +37,7 @@ public class ExampleCacheableConsumer {
     public static void main(String[] args) throws MQClientException, InterruptedException {
         CacheableConsumer cacheableConsumer = new CacheableConsumer("CG_QuickStart");
 
-        MessageHandler exampleMessageHandler = new ExampleMessageHandler(System.currentTimeMillis());
+        MessageHandler exampleMessageHandler = new ExampleMessageHandler();
 
         /**
          * Topic is strictly required.

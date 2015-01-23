@@ -6,6 +6,7 @@ import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -29,16 +30,20 @@ public class FrontController implements MessageListenerConcurrently {
 
     private JobSubmitter jobSubmitter = null;
 
+    private SynchronizedDescriptiveStatistics statistics;
+
     public FrontController(final ConcurrentHashMap<String, MessageHandler> topicHandlerMap,
                            final ThreadPoolExecutor executorWorkerService,
                            final DefaultLocalMessageStore localMessageStore,
                            final LinkedBlockingQueue<MessageExt> messageQueue,
-                           final LinkedBlockingQueue<MessageExt> inProgressMessageQueue) {
+                           final LinkedBlockingQueue<MessageExt> inProgressMessageQueue,
+                           final SynchronizedDescriptiveStatistics statistics) {
         this.topicHandlerMap = topicHandlerMap;
         this.executorWorkerService = executorWorkerService;
         this.localMessageStore = localMessageStore;
         this.messageQueue = messageQueue;
         this.inProgressMessageQueue = inProgressMessageQueue;
+        this.statistics = statistics;
 
         jobSubmitter = new JobSubmitter();
         Thread jobSubmitterThread = new Thread(jobSubmitter);
@@ -89,7 +94,7 @@ public class FrontController implements MessageListenerConcurrently {
                     MessageExt message = messageQueue.take(); //Block if there is no message in the queue.
                     final MessageHandler messageHandler = topicHandlerMap.get(message.getTopic());
                     ProcessMessageTask task = new ProcessMessageTask(message, messageHandler, localMessageStore,
-                            messageQueue, inProgressMessageQueue);
+                            messageQueue, inProgressMessageQueue, statistics);
                     inProgressMessageQueue.put(message);
                     executorWorkerService.submit(task);
                 } catch (Exception e) {

@@ -4,10 +4,10 @@ import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.concurrent.DefaultLocalMessageStore;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.StashableMessage;
+import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.slf4j.Logger;
 
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class ProcessMessageTask implements Runnable {
 
@@ -25,53 +25,44 @@ public class ProcessMessageTask implements Runnable {
 
     private LinkedBlockingQueue<MessageExt> inProgressMessageQueue;
 
-    private static final AtomicLong LOG_COUNTER = new AtomicLong(0L);
-
-    private static final long LOG_PERFORMANCE_INTERVAL = 1000L;
+    private SynchronizedDescriptiveStatistics statistics;
 
     public ProcessMessageTask(MessageExt message, //Message to process.
                               MessageHandler messageHandler, //Message handler.
                               DefaultLocalMessageStore localMessageStore, //Local message store.
                               LinkedBlockingQueue<MessageExt> messageQueue, //Buffered message queue.
-                              LinkedBlockingQueue<MessageExt> inProgressMessageQueue
-
+                              LinkedBlockingQueue<MessageExt> inProgressMessageQueue,
+                              SynchronizedDescriptiveStatistics statistics
     ) {
         this.message = message;
         this.messageHandler = messageHandler;
         this.localMessageStore = localMessageStore;
         this.messageQueue = messageQueue;
         this.inProgressMessageQueue = inProgressMessageQueue;
+        this.statistics = statistics;
     }
 
     @Override
     public void run() {
         try {
-
-            boolean logPerformance = LOG_COUNTER.incrementAndGet() % LOG_PERFORMANCE_INTERVAL == 0;
-
-            long start = 0L;
-            if (logPerformance) {
-                start = System.currentTimeMillis();
-            }
-
+            long start = System.currentTimeMillis();
             int result = messageHandler.handle(message);
-            inProgressMessageQueue.remove(message);
-
-            if (logPerformance) {
-                LOGGER.info("Business processing takes " + (System.currentTimeMillis() - start) + " ms");
-                LOGGER.info("Now " + messageQueue.size() + " messages in queue pending to process.");
-                LOGGER.info("Now " + inProgressMessageQueue.size() + " messages under processing.");
-            }
-
-            if (result > 0) {
+            if (0 == result) {
+                statistics.addValue(System.currentTimeMillis() - start);
+            } else if (result > 0) {
                 StashableMessage stashableMessage = message.buildStashableMessage();
                 stashableMessage.putUserProperty(NEXT_TIME_KEY, String.valueOf(System.currentTimeMillis() + result));
                 LOGGER.info("Stashing message[msgId=" + message.getMsgId() + "] for later retry in " + result + " ms.");
                 localMessageStore.stash(stashableMessage);
                 LOGGER.info("Message stashed.");
+            } else {
+                LOGGER.error("Unable to process returning result: " + result);
             }
         } catch (Exception e) {
-            LOGGER.error("ProcessMessageTask error", e);
+            LOGGER.error("ProcessMessageTask failed! Automatic retry scheduled.", e);
+            messageQueue.offer(message);
+        } finally {
+            inProgressMessageQueue.remove(message);
         }
     }
 

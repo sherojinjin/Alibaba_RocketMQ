@@ -11,6 +11,7 @@ import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
+import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -64,7 +65,8 @@ public class CacheableConsumer {
 
     private int maximumPoolSizeForWorkTasks = MAXIMUM_POOL_SIZE_FOR_WORK_TASKS;
 
-    private ScheduledExecutorService scheduledExecutorDelayService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService scheduledExecutorDelayService =
+            Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("LocalDelayConsumeService"));
 
     private ThreadPoolExecutor executorWorkerService;
 
@@ -75,6 +77,11 @@ public class CacheableConsumer {
     private LinkedBlockingQueue<MessageExt> messageQueue;
 
     private LinkedBlockingQueue<MessageExt> inProgressMessageQueue;
+
+    private ScheduledExecutorService scheduledStatisticsReportExecutorService =
+            Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("StatisticsReportService"));
+
+    private SynchronizedDescriptiveStatistics statistics;
 
     private static String getInstanceName() {
         return BASE_INSTANCE_NAME + RemotingUtil.getLocalAddress(false) + "_" + CONSUMER_NAME_COUNTER.incrementAndGet();
@@ -115,9 +122,32 @@ public class CacheableConsumer {
 
             messageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
             inProgressMessageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
+            statistics = new SynchronizedDescriptiveStatistics(5000);
             frontController = new FrontController(topicHandlerMap, executorWorkerService, localMessageStore,
-                    messageQueue, inProgressMessageQueue);
+                    messageQueue, inProgressMessageQueue, statistics);
             localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
+
+            scheduledStatisticsReportExecutorService.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    LOGGER.info("Business Processing Performance Simple Report:\n min {}ms,\n max {}ms,\n mean {}ms",
+                            statistics.getMin(),
+                            statistics.getMax(),
+                            statistics.getMean());
+                    LOGGER.info("Business Processing Performance Percentile Report: \n 5% {}ms,\n 10% {}ms,\n 20% {}ms," +
+                                    "\n 40% {}ms,\n 50% {}ms,\n 80% {}ms,\n 90% {}ms,\n 95% {},\n 100% {}ms",
+                            statistics.getPercentile(5),
+                            statistics.getPercentile(10),
+                            statistics.getPercentile(20),
+                            statistics.getPercentile(40),
+                            statistics.getPercentile(50),
+                            statistics.getPercentile(80),
+                            statistics.getPercentile(90),
+                            statistics.getPercentile(95),
+                            statistics.getPercentile(100)
+                    );
+                }
+            }, 30, 30, TimeUnit.SECONDS);
         } catch (IOException e) {
             LOGGER.error("Fatal error", e);
             throw new RuntimeException("Fatal error while instantiating CacheableConsumer");
