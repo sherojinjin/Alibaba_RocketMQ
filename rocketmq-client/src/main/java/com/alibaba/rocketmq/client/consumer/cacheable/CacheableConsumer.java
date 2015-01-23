@@ -224,7 +224,7 @@ public class CacheableConsumer {
     }
 
     private void startPopThread() {
-        DelayTask delayTask = new DelayTask(topicHandlerMap, localMessageStore, messageQueue);
+        DelayTask delayTask = new DelayTask(this);
         scheduledExecutorDelayService.scheduleWithFixedDelay(delayTask, 2, 2, TimeUnit.SECONDS);
     }
 
