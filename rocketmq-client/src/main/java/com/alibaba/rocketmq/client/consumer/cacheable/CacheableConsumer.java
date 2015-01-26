@@ -152,7 +152,7 @@ public class CacheableConsumer {
                             statistics.getPercentile(95),
                             statistics.getPercentile(100)
                     );
-                    LOGGER.info("Number of messages pending to send is: {}", messageQueue.size());
+                    LOGGER.info("Number of messages pending to consume is: {}", messageQueue.size());
                     LOGGER.info("Number of messages under processing is: {}", inProgressMessageQueue.size());
                     LOGGER.info("Number of messages Stashed is: {}", localMessageStore.getNumberOfMessageStashed());
 
