@@ -162,6 +162,8 @@ public class CacheableConsumer {
                     LOGGER.info("Failure TPS: " + (currentFailureCount - previousFailureCount) / 30.0);
                     previousSuccessCount = currentSuccessCount;
                     previousFailureCount = currentFailureCount;
+
+                    LOGGER.info("Total number of successfully consumed messages: {}", successCounter.get());
                 }
             }, 30, 30, TimeUnit.SECONDS);
         } catch (IOException e) {
