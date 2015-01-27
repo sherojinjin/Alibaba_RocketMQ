@@ -183,7 +183,6 @@ public class HAConnection {
             while (this.byteBufferRead.hasRemaining()) {
                 try {
                     int readSize = this.socketChannel.read(this.byteBufferRead);
-                    log.info("Master read " + readSize + " bytes from slave.");
                     if (readSize > 0) {
                         readSizeZeroTimes = 0;
                         this.lastReadTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock()
@@ -206,10 +205,7 @@ public class HAConnection {
                             HAConnection.this.haService.notifyTransferSome(HAConnection.this.slaveAckOffset);
                         }
                     } else if (readSize == 0) {
-                        readSizeZeroTimes++;
-                        log.warn("No." + readSizeZeroTimes + " time read 0 byte from slave.");
-                        if (readSizeZeroTimes >= 3) {
-                            log.error("Exceeds 3 times. Abort reading.");
+                        if (++readSizeZeroTimes >= 3) {
                             break;
                         }
                     } else {
@@ -272,7 +268,6 @@ public class HAConnection {
                     // 第一次传输，需要计算从哪里开始
                     // Slave如果本地没有数据，请求的Offset为0，那么master则从物理文件最后一个文件开始传送数据
                     if (-1 == this.nextTransferFromWhere) {
-                        log.info("First time data transfer to slave.");
                         if (0 == HAConnection.this.slaveRequestOffset) {
                             long masterOffset = HAConnection.this.haService.getDefaultMessageStore().getCommitLog()
                                     .getMaxOffset();
@@ -285,12 +280,6 @@ public class HAConnection {
                         } else {
                             this.nextTransferFromWhere = HAConnection.this.slaveRequestOffset;
                         }
-
-                        log.info("Master Offset: " + nextTransferFromWhere);
-
-                        log.info("master transfer data from " + this.nextTransferFromWhere + " to slave["
-                                + HAConnection.this.clientAddr + "], and slave request "
-                                + HAConnection.this.slaveRequestOffset);
                     }
 
                     if (this.lastWriteOver) {
@@ -307,7 +296,6 @@ public class HAConnection {
                             this.byteBufferHeader.putLong(this.nextTransferFromWhere);
                             this.byteBufferHeader.putInt(0);
                             this.byteBufferHeader.flip();
-                            log.info("Sending heartbeat to slaves.");
                             this.lastWriteOver = this.transferData();
                             if (!this.lastWriteOver) {
                                 continue;
@@ -344,9 +332,6 @@ public class HAConnection {
                         this.byteBufferHeader.putLong(thisOffset);
                         this.byteBufferHeader.putInt(size);
                         this.byteBufferHeader.flip();
-
-                        log.info("Sending data to slave. Master Offset: " + nextTransferFromWhere + ", size: " + size);
-
                         this.lastWriteOver = this.transferData();
                     } else {
                         // 没有数据，等待通知
@@ -398,10 +383,7 @@ public class HAConnection {
                     writeSizeZeroTimes = 0;
                     this.lastWriteTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();
                 } else if (writeSize == 0) {
-                    writeSizeZeroTimes++;
-                    log.warn("No." + writeSizeZeroTimes + " time writing 0 byte to slave. Connection is not stable.");
-                    if (writeSizeZeroTimes >= 3) {
-                        log.error("Exceeds 3 times. Abort writing.");
+                    if (++writeSizeZeroTimes >= 3) {
                         break;
                     }
                 } else {
@@ -423,10 +405,7 @@ public class HAConnection {
                         writeSizeZeroTimes = 0;
                         this.lastWriteTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();
                     } else if (writeSize == 0) {
-                        writeSizeZeroTimes++;
-                        log.warn("No." + writeSizeZeroTimes + " time write 0 byte to slave. Connection is not stable.");
-                        if (writeSizeZeroTimes >= 3) {
-                            log.error("Exceeds 3 times. Abort writing.");
+                        if (++writeSizeZeroTimes >= 3) {
                             break;
                         }
                     } else {
@@ -438,10 +417,6 @@ public class HAConnection {
             boolean result = !this.byteBufferHeader.hasRemaining()
                     && !this.selectMappedBufferResult.getByteBuffer().hasRemaining();
 
-            if (result) {
-                log.info("Writing data to slave completes.");
-            }
-
             if (!this.selectMappedBufferResult.getByteBuffer().hasRemaining()) {
                 this.selectMappedBufferResult.release();
                 this.selectMappedBufferResult = null;
@@ -450,12 +425,10 @@ public class HAConnection {
             return result;
         }
 
-
         @Override
         public String getServiceName() {
             return WriteSocketService.class.getSimpleName();
         }
-
 
         @Override
         public void shutdown() {

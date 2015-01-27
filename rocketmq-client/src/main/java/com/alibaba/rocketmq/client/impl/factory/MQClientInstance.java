@@ -71,14 +71,11 @@ public class MQClientInstance {
     private final String clientId;
     private final long bootTimestamp = System.currentTimeMillis();
     // Producer对象
-    private final ConcurrentHashMap<String/* group */, MQProducerInner> producerTable =
-            new ConcurrentHashMap<String, MQProducerInner>();
+    private final ConcurrentHashMap<String/* group */, MQProducerInner> producerTable = new ConcurrentHashMap<String, MQProducerInner>();
     // Consumer对象
-    private final ConcurrentHashMap<String/* group */, MQConsumerInner> consumerTable =
-            new ConcurrentHashMap<String, MQConsumerInner>();
+    private final ConcurrentHashMap<String/* group */, MQConsumerInner> consumerTable = new ConcurrentHashMap<String, MQConsumerInner>();
     // AdminExt对象
-    private final ConcurrentHashMap<String/* group */, MQAdminExtInner> adminExtTable =
-            new ConcurrentHashMap<String, MQAdminExtInner>();
+    private final ConcurrentHashMap<String/* group */, MQAdminExtInner> adminExtTable = new ConcurrentHashMap<String, MQAdminExtInner>();
     // Netty客户端配置
     private final NettyClientConfig nettyClientConfig;
     // RPC调用的封装类
@@ -463,7 +460,8 @@ public class MQClientInstance {
         heartbeatData.setClientID(this.clientId);
 
         // Consumer
-        for (String group : this.consumerTable.keySet()) {
+        for (Map.Entry<String, MQConsumerInner> next : consumerTable.entrySet()) {
+            String group = next.getKey();
             MQConsumerInner impl = this.consumerTable.get(group);
             if (impl != null) {
                 ConsumerData consumerData = new ConsumerData();
@@ -479,7 +477,8 @@ public class MQClientInstance {
         }
 
         // Producer
-        for (String group : this.producerTable.keySet()) {
+        for (Map.Entry<String, MQProducerInner> next : producerTable.entrySet()) {
+            String group = next.getKey();
             MQProducerInner impl = this.producerTable.get(group);
             if (impl != null) {
                 ProducerData producerData = new ProducerData();

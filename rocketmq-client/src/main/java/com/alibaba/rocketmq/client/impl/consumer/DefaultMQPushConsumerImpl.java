@@ -474,12 +474,10 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                                         pullRequest.getMessageQueue(), pullRequest.getNextOffset(), false);
 
                                     // 第四步、将最新的Offset更新到服务器
-                                    DefaultMQPushConsumerImpl.this.offsetStore.persist(pullRequest
-                                        .getMessageQueue());
+                                    DefaultMQPushConsumerImpl.this.offsetStore.persist(pullRequest.getMessageQueue());
 
                                     // 第五步、丢弃当前PullRequest，并且从Rebalance结果里删除，等待下次Rebalance时，取纠正后的Offset
-                                    DefaultMQPushConsumerImpl.this.rebalanceImpl
-                                        .removeProcessQueue(pullRequest.getMessageQueue());
+                                    DefaultMQPushConsumerImpl.this.rebalanceImpl.removeProcessQueue(pullRequest.getMessageQueue());
 
                                     log.warn("fix the pull request offset, {}", pullRequest);
                                 }
@@ -1127,10 +1125,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
         info.getSubscriptionSet().addAll(subSet);
 
         // 消费进度、Rebalance、内部消费队列的信息
-        Iterator<Entry<MessageQueue, ProcessQueue>> it =
-                this.rebalanceImpl.getProcessQueueTable().entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<MessageQueue, ProcessQueue> next = it.next();
+        for (Entry<MessageQueue, ProcessQueue> next : this.rebalanceImpl.getProcessQueueTable().entrySet()) {
             MessageQueue mq = next.getKey();
             ProcessQueue pq = next.getValue();
 

@@ -11,6 +11,7 @@ import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
+import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -64,7 +65,8 @@ public class CacheableConsumer {
 
     private int maximumPoolSizeForWorkTasks = MAXIMUM_POOL_SIZE_FOR_WORK_TASKS;
 
-    private ScheduledExecutorService scheduledExecutorDelayService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService scheduledExecutorDelayService =
+            Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("LocalDelayConsumeService"));
 
     private ThreadPoolExecutor executorWorkerService;
 
@@ -75,6 +77,19 @@ public class CacheableConsumer {
     private LinkedBlockingQueue<MessageExt> messageQueue;
 
     private LinkedBlockingQueue<MessageExt> inProgressMessageQueue;
+
+    private ScheduledExecutorService scheduledStatisticsReportExecutorService =
+            Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("StatisticsReportService"));
+
+    private SynchronizedDescriptiveStatistics statistics;
+
+    private volatile long previousSuccessCount = 0;
+
+    private volatile long previousFailureCount = 0;
+
+    private AtomicLong successCounter = new AtomicLong(0L);
+
+    private AtomicLong failureCounter = new AtomicLong(0L);
 
     private static String getInstanceName() {
         return BASE_INSTANCE_NAME + RemotingUtil.getLocalAddress(false) + "_" + CONSUMER_NAME_COUNTER.incrementAndGet();
@@ -115,9 +130,42 @@ public class CacheableConsumer {
 
             messageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
             inProgressMessageQueue = new LinkedBlockingQueue<MessageExt>(MAXIMUM_NUMBER_OF_MESSAGE_BUFFERED);
-            frontController = new FrontController(topicHandlerMap, executorWorkerService, localMessageStore,
-                    messageQueue, inProgressMessageQueue);
+            statistics = new SynchronizedDescriptiveStatistics(5000);
             localMessageStore = new DefaultLocalMessageStore(consumerGroupName);
+            frontController = new FrontController(this);
+            scheduledStatisticsReportExecutorService.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    LOGGER.info("Business Processing Performance Simple Report:\n min {}ms,\n max {}ms,\n mean {}ms",
+                            statistics.getMin(),
+                            statistics.getMax(),
+                            statistics.getMean());
+                    LOGGER.info("Business Processing Performance Percentile Report: \n 5% {}ms,\n 10% {}ms,\n 20% {}ms," +
+                                    "\n 40% {}ms,\n 50% {}ms,\n 80% {}ms,\n 90% {}ms,\n 95% {}ms,\n 100% {}ms",
+                            statistics.getPercentile(5),
+                            statistics.getPercentile(10),
+                            statistics.getPercentile(20),
+                            statistics.getPercentile(40),
+                            statistics.getPercentile(50),
+                            statistics.getPercentile(80),
+                            statistics.getPercentile(90),
+                            statistics.getPercentile(95),
+                            statistics.getPercentile(100)
+                    );
+                    LOGGER.info("Number of messages pending to consume is: {}", messageQueue.size());
+                    LOGGER.info("Number of messages under processing is: {}", inProgressMessageQueue.size());
+                    LOGGER.info("Number of messages Stashed is: {}", localMessageStore.getNumberOfMessageStashed());
+
+                    long currentSuccessCount = successCounter.get();
+                    long currentFailureCount = failureCounter.get();
+                    LOGGER.info("Success TPS: " + (currentSuccessCount - previousSuccessCount) / 30.0);
+                    LOGGER.info("Failure TPS: " + (currentFailureCount - previousFailureCount) / 30.0);
+                    previousSuccessCount = currentSuccessCount;
+                    previousFailureCount = currentFailureCount;
+
+                    LOGGER.info("Total number of successfully consumed messages: {}", successCounter.get());
+                }
+            }, 30, 30, TimeUnit.SECONDS);
         } catch (IOException e) {
             LOGGER.error("Fatal error", e);
             throw new RuntimeException("Fatal error while instantiating CacheableConsumer");
@@ -193,7 +241,7 @@ public class CacheableConsumer {
     }
 
     private void startPopThread() {
-        DelayTask delayTask = new DelayTask(topicHandlerMap, localMessageStore, frontController.getMessageQueue());
+        DelayTask delayTask = new DelayTask(this);
         scheduledExecutorDelayService.scheduleWithFixedDelay(delayTask, 2, 2, TimeUnit.SECONDS);
     }
 
@@ -276,6 +324,38 @@ public class CacheableConsumer {
         return consumerGroupName;
     }
 
+    public DefaultLocalMessageStore getLocalMessageStore() {
+        return localMessageStore;
+    }
+
+    public LinkedBlockingQueue<MessageExt> getMessageQueue() {
+        return messageQueue;
+    }
+
+    public LinkedBlockingQueue<MessageExt> getInProgressMessageQueue() {
+        return inProgressMessageQueue;
+    }
+
+    public SynchronizedDescriptiveStatistics getStatistics() {
+        return statistics;
+    }
+
+    public ConcurrentHashMap<String, MessageHandler> getTopicHandlerMap() {
+        return topicHandlerMap;
+    }
+
+    public ThreadPoolExecutor getExecutorWorkerService() {
+        return executorWorkerService;
+    }
+
+    public AtomicLong getSuccessCounter() {
+        return successCounter;
+    }
+
+    public AtomicLong getFailureCounter() {
+        return failureCounter;
+    }
+
     /**
      * This method shuts down this client properly.
      * @throws InterruptedException If unable to shut down within 1 minute.
@@ -318,7 +398,6 @@ public class CacheableConsumer {
             frontController.stopSubmittingJob();
 
             //Stash back all those that is not properly handled.
-            LinkedBlockingQueue<MessageExt> messageQueue = frontController.getMessageQueue();
             LOGGER.info(messageQueue.size() + " messages to save into local message store due to system shutdown.");
             if (messageQueue.size() > 0) {
                 MessageExt messageExt = messageQueue.poll();

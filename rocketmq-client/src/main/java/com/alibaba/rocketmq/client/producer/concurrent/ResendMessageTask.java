@@ -48,23 +48,23 @@ public class ResendMessageTask implements Runnable {
                 return;
             }
 
+            int totalNumberOfMessagesSubmitted = 0;
+
             while (null != messages && messages.length > 0) {
                 //Acquire tokens from semaphore.
                 multiThreadMQProducer.getSemaphore().acquireUninterruptibly(messages.length);
                 //Send messages with tokens.
                 multiThreadMQProducer.send(messages, true);
-
-                LOGGER.info(messages.length + " stashed messages re-sending completes: scheduled job submitted.");
-
+                totalNumberOfMessagesSubmitted += messages.length;
                 //Prepare for next loop step.
                 popSize = Math.min(multiThreadMQProducer.getSemaphore().availablePermits(),
                         BATCH_FETCH_MESSAGE_FROM_STORE_SIZE);
                 if (popSize <= 0) {
-                    LOGGER.info("No permits available in semaphore. Break looping.");
                     break;
                 }
                 messages = localMessageStore.pop(popSize);
             }
+            LOGGER.info(totalNumberOfMessagesSubmitted + " stashed messages re-sending completes: scheduled job submitted.");
         } catch (Exception e) {
             LOGGER.error("ResendMessageTask got an exception!", e);
         }
