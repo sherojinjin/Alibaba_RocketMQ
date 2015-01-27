@@ -1709,22 +1709,17 @@ public class DefaultMessageStore implements MessageStore {
 
         private void doReput() {
             for (boolean doNext = true; doNext;) {
-                log.info("Begin doReput");
                 SelectMappedBufferResult result = DefaultMessageStore.this.commitLog.getData(reputFromOffset);
-                log.info("SelectMappedBufferResult " + (null == result ? " is null ": " is OK"));
                 if (result != null) {
                     try {
                         for (int readSize = 0; readSize < result.getSize() && doNext;) {
                             DispatchRequest dispatchRequest = DefaultMessageStore.this.commitLog.
                                     checkMessageAndReturnSize(result.getByteBuffer(), false, false);
                             int size = dispatchRequest.getMsgSize();
-                            log.info("DispatchRequest#msgSize:" + size);
                             // 正常数据
                             if (size > 0) {
                                 DefaultMessageStore.this.putDispatchRequest(dispatchRequest);
-                                log.info("DispatchRequest done.");
                                 this.reputFromOffset += size;
-                                log.info("Update reputFromOffset to : " + reputFromOffset);
                                 readSize += size;
                                 DefaultMessageStore.this.storeStatsService
                                     .getSinglePutMessageTopicTimesTotal(dispatchRequest.getTopic())
