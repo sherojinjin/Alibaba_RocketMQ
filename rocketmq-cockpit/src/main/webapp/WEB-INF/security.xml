@@ -35,6 +35,7 @@
         <security:session-management>
             <security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false"  />
         </security:session-management>
+        <security:access-denied-handler ref="accessDeniedHandler" />
     </security:http>
 
     <security:authentication-manager alias="myAuthenticationManager">
@@ -47,6 +48,9 @@
 
     <bean id="rocketMQLoginFilter" class="com.ndpmedia.rocketmq.authentication.RocketMQLoginFilter" />
     <bean id="rocketMQUserLoginSuccessHandler" class="com.ndpmedia.rocketmq.authentication.RocketMQUserLoginSuccessHanlder" />
+    <bean id="accessDeniedHandler" class="com.ndpmedia.rocketmq.authentication.RocketMQUserAccessDeniedHandler" >
+        <property name="accessDeniedURL" value="/cockpit/home.jsp" />
+    </bean>
     <!--
             通过 RocketMQUserDetailsService,Spring会控制用户的访问级别.
             也可以理解成:以后我们和数据库操作就是通过RocketMQUserDetailsService来进行关联.

@@ -53,7 +53,7 @@ if (null != errMSG){
   <div class="chknumber">
          <label>verification code：</label></td>
          <td><input name="kaptcha" type="text" id="kaptcha" maxlength="8" class="chknumber_input" />
-         <img src="/cockpit/captcha-image" width="140" height="40" id="kaptchaImage"  style="margin-bottom: -3px"/>
+         <img src="/cockpit/captcha-image" width="170" height="40" id="kaptchaImage"  style="margin-bottom: -3px"/>
          <script type="text/javascript">
           $(function(){
               $('#kaptchaImage').click(function () {//生成验证码

@@ -6,6 +6,13 @@
     <base href="<%=basePath%>">
 </head>
 <body>
+<%
+String msg = "";
+Object errSMSG =  session.getAttribute("ACCESS_DENIED_MSG");
+if (null != errSMSG){
+    msg = errSMSG.toString();
+    }
+%>
     <h1>Cockpit Home</h1>
 
     <ul>
@@ -17,6 +24,10 @@
     <h1>Console Home</h1>
     <ul>
         <li><a href="console/">Manage</a></li>
+    </ul>
+
+    <ul>
+       <span style="color:red"> <%=msg%> </span>
     </ul>
 </body>
 </html>

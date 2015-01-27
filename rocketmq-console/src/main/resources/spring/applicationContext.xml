@@ -34,11 +34,13 @@
 		<security:intercept-url pattern="/console/index.html" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
 		<security:intercept-url pattern="/authority/login.do" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
 		<security:intercept-url pattern="/console/authority/login.do" access="IS_AUTHENTICATED_ANONYMOUSLY"/>
+
 		<security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
 		<security:form-login login-page="/authority/login.do" />
 		<security:session-management >
 			<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="false" />
 		</security:session-management>
+		<security:access-denied-handler ref="accessDeniedHandler" />
 	</security:http>
 
 
@@ -48,6 +50,9 @@
 
 	<bean id="rocketMQUserLoginProvider" class="com.alibaba.rocketmq.authentication.RocketMQUserLoginProvider" />
 
+	<bean id="accessDeniedHandler" class="com.alibaba.rocketmq.authentication.RocketMQUserAccessDeniedHandler" >
+		<property name="accessDeniedURL" value="/cockpit/home.jsp" />
+	</bean>
 
 	<bean id="configureInitializer" class="com.alibaba.rocketmq.config.ConfigureInitializer" init-method="init">
 	<!--

@@ -34,4 +34,6 @@ public interface LoginConstant extends Constant
     String PROPERTIES_KEY_JDBC_URL = "";
 
     String COOKIE_ENCRYPTION_KEY = "C0ckp1t";
+
+    String ACCESS_DENIED_MSG = "ACCESS_DENIED_MSG";
 }

@@ -45,7 +45,7 @@ public class AutoLoginAction {
 
             SecurityContextHolder.getContext().setAuthentication(authenticatedUser);
 
-            request.getRequestDispatcher("../cluster/list.do").forward(request, response);
+            response.sendRedirect("../cluster/list.do");
             hasLoggedIn = true;
         } catch (Exception e) {
             e.printStackTrace();
