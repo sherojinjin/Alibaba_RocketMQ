@@ -101,7 +101,6 @@
 		</encoder>
 	</appender>
 
-
 	<appender name="RocketmqTransactionAppender"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>${user.home}/logs/rocketmqlogs/transaction.log</file>
@@ -122,6 +121,24 @@
 		</encoder>
 	</appender>
 
+	<appender name="RocketmqTracerAppender"
+			  class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${user.home}/logs/rocketmqlogs/tracer.log</file>
+		<append>true</append>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<fileNamePattern>${user.home}/logs/rocketmqlogs/otherdays/tracer.%i.log
+			</fileNamePattern>
+			<minIndex>1</minIndex>
+			<maxIndex>5</maxIndex>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<maxFileSize>100MB</maxFileSize>
+		</triggeringPolicy>
+		<encoder>
+			<pattern>%d{yyy-MM-dd HH:mm:ss,GMT+8} %p %t - %m%n</pattern>
+			<charset class="java.nio.charset.Charset">UTF-8</charset>
+		</encoder>
+	</appender>
 
 	<appender name="RocketmqRebalanceLockAppender"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -193,6 +210,11 @@
 	<logger name="RocketmqTransaction" additivity="false">
 		<level value="INFO" />
 		<appender-ref ref="RocketmqTransactionAppender" />
+	</logger>
+
+	<logger name="RocketmqTracer" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="RocketmqTracerAppender" />
 	</logger>
 
 	<logger name="RocketmqRebalanceLock" additivity="false">

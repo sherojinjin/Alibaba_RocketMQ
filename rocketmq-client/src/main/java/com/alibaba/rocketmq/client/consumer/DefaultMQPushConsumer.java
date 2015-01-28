@@ -22,6 +22,7 @@ import com.alibaba.rocketmq.client.consumer.rebalance.AllocateMessageQueueAverag
 import com.alibaba.rocketmq.client.consumer.store.OffsetStore;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
 import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.client.hook.ConsumeMessageClientTraceHook;
 import com.alibaba.rocketmq.client.impl.consumer.DefaultMQPushConsumerImpl;
 import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.UtilAll;
@@ -153,6 +154,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
         this.consumerGroup = consumerGroup;
         this.allocateMessageQueueStrategy = allocateMessageQueueStrategy;
         defaultMQPushConsumerImpl = new DefaultMQPushConsumerImpl(this, rpcHook);
+        defaultMQPushConsumerImpl.registerConsumeMessageHook(new ConsumeMessageClientTraceHook("DefaultMQPushConsumerTracer"));
     }
 
 

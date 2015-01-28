@@ -32,4 +32,5 @@ public class LoggerName {
     public static final String RocketmqStatsLoggerName = "RocketmqStats";
     public static final String RocketmqAuthorizeLoggerName = "RocketmqAuthorize";
     public static final String RocketMqCockpitLoggerName = "RocketMqCockpit";
+    public static final String RocketmqTracerLoggerName = "RocketmqTracer";
 }

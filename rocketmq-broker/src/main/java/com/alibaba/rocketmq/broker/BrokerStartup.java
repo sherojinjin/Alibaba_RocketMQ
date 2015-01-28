@@ -17,6 +17,8 @@ package com.alibaba.rocketmq.broker;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
+import com.alibaba.rocketmq.broker.mqtrace.ConsumeMessageBrokerTraceHook;
+import com.alibaba.rocketmq.broker.mqtrace.SendMessageBrokerTraceHook;
 import com.alibaba.rocketmq.common.BrokerConfig;
 import com.alibaba.rocketmq.common.MQVersion;
 import com.alibaba.rocketmq.common.MixAll;
@@ -223,7 +225,8 @@ public class BrokerStartup {
                 System.exit(-3);
             }
 
-
+            controller.registerSendMessageHook(new SendMessageBrokerTraceHook("ReceiveMessageTracer", brokerConfig));
+            controller.registerConsumeMessageHook(new ConsumeMessageBrokerTraceHook("DeliverMessageTracer", brokerConfig));
 
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 private volatile boolean hasShutdown = false;

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 
 /**
@@ -52,11 +53,9 @@ public class Message implements Serializable {
     public Message() {
     }
 
-
     public Message(String topic, byte[] body) {
         this(topic, "", "", 0, body, true);
     }
-
 
     public Message(String topic, String tags, byte[] body) {
         this(topic, tags, "", 0, body, true);
@@ -80,6 +79,9 @@ public class Message implements Serializable {
             this.setKeys(keys);
 
         this.setWaitStoreMsgOK(waitStoreMsgOK);
+
+        properties = new HashMap<String, String>();
+        properties.put(MessageConst.PROPERTY_MESSAGE_TRACE_ID, UUID.randomUUID().toString());
     }
 
     public StashableMessage buildStashableMessage() {
