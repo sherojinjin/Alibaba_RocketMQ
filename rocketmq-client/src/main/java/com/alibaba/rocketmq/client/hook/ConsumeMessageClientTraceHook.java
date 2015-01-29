@@ -29,8 +29,9 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
                 continue;
             }
 
-            logger.info("MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
+            logger.info("TracerId: {}, MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
                             "ConsumerGroup: {}, Client: {}, Topic: {}, Tags: {}, Status: {}, Source: {}",
+                    messageExt.getTracerId(),
                     messageExt.getMsgId(),
                     timeStamp,
                     context.getMq().getBrokerName(),
@@ -51,8 +52,9 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
                 continue;
             }
 
-            logger.info("MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
+            logger.info("TracerId: {}, MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
                             "ConsumerGroup: {}, Client: {}, Topic: {}, Tags: {}, Status: {}, Source: {}",
+                    messageExt.getTracerId(),
                     messageExt.getMsgId(),
                     timeStamp,
                     context.getMq().getBrokerName(),

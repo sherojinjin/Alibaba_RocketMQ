@@ -43,7 +43,7 @@ public class SendMessageBrokerTraceHook implements SendMessageHook {
         }
 
         long timeStamp = System.currentTimeMillis();
-        logger.info("UUID: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
+        logger.info("TracerId: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
                         "Broker: {}, MessageQueue: {}, OffSet: {}, Status: {}, Source: {}",
                 properties.get(MessageConst.PROPERTY_MESSAGE_TRACE_ID),
                 timeStamp,
@@ -68,7 +68,7 @@ public class SendMessageBrokerTraceHook implements SendMessageHook {
         }
         
         long timeStamp = System.currentTimeMillis();
-        logger.info("UUID: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
+        logger.info("TracerId: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
                         "Broker: {}, MessageQueue: {}, OffSet: {}, Status: {}, Source: {}",
                 properties.get(MessageConst.PROPERTY_MESSAGE_TRACE_ID),
                 timeStamp,

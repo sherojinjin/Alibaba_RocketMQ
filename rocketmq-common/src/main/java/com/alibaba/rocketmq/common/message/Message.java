@@ -87,6 +87,10 @@ public class Message implements Serializable {
         properties.put(MessageConst.PROPERTY_MESSAGE_TRACE_ID, traceId);
     }
 
+    public String getTracerId() {
+        return null == properties ? null : properties.get(MessageConst.PROPERTY_MESSAGE_TRACE_ID);
+    }
+
     public boolean isTraceable() {
         return null != properties && properties.containsKey(MessageConst.PROPERTY_MESSAGE_TRACE_ID);
     }

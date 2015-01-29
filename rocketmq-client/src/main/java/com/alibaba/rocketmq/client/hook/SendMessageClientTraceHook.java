@@ -2,7 +2,6 @@ package com.alibaba.rocketmq.client.hook;
 
 import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.common.constant.LoggerName;
-import com.alibaba.rocketmq.common.message.MessageConst;
 import org.slf4j.Logger;
 
 public class SendMessageClientTraceHook implements SendMessageHook {
@@ -27,9 +26,9 @@ public class SendMessageClientTraceHook implements SendMessageHook {
         }
 
         long timeStamp = System.currentTimeMillis();
-        logger.info("UUID: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
+        logger.info("TracerId: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
                         "Broker: {}, MessageQueue: {}, OffSet: {}, Status: {}, Source: {}",
-                context.getMessage().getProperty(MessageConst.PROPERTY_MESSAGE_TRACE_ID),
+                context.getMessage().getTracerId(),
                 timeStamp,
                 context.getProducerGroup(),
                 context.getBornHost(),
@@ -50,9 +49,9 @@ public class SendMessageClientTraceHook implements SendMessageHook {
         }
 
         long timeStamp = System.currentTimeMillis();
-        logger.info("UUID: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
+        logger.info("TracerId: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
                         "Broker: {}, MessageQueue: {}, Status: {}, Source: {}",
-                context.getMessage().getProperty(MessageConst.PROPERTY_MESSAGE_TRACE_ID),
+                context.getMessage().getTracerId(),
                 timeStamp,
                 context.getProducerGroup(),
                 context.getBornHost(),
