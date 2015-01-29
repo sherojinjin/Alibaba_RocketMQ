@@ -618,7 +618,6 @@ public class DefaultMQProducerImpl implements MQProducerInner {
             tryToFindTopicPublishInfo(mq.getTopic());
             brokerAddr = this.mQClientFactory.findBrokerAddressInPublish(mq.getBrokerName());
         }
-        traceCounter.incrementAndGet();
 
         switch (defaultMQProducer.getTraceLevel()) {
             case DEBUG:
@@ -626,13 +625,13 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                 break;
 
             case MEDIUM:
-                if (traceCounter.longValue() % 256 == 0) {
+                if (traceCounter.incrementAndGet() % 256 == 0) {
                     msg.setTraceId(UUID.randomUUID().toString());
                 }
                 break;
 
             case PRODUCTION:
-                if (traceCounter.longValue() % 1024 == 0) {
+                if (traceCounter.incrementAndGet() % 1024 == 0) {
                     msg.setTraceId(UUID.randomUUID().toString());
                 }
                 break;
