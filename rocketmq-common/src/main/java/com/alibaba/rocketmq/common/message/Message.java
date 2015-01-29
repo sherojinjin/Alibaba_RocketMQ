@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 
 /**
@@ -79,9 +78,17 @@ public class Message implements Serializable {
             this.setKeys(keys);
 
         this.setWaitStoreMsgOK(waitStoreMsgOK);
+    }
 
-        properties = new HashMap<String, String>();
-        properties.put(MessageConst.PROPERTY_MESSAGE_TRACE_ID, UUID.randomUUID().toString());
+    public synchronized void setTraceId(String traceId) {
+        if (null == properties) {
+            properties = new HashMap<String, String>();
+        }
+        properties.put(MessageConst.PROPERTY_MESSAGE_TRACE_ID, traceId);
+    }
+
+    public boolean isTraceable() {
+        return null != properties && properties.containsKey(MessageConst.PROPERTY_MESSAGE_TRACE_ID);
     }
 
     public StashableMessage buildStashableMessage() {

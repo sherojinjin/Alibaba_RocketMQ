@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -60,8 +61,8 @@ public class DefaultMQProducerImpl implements MQProducerInner {
     private final Logger log = ClientLogger.getLog();
 
     private final DefaultMQProducer defaultMQProducer;
-    private final ConcurrentHashMap<String/* topic */, TopicPublishInfo> topicPublishInfoTable =
-            new ConcurrentHashMap<String, TopicPublishInfo>();
+    private final ConcurrentHashMap<String/* topic */, TopicPublishInfo> topicPublishInfoTable = new ConcurrentHashMap<String, TopicPublishInfo>();
+    private final AtomicLong traceCounter = new AtomicLong(0L);
     /**
      * 事务相关
      */
@@ -616,6 +617,28 @@ public class DefaultMQProducerImpl implements MQProducerInner {
             // TODO 此处可能对Name Server压力过大，需要调优
             tryToFindTopicPublishInfo(mq.getTopic());
             brokerAddr = this.mQClientFactory.findBrokerAddressInPublish(mq.getBrokerName());
+        }
+        traceCounter.incrementAndGet();
+
+        switch (defaultMQProducer.getTraceLevel()) {
+            case DEBUG:
+                msg.setTraceId(UUID.randomUUID().toString());
+                break;
+
+            case MEDIUM:
+                if (traceCounter.longValue() % 256 == 0) {
+                    msg.setTraceId(UUID.randomUUID().toString());
+                }
+                break;
+
+            case PRODUCTION:
+                if (traceCounter.longValue() % 1024 == 0) {
+                    msg.setTraceId(UUID.randomUUID().toString());
+                }
+                break;
+
+            default:
+                break;
         }
 
         SendMessageContext context = null;

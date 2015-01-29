@@ -25,6 +25,10 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
     public void consumeMessageBefore(ConsumeMessageContext context) {
         long timeStamp = System.currentTimeMillis();
         for (MessageExt messageExt : context.getMsgList()) {
+            if (!messageExt.isTraceable()) {
+                continue;
+            }
+
             logger.info("MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
                             "ConsumerGroup: {}, Client: {}, Topic: {}, Tags: {}, Status: {}, Source: {}",
                     messageExt.getMsgId(),
@@ -43,6 +47,10 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
     public void consumeMessageAfter(ConsumeMessageContext context) {
         long timeStamp = System.currentTimeMillis();
         for (MessageExt messageExt : context.getMsgList()) {
+            if(!messageExt.isTraceable()) {
+                continue;
+            }
+
             logger.info("MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
                             "ConsumerGroup: {}, Client: {}, Topic: {}, Tags: {}, Status: {}, Source: {}",
                     messageExt.getMsgId(),

@@ -32,7 +32,7 @@ public class Producer {
         producer.setSendMsgTimeout(10000);
         producer.start();
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 1; i++) {
             try {
                 Message msg = new Message("T_QuickStart",// topic
                     "TagA",// tag

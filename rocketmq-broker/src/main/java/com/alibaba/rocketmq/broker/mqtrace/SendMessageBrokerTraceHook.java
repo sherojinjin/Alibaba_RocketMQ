@@ -37,8 +37,12 @@ public class SendMessageBrokerTraceHook implements SendMessageHook {
 
     @Override
     public void sendMessageBefore(SendMessageContext context) {
-        long timeStamp = System.currentTimeMillis();
         Map<String, String> properties = MessageDecoder.string2messageProperties(context.getMsgProps());
+        if (!properties.containsKey(MessageConst.PROPERTY_MESSAGE_TRACE_ID)) {
+            return;
+        }
+
+        long timeStamp = System.currentTimeMillis();
         logger.info("UUID: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
                         "Broker: {}, MessageQueue: {}, OffSet: {}, Status: {}, Source: {}",
                 properties.get(MessageConst.PROPERTY_MESSAGE_TRACE_ID),
@@ -58,8 +62,12 @@ public class SendMessageBrokerTraceHook implements SendMessageHook {
 
     @Override
     public void sendMessageAfter(SendMessageContext context) {
-        long timeStamp = System.currentTimeMillis();
         Map<String, String> properties = MessageDecoder.string2messageProperties(context.getMsgProps());
+        if (!properties.containsKey(MessageConst.PROPERTY_MESSAGE_TRACE_ID)) {
+            return;
+        }
+        
+        long timeStamp = System.currentTimeMillis();
         logger.info("UUID: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
                         "Broker: {}, MessageQueue: {}, OffSet: {}, Status: {}, Source: {}",
                 properties.get(MessageConst.PROPERTY_MESSAGE_TRACE_ID),

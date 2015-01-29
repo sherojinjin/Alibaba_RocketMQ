@@ -22,6 +22,10 @@ public class SendMessageClientTraceHook implements SendMessageHook {
 
     @Override
     public void sendMessageBefore(SendMessageContext context) {
+        if (!context.getMessage().isTraceable()) {
+            return;
+        }
+
         long timeStamp = System.currentTimeMillis();
         logger.info("UUID: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
                         "Broker: {}, MessageQueue: {}, OffSet: {}, Status: {}, Source: {}",
@@ -41,6 +45,10 @@ public class SendMessageClientTraceHook implements SendMessageHook {
 
     @Override
     public void sendMessageAfter(SendMessageContext context) {
+        if (!context.getMessage().isTraceable()) {
+            return;
+        }
+
         long timeStamp = System.currentTimeMillis();
         logger.info("UUID: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
                         "Broker: {}, MessageQueue: {}, Status: {}, Source: {}",
