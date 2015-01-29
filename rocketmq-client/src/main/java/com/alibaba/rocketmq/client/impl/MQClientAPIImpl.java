@@ -254,7 +254,7 @@ public class MQClientAPIImpl {
      * 是否发送网络包精简的Message
      */
     public static boolean sendSmartMsg = //
-            Boolean.parseBoolean(System.getProperty("com.alibaba.rocketmq.client.sendSmartMsg", "true"));
+            Boolean.parseBoolean(System.getProperty("com.alibaba.rocketmq.client.sendSmartMsg", "false"));
 
 
     /**
@@ -280,11 +280,9 @@ public class MQClientAPIImpl {
 
         RemotingCommand request = null;
         if (sendSmartMsg) {
-            SendMessageRequestHeaderV2 requestHeaderV2 =
-                    SendMessageRequestHeaderV2.createSendMessageRequestHeaderV2(requestHeader);
+            SendMessageRequestHeaderV2 requestHeaderV2 = SendMessageRequestHeaderV2.createSendMessageRequestHeaderV2(requestHeader);
             request = RemotingCommand.createRequestCommand(RequestCode.SEND_MESSAGE_V2, requestHeaderV2);
-        }
-        else {
+        } else {
             request = RemotingCommand.createRequestCommand(RequestCode.SEND_MESSAGE, requestHeader);
         }
 
