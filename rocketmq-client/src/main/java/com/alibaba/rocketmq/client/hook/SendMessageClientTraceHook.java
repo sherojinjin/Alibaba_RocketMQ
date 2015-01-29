@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 
 public class SendMessageClientTraceHook implements SendMessageHook {
 
-    private Logger logger = ClientLogger.createLogger(LoggerName.RocketmqTracerLoggerName);
+    private Logger logger = ClientLogger.getLog(LoggerName.RocketmqTracerLoggerName);
 
     private String name;
 
@@ -39,12 +39,13 @@ public class SendMessageClientTraceHook implements SendMessageHook {
                 context.getMq().getQueueId(),
                 null,
                 "BEFORE_SEND",
-                "CLIENT");
+                "PRODUCER");
     }
 
     @Override
     public void sendMessageAfter(SendMessageContext context) {
         if (!context.getMessage().isTraceable()) {
+            logger.error("Tracer falters.");
             return;
         }
 
@@ -57,12 +58,12 @@ public class SendMessageClientTraceHook implements SendMessageHook {
                 context.getBornHost(),
                 context.getMessage().getTopic(),
                 context.getMessage().getTags(),
-                context.getSendResult().getMsgId(),
+                null == context.getSendResult() ? null : context.getSendResult().getMsgId(),
                 context.getBrokerAddr(),
-                context.getMq().getQueueId(),
-                context.getSendResult().getQueueOffset(),
-                context.getSendResult().getSendStatus().toString(),
-                "CLIENT");
+                null == context.getMq() ? null : context.getMq().getQueueId(),
+                null == context.getSendResult() ? "UNKNOWN" : context.getSendResult().getQueueOffset(),
+                null == context.getSendResult() ? "AFTER_SEND" : context.getSendResult().getSendStatus().toString(),
+                "PRODUCER");
 
     }
 }

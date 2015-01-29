@@ -36,10 +36,11 @@ public class ClientLogger {
 
     static {
         // 初始化Logger
-        log = createLogger(LoggerName.ClientLoggerName);
+        initLogger();
+        log = LoggerFactory.getLogger(LoggerName.ClientLoggerName);
     }
 
-    public static Logger createLogger(final String loggerName) {
+    private static void initLogger() {
         String logConfigFilePath = System.getProperty("rocketmq.client.log.configFile",
                     System.getenv("ROCKETMQ_CLIENT_LOG_CONFIGFILE"));
         Boolean isloadconfig =
@@ -65,14 +66,12 @@ public class ClientLogger {
                         Method configure = DOMConfiguratorObj.getClass().getMethod("configure", URL.class);
                         URL url = ClientLogger.class.getClassLoader().getResource(log4j_resource_file);
                         configure.invoke(DOMConfiguratorObj, url);
-                    }
-                    else {
+                    } else {
                         Method configure = DOMConfiguratorObj.getClass().getMethod("configure", String.class);
                         configure.invoke(DOMConfiguratorObj, logConfigFilePath);
                     }
 
-                }
-                else if (classType.getName().equals("ch.qos.logback.classic.LoggerContext")) {
+                } else if (classType.getName().equals("ch.qos.logback.classic.LoggerContext")) {
                     Class<?> joranConfigurator = null;
                     Class<?> context = Class.forName("ch.qos.logback.core.Context");
                     Object joranConfiguratoroObj = null;
@@ -86,24 +85,25 @@ public class ClientLogger {
                         Method doConfigure =
                                 joranConfiguratoroObj.getClass().getMethod("doConfigure", URL.class);
                         doConfigure.invoke(joranConfiguratoroObj, url);
-                    }
-                    else {
+                    } else {
                         Method doConfigure = joranConfiguratoroObj.getClass().getMethod("doConfigure", String.class);
                         doConfigure.invoke(joranConfiguratoroObj, logConfigFilePath);
                     }
 
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.err.println(e);
             }
         }
-        return LoggerFactory.getLogger(loggerName);
     }
 
 
     public static Logger getLog() {
         return log;
+    }
+
+    public static Logger getLog(String name){
+        return LoggerFactory.getLogger(name);
     }
 
 

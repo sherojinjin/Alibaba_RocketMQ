@@ -29,6 +29,10 @@ public class SendMessageBrokerTraceHook implements SendMessageHook {
     public void sendMessageBefore(SendMessageContext context) {
         Map<String, String> properties = MessageDecoder.string2messageProperties(context.getMsgProps());
         if (!properties.containsKey(MessageConst.PROPERTY_MESSAGE_TRACE_ID)) {
+            for (Map.Entry<String, String> next : properties.entrySet()) {
+                logger.info(next.getKey() + " : " + next.getValue());
+            }
+            logger.info("Tracer falters.");
             return;
         }
 
@@ -54,6 +58,10 @@ public class SendMessageBrokerTraceHook implements SendMessageHook {
     public void sendMessageAfter(SendMessageContext context) {
         Map<String, String> properties = MessageDecoder.string2messageProperties(context.getMsgProps());
         if (!properties.containsKey(MessageConst.PROPERTY_MESSAGE_TRACE_ID)) {
+            for (Map.Entry<String, String> next : properties.entrySet()) {
+                logger.info(next.getKey() + " : " + next.getValue());
+            }
+            logger.info("Tracer falters.");
             return;
         }
         

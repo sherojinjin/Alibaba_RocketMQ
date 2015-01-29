@@ -1,6 +1,7 @@
 package com.alibaba.rocketmq.client.hook;
 
 import com.alibaba.rocketmq.client.log.ClientLogger;
+import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
 
     public ConsumeMessageClientTraceHook(String name) {
         this.name = name;
-        logger = ClientLogger.createLogger(LoggerName.RocketmqTracerLoggerName);
+        logger = ClientLogger.getLog(LoggerName.RocketmqTracerLoggerName);
     }
 
     @Override
@@ -37,10 +38,11 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
                     context.getMq().getBrokerName(),
                     context.getMq().getQueueId(),
                     context.getConsumerGroup(),
+                    MixAll.localhostName(),
                     messageExt.getTopic(),
                     messageExt.getTags(),
                     context.getStatus(),
-                    "CLIENT");
+                    "CONSUMER");
         }
     }
 
@@ -60,10 +62,11 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
                     context.getMq().getBrokerName(),
                     context.getMq().getQueueId(),
                     context.getConsumerGroup(),
+                    MixAll.localhostName(),
                     messageExt.getTopic(),
                     messageExt.getTags(),
                     context.getStatus(),
-                    "CLIENT");
+                    "CONSUMER");
         }
 
     }

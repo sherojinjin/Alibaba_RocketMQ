@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
 
 public final class BrokerLogFactory {
 
-    private volatile boolean configured;
-
     private BrokerLogFactory() {
     }
 
