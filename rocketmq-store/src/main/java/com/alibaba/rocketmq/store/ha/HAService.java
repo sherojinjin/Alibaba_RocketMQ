@@ -427,7 +427,7 @@ public class HAService {
 
             this.swapByteBuffer();
 
-            this.byteBufferRead.position(remain); //for clarity only.
+            this.byteBufferRead.position(remain);
             this.byteBufferRead.limit(READ_MAX_BUFFER_SIZE);
             this.dispatchPosition = 0;
         }
@@ -445,7 +445,6 @@ public class HAService {
             while (this.byteBufferRead.hasRemaining()) {
                 try {
                     int readSize = this.socketChannel.read(this.byteBufferRead);
-                    LOGGER.info("Slave read " + readSize + " bytes from master.");
                     if (readSize > 0) {
                         readSizeZeroTimes = 0;
                         lastReadTimestamp = HAService.this.defaultMessageStore.getSystemClock().now();
@@ -456,7 +455,6 @@ public class HAService {
                         }
                     } else if (readSize == 0) {
                         readSizeZeroTimes++;
-                        LOGGER.warn("No." + readSizeZeroTimes + " time, slave read 0 byte from master.");
                         if (readSizeZeroTimes >= 3) {
                             break;
                         }
@@ -484,8 +482,6 @@ public class HAService {
                 if (diff >= MSG_HEADER_SIZE) {
                     long masterPhyOffset = this.byteBufferRead.getLong(this.dispatchPosition);
                     int bodySize = this.byteBufferRead.getInt(this.dispatchPosition + 8);
-
-                    LOGGER.info("Slave reads data received from master. offset:" + masterPhyOffset + ", size: " + bodySize);
 
                     long slavePhyOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
 
@@ -556,8 +552,6 @@ public class HAService {
                         this.socketChannel = RemotingUtil.connect(socketAddress);
                         if (this.socketChannel != null) {
                             this.socketChannel.register(this.selector, SelectionKey.OP_READ);
-                        } else {
-                            LOGGER.error("Unable to establish a connection.");
                         }
                     }
                 }
@@ -568,8 +562,6 @@ public class HAService {
                 this.lastReadTimestamp = System.currentTimeMillis();
                 if (null != socketChannel) {
                     reportSlaveMaxOffset(currentReportedOffset);
-                } else {
-                    LOGGER.error("No established connection, unable to report maximum offset of slave store.");
                 }
             }
 
@@ -585,9 +577,7 @@ public class HAService {
                     if (sk != null) {
                         sk.cancel();
                     }
-
                     this.socketChannel.close();
-
                     this.socketChannel = null;
                 } catch (IOException e) {
                     LOGGER.warn("closeMaster exception. ", e);
