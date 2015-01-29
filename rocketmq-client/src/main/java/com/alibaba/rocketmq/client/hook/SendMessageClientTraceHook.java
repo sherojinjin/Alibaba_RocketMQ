@@ -51,7 +51,7 @@ public class SendMessageClientTraceHook implements SendMessageHook {
 
         long timeStamp = System.currentTimeMillis();
         logger.info("TracerId: {}, TimeStamp: {}, ProducerGroup: {}, BornHost: {}, Topic: {}, Tags: {}, MsgId: {} --> " +
-                        "Broker: {}, MessageQueue: {}, Status: {}, Source: {}",
+                        "Broker: {}, MessageQueue: {}, QueueOffset: {}, Status: {}, Source: {}",
                 context.getMessage().getTracerId(),
                 timeStamp,
                 context.getProducerGroup(),
