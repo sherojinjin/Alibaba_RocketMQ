@@ -33,15 +33,15 @@ import java.util.List;
 public class Consumer {
 
     public static void main(String[] args) throws InterruptedException, MQClientException {
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("CG_yeahTool_campaignModify");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("CG_QuickStart");
         /**
          * 设置Consumer第一次启动是从队列头部开始消费还是队列尾部开始消费<br>
          * 如果非第一次启动，那么按照上次消费的位置继续消费
          */
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
 
-        consumer.subscribe("T_yeahTool_campaignModify", "*");
-        consumer.setMessageModel(MessageModel.BROADCASTING);
+        consumer.subscribe("T_QuickStart", "*");
+        consumer.setMessageModel(MessageModel.CLUSTERING);
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
 
