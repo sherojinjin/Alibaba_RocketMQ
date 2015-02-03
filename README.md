@@ -28,8 +28,9 @@ It offers a variety of features as following:
 
 ## How can I develop with RocketMQ?
 * [Download the latest release package](https://github.com/alibaba/RocketMQ/releases)
-* [Reference the latest document](https://github.com/alibaba/RocketMQ/issues/1)
+* [Reference the latest doc.](https://github.com/alibaba/RocketMQ/issues/1)
 * [`Cloud environment`](http://www.aliyun.com/product/ons)
+* [`Docker images`](https://registry.hub.docker.com/u/vongosling/rocketmq/)
 * [Integrate with alibaba JStorm](https://github.com/alibaba/jstorm)
 * [Integrate with alibaba Canal](https://github.com/alibaba/canal)
 
@@ -49,6 +50,3 @@ It offers a variety of features as following:
 
 ## License
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) 2010-2013 Alibaba Group Holding Limited
-
-
-
