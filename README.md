@@ -16,7 +16,7 @@ It offers a variety of features as following:
 [![Build Status](https://travis-ci.org/alibaba/RocketMQ.svg?branch=develop)](https://travis-ci.org/alibaba/RocketMQ)
 
 
-* Homepage: <http://pomelo.netease.com/>
+* Homepage: <https://github.com/alibaba/RocketMQ>
 * Mailing list: <https://groups.google.com/forum/?hl=en#!forum/rocketmq>
 * Documentation: <https://github.com/alibaba/RocketMQ/wiki>
 * Wiki: <https://github.com/alibaba/RocketMQ/wiki>
