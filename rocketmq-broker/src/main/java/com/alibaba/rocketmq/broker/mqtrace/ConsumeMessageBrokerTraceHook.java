@@ -23,38 +23,40 @@ public class ConsumeMessageBrokerTraceHook implements ConsumeMessageHook {
 
     @Override
     public void consumeMessageBefore(ConsumeMessageContext context) {
-        long timeStamp = System.currentTimeMillis();
-        for (String msgId : context.getMessageIds().keySet()) {
-            logger.info("MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
-                            "ConsumerGroup: {}, Client: {}, Status: {}, Source: {}",
-                    msgId,
-                    timeStamp,
-                    context.getStoreHost(),
-                    context.getQueueId(),
-                    context.getConsumerGroup(),
-                    context.getClientHost(),
-                    context.getStatus(),
-                    "BROKER");
+        if (logger.isDebugEnabled()) {
+            long timeStamp = System.currentTimeMillis();
+            for (String msgId : context.getMessageIds().keySet()) {
+                logger.debug("MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
+                                "ConsumerGroup: {}, Client: {}, Status: {}, Source: {}",
+                        msgId,
+                        timeStamp,
+                        context.getStoreHost(),
+                        context.getQueueId(),
+                        context.getConsumerGroup(),
+                        context.getClientHost(),
+                        context.getStatus(),
+                        "BROKER");
+            }
         }
     }
 
     @Override
     public void consumeMessageAfter(ConsumeMessageContext context) {
-
-        long timeStamp = System.currentTimeMillis();
-        for (String msgId : context.getMessageIds().keySet()) {
-            logger.info("MsgId: {}, TimeStamp: {}, ConsumerGroup: {}, Client: {} --> " +
-                            "Broker: {}, MessageQueue: {}, Status: {}, Source: {}",
-                    msgId,
-                    timeStamp,
-                    context.getStoreHost(),
-                    context.getQueueId(),
-                    context.getConsumerGroup(),
-                    context.getClientHost(),
-                    context.getStatus(),
-                    "BROKER");
+        if (logger.isDebugEnabled()) {
+            long timeStamp = System.currentTimeMillis();
+            for (String msgId : context.getMessageIds().keySet()) {
+                logger.debug("MsgId: {}, TimeStamp: {}, ConsumerGroup: {}, Client: {} --> " +
+                                "Broker: {}, MessageQueue: {}, Status: {}, Source: {}",
+                        msgId,
+                        timeStamp,
+                        context.getStoreHost(),
+                        context.getQueueId(),
+                        context.getConsumerGroup(),
+                        context.getClientHost(),
+                        context.getStatus(),
+                        "BROKER");
+            }
         }
-
     }
 
 }
