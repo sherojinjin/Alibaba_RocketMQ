@@ -15,14 +15,14 @@
  */
 package com.alibaba.rocketmq.client.producer;
 
-import java.util.List;
-
 import com.alibaba.rocketmq.client.MQAdmin;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
+
+import java.util.List;
 
 
 /**
@@ -135,7 +135,7 @@ public interface MQProducer extends MQAdmin {
 
 
     /**
-     * 向指定队列发送消息，Oneway形式，服务器不应答，无法保证消息是否成功到达服务器
+     * 向指定队列发送消息，one way形式，服务器不应答，无法保证消息是否成功到达服务器
      * 
      * @param msg
      *            消息
@@ -212,5 +212,5 @@ public interface MQProducer extends MQAdmin {
 
 
     public TransactionSendResult sendMessageInTransaction(final Message msg,
-            final LocalTransactionExecutor tranExecuter, final Object arg) throws MQClientException;
+            final LocalTransactionExecutor transactionExecutor, final Object arg) throws MQClientException;
 }

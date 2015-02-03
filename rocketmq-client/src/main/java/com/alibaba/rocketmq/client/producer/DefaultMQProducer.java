@@ -38,6 +38,7 @@ import java.util.List;
  * @since 2013-7-25
  */
 public class DefaultMQProducer extends ClientConfig implements MQProducer {
+
     protected final transient DefaultMQProducerImpl defaultMQProducerImpl;
 
     /**
@@ -86,7 +87,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      */
     private boolean unitMode = false;
 
-    private TraceLevel traceLevel = TraceLevel.DEBUG;
+    private TraceLevel traceLevel = TraceLevel.PRODUCTION;
 
     public DefaultMQProducer() {
         this(MixAll.DEFAULT_PRODUCER_GROUP, null);
@@ -191,7 +192,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
 
     @Override
-    public TransactionSendResult sendMessageInTransaction(Message msg, LocalTransactionExecutor tranExecuter,
+    public TransactionSendResult sendMessageInTransaction(Message msg, LocalTransactionExecutor transactionExecutor,
             final Object arg) throws MQClientException {
         throw new RuntimeException(
             "sendMessageInTransaction not implement, please use TransactionMQProducer class");
