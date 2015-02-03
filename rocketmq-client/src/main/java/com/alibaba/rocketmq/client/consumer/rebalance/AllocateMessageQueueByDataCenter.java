@@ -121,7 +121,11 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
         } catch (RemotingException e) {
             LOGGER.error("Error fetching suspended consumers", e);
         } catch (MQClientException e) {
-            LOGGER.error("Error fetching suspended consumers", e);
+            if (e.getMessage().contains("DC_SELECTOR")) {
+                LOGGER.info(e.getMessage());
+            } else {
+                LOGGER.error("Error fetching suspended consumers", e);
+            }
         }
 
         if (isSuspended(ranges, currentConsumerID)) {
@@ -260,8 +264,8 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
             }
         }
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Allocation Result:");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Allocation Result:");
             for (Map.Entry<String, List<MessageQueue>> row : result.entrySet()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 for (MessageQueue messageQueue : row.getValue()) {
@@ -269,10 +273,10 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
                             .append(", ");
                 }
                 if (stringBuilder.length() > 2) {
-                    LOGGER.info(row.getKey() + " --> " + stringBuilder.substring(0, stringBuilder.length() - 2));
+                    LOGGER.debug(row.getKey() + " --> " + stringBuilder.substring(0, stringBuilder.length() - 2));
                 }
             }
-            LOGGER.info("Allocation End.");
+            LOGGER.debug("Allocation End.");
         }
         return null == result.get(currentConsumerID) ? new ArrayList<MessageQueue>()
                 : result.get(currentConsumerID);
