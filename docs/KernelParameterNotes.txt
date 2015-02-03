@@ -1,0 +1,91 @@
+vm.overcommit_memory=1
+    内核参数说明如下：
+    overcommit_memory文件指定了内核针对内存分配的策略，其值可以是0、1、2。
+    0， 表示内核将检查是否有足够的可用内存供应用进程使用；如果有足够的可用内存，内存申请允许；否则，内存申请失败，并把错误返回给应用进程。
+    1， 表示内核允许分配所有的物理内存，而不管当前的内存状态如何。
+    2， 表示内核允许分配超过所有物理内存和交换空间总和的内存
+
+vm.min_free_kbytes
+    调整MIN_FREE_KBYTES的目的是保持物理内存有足够的空闲空间，防止突发性的换页。
+
+vm.swappiness
+    vm.swapiness缺省为60，减少swapiness会使系统尽快通过swap out不使用的进程资源来释放更多的物理内存。
+
+vm.dirty_writeback_centisecs
+    /proc/sys/vm/dirty_writeback_centisecs
+    这个参数控制内核的脏数据刷新进程pdflush的运行间隔。单位是 1/100 秒。缺省数值是500，也就是 5 秒。如果你的系统是持续地写入动作，
+    那么实际上还是降低这个数值比较好，这样可以把尖峰的写操作削平成多次写操作。设置方法如下：
+      echo "100" > /proc/sys/vm/dirty_writeback_centisecs
+    如果你的系统是短期地尖峰式的写操作，并且写入数据不大（几十M/次）且内存有比较多富裕，那么应该增大此数值：
+     echo "1000" > /proc/sys/vm/dirty_writeback_centisecs
+
+
+vm.page-cluster
+    这个参数用来控制VM的虚拟内存的,读取大量的page,同时发生page错误时,linux VM子系统为了避免过多的磁盘寻址.
+    读取大量的page依赖于系统的内存.内核 一次读取page的数量等于2的page-cluster值的次方即2^page-cluster.当设的值超过2的5次方即2^5,
+    它不会被swap所检测到.
+
+vm.dirty_background_ratio
+    这个参数控制文件系统的pdflush进程，在何时刷新磁盘。单位是百分比，表示系统内存的百分比，意思是当写缓冲使用到系统内存多少的时候，
+    pdflush开始向磁盘写出数据。增大之会使用更多系统内存用于磁盘写缓冲，也可以极大提高系统的写性能。但是，当你需要持续、恒定的写入场合
+    时，应该降低其数值，：
+    echo '1' > /proc/sys/vm/dirty_background_ratio
+
+vm.dirty_ratio
+    参数意义：控制一个在产生磁盘写操作的进程开始写出脏数据到内存缓冲区.缓冲区的值大小是系统内存的百分比.
+    增大会使用更多系统内存用于磁盘写缓冲
+
+
+max_map_count:
+    The max_map_count file allows for the restriction of the number of VMAs (Virtual Memory Areas) that a particular
+    process can own. A Virtual Memory Area is a contiguous area of virtual address space. These areas are created during
+    the life of the process when the program attempts to memory map a file, links to a shared memory segment, or allocates
+    heap space. Tuning this value limits the amount of these VMAs that a process can own. Limiting the amount of VMAs a
+    process can own can lead to problematic application behavior because the system will return out of memory errors when
+    a process reaches its VMA limit but can free up lowmem for other kernel uses. If your system is running low on memory
+    in the NORMAL zone, then lowering this value will help free up memory for kernel use.
+
+
+zone_reclaim_mode:
+    Zone_reclaim_mode allows someone to set more or less aggressive approaches to reclaim memory when a zone runs out of
+    memory. If it is set to zero then no zone reclaim occurs. Allocations will be satisfied from other zones / nodes in the
+    system.
+    当出现out of memory的时候，
+     zone reclaim 模式，
+    允许管理人员来设置激进方式来回收内存，如果设置成0那么不会回收内存。
+     This is value ORed together of
+    1	= Zone reclaim on 1设置reclaim开启
+    2	= Zone reclaim writes dirty pages out 设置回收写脏页
+    4	= Zone reclaim swaps pages   设置回收swap页 zone_reclaim_mode is disabled by default.  For file servers or workloads that benefit from having their data cached, zone_reclaim_mode should be left disabled as the caching effect is likely to be more important than data locality.
+    默认reclaim是关闭的，文件服务器需要禁用该选项。
+     zone_reclaim may be enabled if it's known that the workload is partitioned such that each partition fits within a NUMA node and that accessing remote memory would cause a measurable performance reduction.  The page allocator will then reclaim easily reusable pages (those page cache pages that are currently not used) before allocating off node pages.
+
+    Allowing zone reclaim to write out pages stops processes that are writing large amounts of data from dirtying pages on other nodes. Zone reclaim will write out dirty pages if a zone fills up and so effectively throttle the process. This may decrease the performance of a single process since it cannot use all of system memory to buffer the outgoing writes anymore but it preserve the memory on other nodes so that the performance of other processes running on other nodes will not be affected.
+
+    Allowing regular swap effectively restricts allocations to the local node unless explicitly overridden by memory policies or cpuset configurations.
+
+
+
+drop_caches
+    Kernels 2.6.16 and newer provide a mechanism to have the kernel drop the page cache and/or inode and dentry caches
+    on command, which can help free up a lot of memory. Now you can throw away that script that allocated a ton of
+    memory just to get rid of the cache...
+
+    To use /proc/sys/vm/drop_caches , just echo a number to it.
+
+    To free pagecache:
+
+    # echo 1 > /proc/sys/vm/drop_caches
+    To free dentries and inodes:
+
+    # echo 2 > /proc/sys/vm/drop_caches
+    To free pagecache, dentries and inodes:
+
+    echo 3 > /proc/sys/vm/drop_caches
+    This is a non-destructive operation and will only free things that are completely unused. Dirty objects will
+    continue to be in use until written out to disk and are not freeable. If you run "sync" first to flush them out to
+    disk, these drop operations will tend to free more memory.
+
+
+
+

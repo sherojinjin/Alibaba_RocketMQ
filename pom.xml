@@ -18,8 +18,6 @@
 	<name>rocketmq-all ${project.version}</name>
 	<url>https://github.com/alibaba/rocketmq</url>
 	<description>https://github.com/alibaba/RocketMQ/blob/develop/README.md</description>
-
-
 	<modules>
 		<module>rocketmq-client</module>
 		<module>rocketmq-common</module>
@@ -31,11 +29,10 @@
 		<module>rocketmq-example</module>
 		<module>rocketmq-filtersrv</module>
 		<module>rocketmq-srvutil</module>
+		<module>rocketmq-babel</module>
+
 		<module>rocketmq-cockpit</module>
 		<module>rocketmq-console</module>
-		<module>rocketmq-spring-adaptor</module>
-		<module>rocketmq-web-example</module>
-		<module>rocketmq-babel</module>
 	</modules>
 
 	<developers>

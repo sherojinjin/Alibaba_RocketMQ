@@ -1,6 +1,7 @@
 package com.alibaba.rocketmq.client.hook;
 
 import com.alibaba.rocketmq.client.log.ClientLogger;
+import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.constant.LoggerName;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
 
     public ConsumeMessageClientTraceHook(String name) {
         this.name = name;
-        logger = ClientLogger.createLogger(LoggerName.RocketmqTracerLoggerName);
+        logger = ClientLogger.getLog(LoggerName.RocketmqTracerLoggerName);
     }
 
     @Override
@@ -25,17 +26,23 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
     public void consumeMessageBefore(ConsumeMessageContext context) {
         long timeStamp = System.currentTimeMillis();
         for (MessageExt messageExt : context.getMsgList()) {
-            logger.info("MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
+            if (!messageExt.isTraceable()) {
+                continue;
+            }
+
+            logger.info("TracerId: {}, MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
                             "ConsumerGroup: {}, Client: {}, Topic: {}, Tags: {}, Status: {}, Source: {}",
+                    messageExt.getTracerId(),
                     messageExt.getMsgId(),
                     timeStamp,
                     context.getMq().getBrokerName(),
                     context.getMq().getQueueId(),
                     context.getConsumerGroup(),
+                    MixAll.localhostName(),
                     messageExt.getTopic(),
                     messageExt.getTags(),
                     context.getStatus(),
-                    "CLIENT");
+                    "CONSUMER");
         }
     }
 
@@ -43,17 +50,23 @@ public class ConsumeMessageClientTraceHook implements ConsumeMessageHook {
     public void consumeMessageAfter(ConsumeMessageContext context) {
         long timeStamp = System.currentTimeMillis();
         for (MessageExt messageExt : context.getMsgList()) {
-            logger.info("MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
+            if(!messageExt.isTraceable()) {
+                continue;
+            }
+
+            logger.info("TracerId: {}, MsgId: {}, TimeStamp: {}, Broker: {}, MessageQueue: {} --> " +
                             "ConsumerGroup: {}, Client: {}, Topic: {}, Tags: {}, Status: {}, Source: {}",
+                    messageExt.getTracerId(),
                     messageExt.getMsgId(),
                     timeStamp,
                     context.getMq().getBrokerName(),
                     context.getMq().getQueueId(),
                     context.getConsumerGroup(),
+                    MixAll.localhostName(),
                     messageExt.getTopic(),
                     messageExt.getTags(),
                     context.getStatus(),
-                    "CLIENT");
+                    "CONSUMER");
         }
 
     }

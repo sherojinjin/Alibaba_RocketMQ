@@ -17,14 +17,12 @@ package com.alibaba.rocketmq.example.quickstart;
 
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.common.message.Message;
 
 
 /**
  * Producer，发送消息
- * 
  */
 public class Producer {
     public static void main(String[] args) throws MQClientException, InterruptedException {
@@ -32,32 +30,20 @@ public class Producer {
         producer.setSendMsgTimeout(10000);
         producer.start();
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 1; i++) {
             try {
                 Message msg = new Message("T_QuickStart",// topic
-                    "TagA",// tag
-                    ("Hello RocketMQ " + i).getBytes()// body
-                        );
-                final long start  = System.nanoTime();
-                 producer.send(msg, new SendCallback() {
-                    @Override
-                    public void onSuccess(SendResult sendResult) {
-                        System.out.print("Nano Time: " +  (System.nanoTime() - start));
-                        System.out.println(sendResult);
-                    }
-
-                    @Override
-                    public void onException(Throwable e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-            catch (Exception e) {
+                        "TagA",// tag
+                        ("Hello RocketMQ " + i).getBytes()// body
+                );
+                msg.putUserProperty("id", "aaa");
+                SendResult sendResult = producer.send(msg);
+                System.out.println(sendResult);
+            } catch (Exception e) {
                 e.printStackTrace();
                 Thread.sleep(1000);
             }
         }
-
         producer.shutdown();
     }
 }

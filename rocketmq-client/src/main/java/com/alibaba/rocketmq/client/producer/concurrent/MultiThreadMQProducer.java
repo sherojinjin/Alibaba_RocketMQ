@@ -5,6 +5,7 @@ import com.alibaba.rocketmq.client.log.ClientLogger;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.client.producer.MessageQueueSelector;
 import com.alibaba.rocketmq.client.producer.SendCallback;
+import com.alibaba.rocketmq.client.producer.TraceLevel;
 import com.alibaba.rocketmq.client.producer.selector.SelectMessageQueueByDataCenter;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
 import com.alibaba.rocketmq.common.message.Message;
@@ -84,7 +85,7 @@ public class MultiThreadMQProducer {
                 defaultMQProducer.setDefaultTopicQueueNums(configuration.getDefaultTopicQueueNumber());
                 defaultMQProducer.setRetryTimesWhenSendFailed(configuration.getRetryTimesBeforeSendingFailureClaimed());
                 defaultMQProducer.setSendMsgTimeout(configuration.getSendMessageTimeOutInMilliSeconds());
-
+                defaultMQProducer.setTraceLevel(TraceLevel.PRODUCTION);
                 defaultMQProducers.add(defaultMQProducer);
             }
 

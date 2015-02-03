@@ -86,6 +86,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      */
     private boolean unitMode = false;
 
+    private TraceLevel traceLevel = TraceLevel.DEBUG;
 
     public DefaultMQProducer() {
         this(MixAll.DEFAULT_PRODUCER_GROUP, null);
@@ -340,5 +341,13 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
     public void setUnitMode(boolean isUnitMode) {
         this.unitMode = isUnitMode;
+    }
+
+    public TraceLevel getTraceLevel() {
+        return traceLevel;
+    }
+
+    public void setTraceLevel(TraceLevel traceLevel) {
+        this.traceLevel = traceLevel;
     }
 }

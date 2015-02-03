@@ -15,8 +15,6 @@
  */
 package com.alibaba.rocketmq.broker;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
 import com.alibaba.rocketmq.broker.mqtrace.ConsumeMessageBrokerTraceHook;
 import com.alibaba.rocketmq.broker.mqtrace.SendMessageBrokerTraceHook;
 import com.alibaba.rocketmq.common.BrokerConfig;
@@ -36,7 +34,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.PosixParser;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -199,13 +196,9 @@ public class BrokerStartup {
             // Master监听Slave请求的端口，默认为服务端口+1
             messageStoreConfig.setHaListenPort(nettyServerConfig.getListenPort() + 1);
 
-            // 初始化Logback
-            LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-            JoranConfigurator configurator = new JoranConfigurator();
-            configurator.setContext(lc);
-            lc.reset();
-            configurator.doConfigure(brokerConfig.getRocketmqHome() + "/conf/logback_broker.xml");
-            log = LoggerFactory.getLogger(LoggerName.BrokerLoggerName);
+            BrokerLogFactory.initialize(brokerConfig);
+
+            log = BrokerLogFactory.getLogger(LoggerName.BrokerLoggerName);
 
             // 打印启动参数
             MixAll.printObjectProperties(log, brokerConfig);
@@ -225,8 +218,8 @@ public class BrokerStartup {
                 System.exit(-3);
             }
 
-            controller.registerSendMessageHook(new SendMessageBrokerTraceHook("ReceiveMessageTracer", brokerConfig));
-            controller.registerConsumeMessageHook(new ConsumeMessageBrokerTraceHook("DeliverMessageTracer", brokerConfig));
+            controller.registerSendMessageHook(new SendMessageBrokerTraceHook("ReceiveMessageTracer"));
+            controller.registerConsumeMessageHook(new ConsumeMessageBrokerTraceHook("DeliverMessageTracer"));
 
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 private volatile boolean hasShutdown = false;

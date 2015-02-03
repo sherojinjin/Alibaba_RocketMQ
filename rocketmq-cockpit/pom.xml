@@ -30,9 +30,9 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <jdbc.url>jdbc:mysql://172.30.50.54:3306/cockpit?useUnicode=true&amp;characterEncoding=UTF-8</jdbc.url>
+                <jdbc.url>jdbc:mysql://localhost:3306/cockpit?useUnicode=true&amp;characterEncoding=UTF-8</jdbc.url>
                 <jdbc.userName>root</jdbc.userName>
-                <jdbc.password>passme</jdbc.password>
+                <jdbc.password>password</jdbc.password>
             </properties>
         </profile>
 
@@ -74,7 +74,6 @@
             <version>${spring.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
@@ -112,15 +111,20 @@
         </dependency>
 
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
         </dependency>
 
         <dependency>
@@ -171,7 +175,6 @@
             <artifactId>filters</artifactId>
             <version>2.0.235</version>
         </dependency>
-
     </dependencies>
 
 
