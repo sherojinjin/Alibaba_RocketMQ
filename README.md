@@ -1,4 +1,4 @@
-## RocketMQ -- a faster, reliable, scalable, easier to use message oriented middleware breeding from alibaba massive messaging business. 
+## RocketMQ -- a faster, reliable, scalable, easier to use message oriented middleware, breeding from alibaba massive messaging business. 
 
 RocketMQ is a faster, reliable, scalable, easier to use message oriented middleware breeding from alibaba massive messaging business.
 It offers a variety of features as following:
