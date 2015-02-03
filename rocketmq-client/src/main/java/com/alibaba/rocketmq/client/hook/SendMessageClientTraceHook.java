@@ -45,7 +45,6 @@ public class SendMessageClientTraceHook implements SendMessageHook {
     @Override
     public void sendMessageAfter(SendMessageContext context) {
         if (!context.getMessage().isTraceable()) {
-            logger.error("Tracer falters.");
             return;
         }
 
