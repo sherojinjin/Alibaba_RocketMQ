@@ -1,6 +1,7 @@
 package com.ndpmedia.rocketmq.cockpit.log;
 
 import com.alibaba.rocketmq.common.constant.LoggerName;
+import com.ndpmedia.rocketmq.monitor.MonitorThreadController;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +16,13 @@ public class CockpitLogger
 {
     private static Logger logger;
 
+    private static MonitorThreadController m ;
+
     static
     {
         logger = createLogger(LoggerName.RocketMqCockpitLoggerName);
+
+        m = new MonitorThreadController();
     }
 
     private static Logger createLogger(String logName)

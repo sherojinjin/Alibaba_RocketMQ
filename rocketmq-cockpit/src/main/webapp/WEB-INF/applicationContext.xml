@@ -85,7 +85,7 @@
     </bean>
 
     <bean id="consumerManager" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerManagerImpl">
-
+        <property name="cockpitDao" ref="cockpitDao" />
     </bean>
 
     <bean id="producerManager" class="com.ndpmedia.rocketmq.producer.impl.ProducerManagerImpl">
@@ -131,6 +131,5 @@
                 </bean>
             </property>
         </bean>
-
 
 </beans>

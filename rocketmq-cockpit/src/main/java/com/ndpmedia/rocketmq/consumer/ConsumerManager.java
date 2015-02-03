@@ -13,4 +13,6 @@ public interface ConsumerManager
     public List<Consumer> findConsumersByGroupName(String groupName);
 
     public List<ConsumerProgress> findProgress(String groupName, String topic, String broker);
+
+    public List<String> findConsumerGroupNames();
 }

@@ -50,7 +50,9 @@ public class ConsumerProgress
     public String toString() {
         return "ConsumerProgress{" +
                 "messageQueue=" + messageQueue +
-                ", offsetWrapper=" + offsetWrapper +
+                ", offsetWrapper=OffsetWrapper [brokerOffset=" + offsetWrapper.getBrokerOffset() +
+                ", consumerOffset=" + offsetWrapper.getConsumerOffset() +
+                ", lastTimestamp=" + offsetWrapper.getLastTimestamp() + "]" +
                 ", diff=" + diff +
                 '}';
     }

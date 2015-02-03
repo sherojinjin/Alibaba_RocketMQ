@@ -21,9 +21,6 @@ public class TopicManagerImpl implements TopicManager
             defaultMQAdminExt.start();
 
             TopicList topicList = defaultMQAdminExt.fetchAllTopicList();
-            for (String topic : topicList.getTopicList()) {
-                System.out.println(topic);
-            }
 
             return topicList.getTopicList();
         }

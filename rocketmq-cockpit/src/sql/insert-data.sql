@@ -20,7 +20,10 @@ INSERT INTO ip_mapping(inner_ip, public_ip) VALUES ('10.1.36.11', '54.173.209.19
 INSERT INTO cockpit_user(username, password, role) VALUES ('root', '320734fbb627d6884a1284acbdaa5db9', 'ROLE_ADMIN');
 INSERT INTO cockpit_user(username, password, role) VALUES ('xutao', '23dc3038d25ef09f3ad7c0552b40ef9f', 'ROLE_USER');
 
-INSERT INTO cockpit_role(name) VALUES('ROLE_ADMIN');
-INSERT INTO cockpit_role(name) VALUES('ROLE_USER');
+INSERT INTO topic(topic, broker_address) VALUES ('T_QuickStart', '54.94.212.186:10911');
+INSERT INTO topic(topic, broker_address) VALUES ('T_QuickStart', '54.94.203.40:10911');
+INSERT INTO topic(topic, broker_address) VALUES ('TopicTest_Robert', '172.30.50.54:10911');
+INSERT INTO topic(topic, broker_address) VALUES ('T_PARSER', '172.30.50.54:10911');
 
-INSERT INTO cockpit_rel_user_role(user_id, role_id) VALUES();
+INSERT INTO consumer_group(group_name, broker_address, broker_id) VALUES ('CG_QuickStart', '54.94.212.186:10911', 0);
+INSERT INTO consumer_group(group_name, broker_address, broker_id) VALUES ('C_GKT_MQ_GROUP', '172.30.50.54:10911', 0);
