@@ -21,7 +21,7 @@ It offers a variety of features as following:
 * Documentation: <https://github.com/alibaba/RocketMQ/wiki>
 * Wiki: <https://github.com/alibaba/RocketMQ/wiki>
 * Issues: <https://github.com/alibaba/RocketMQ/issues>
-* Other social tools: weibo <http://q.weibo.com/1628465> or QQ:5776652
+* Other social tools: weibo <http://q.weibo.com/1628465> or QQ group:5776652
  
 
 ----------
@@ -39,6 +39,11 @@ It offers a variety of features as following:
 * vintagewang([@vintagewang](https://github.com/vintagewang))
 * vongosling([@vongosling](https://github.com/vongosling))
 * lizhanhui([@lizhanhui](https://github.com/lizhanhui))
+* lansheng  
+* manhong  
+* longji  
+* fuchong  
+* mouyu
 
 ----------
 
