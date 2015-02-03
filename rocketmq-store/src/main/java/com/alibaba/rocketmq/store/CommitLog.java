@@ -239,12 +239,9 @@ public class CommitLog {
 
             // 1 TOTALSIZE
             int totalSize = byteBuffer.getInt();
-            LOGGER.info("CommitLog#checkMessageAndReturnSize: totalSize: " + totalSize);
 
             // 2 MAGICCODE
             int magicCode = byteBuffer.getInt();
-            LOGGER.info("CommitLog#checkMessageAndReturnSize: magicCode: " + magicCode);
-
             switch (magicCode) {
                 case MessageMagicCode:
                     break;
