@@ -29,7 +29,7 @@ It offers a variety of features as following:
 ## How can I develop with RocketMQ?
 * [Download the latest release package](https://github.com/alibaba/RocketMQ/releases)
 * [Reference the latest document](https://github.com/alibaba/RocketMQ/issues/1)
-* [`aliyun cloud environment`](http://www.aliyun.com/product/ons)
+* [`Cloud environment`](http://www.aliyun.com/product/ons)
 * [Integrate with alibaba JStorm](https://github.com/alibaba/jstorm)
 * [Integrate with alibaba Canal](https://github.com/alibaba/canal)
 
