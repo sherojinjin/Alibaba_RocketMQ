@@ -30,9 +30,9 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <jdbc.url>jdbc:mysql://localhost:3306/cockpit?useUnicode=true&amp;characterEncoding=UTF-8</jdbc.url>
+                <jdbc.url>jdbc:mysql://172.30.50.54:3306/cockpit?useUnicode=true&amp;characterEncoding=UTF-8</jdbc.url>
                 <jdbc.userName>root</jdbc.userName>
-                <jdbc.password>password</jdbc.password>
+                <jdbc.password>passme</jdbc.password>
             </properties>
         </profile>
 
