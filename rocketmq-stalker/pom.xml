@@ -12,11 +12,13 @@
     <artifactId>rocketmq-stalker</artifactId>
 
     <dependencies>
+        <!--
         <dependency>
             <groupId>org.apache.flume</groupId>
             <artifactId>flume-ng-embedded-agent</artifactId>
             <version>1.5.2</version>
         </dependency>
+        -->
     </dependencies>
 
 
