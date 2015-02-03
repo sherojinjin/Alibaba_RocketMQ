@@ -31,14 +31,14 @@ It offers a variety of features as following:
 * [Reference the latest document](https://github.com/alibaba/RocketMQ/issues/1)
 * [`aliyun cloud environment`](http://www.aliyun.com/product/ons)
 * [Integrate with alibaba JStorm](https://github.com/alibaba/jstorm)
-* [Integrate with alibaba canal配](https://github.com/alibaba/canal)
+* [Integrate with alibaba Canal](https://github.com/alibaba/canal)
 
 ----------
 
 ## Contributors
-* vintagewang(@vintagewang)
-* vongosling(@vongosling)
-* lizhanhui(@lizhanhui)
+* vintagewang([@vintagewang](https://github.com/vintagewang))
+* vongosling([@vongosling](https://github.com/vongosling))
+* lizhanhui([@lizhanhui](https://github.com/lizhanhui))
 
 ----------
 
