@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Broker主动调用客户端接口
- * 
+ *
  * @author shijia.wxr<vintage.wang@gmail.com>
  * @since 2013-7-26
  */
@@ -69,9 +69,9 @@ public class Broker2Client {
      * Broker主动回查Producer事务状态，Oneway
      */
     public void checkProducerTransactionState(//
-            final Channel channel,//
-            final CheckTransactionStateRequestHeader requestHeader,//
-            final SelectMappedBufferResult selectMappedBufferResult//
+                                              final Channel channel,//
+                                              final CheckTransactionStateRequestHeader requestHeader,//
+                                              final SelectMappedBufferResult selectMappedBufferResult//
     ) {
         RemotingCommand request =
                 RemotingCommand.createRequestCommand(RequestCode.CHECK_TRANSACTION_STATE, requestHeader);
@@ -90,8 +90,7 @@ public class Broker2Client {
                     }
                 }
             });
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             log.error("invokeProducer exception", e);
             selectMappedBufferResult.release();
         }
@@ -99,8 +98,8 @@ public class Broker2Client {
 
 
     public RemotingCommand callClient(//
-            final Channel channel,//
-            final RemotingCommand request//
+                                      final Channel channel,//
+                                      final RemotingCommand request//
     ) throws RemotingSendRequestException, RemotingTimeoutException, InterruptedException {
         return this.brokerController.getRemotingServer().invokeSync(channel, request, 10000);
     }
@@ -110,8 +109,8 @@ public class Broker2Client {
      * Broker主动通知Consumer，Id列表发生变化，Oneway
      */
     public void notifyConsumerIdsChanged(//
-            final Channel channel,//
-            final String consumerGroup//
+                                         final Channel channel,//
+                                         final String consumerGroup//
     ) {
         if (null == consumerGroup) {
             log.error("notifyConsumerIdsChanged consumerGroup is null");
@@ -125,8 +124,7 @@ public class Broker2Client {
 
         try {
             this.brokerController.getRemotingServer().invokeOneWay(channel, request, 10);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("notifyConsumerIdsChanged exception, " + consumerGroup, e);
         }
     }
@@ -153,20 +151,17 @@ public class Broker2Client {
             mq.setTopic(topic);
             mq.setQueueId(i);
 
-            long consumerOffset =
-                    this.brokerController.getConsumerOffsetManager().queryOffset(group, topic, i);
+            long consumerOffset = this.brokerController.getConsumerOffsetManager().queryOffset(group, topic, i);
             if (-1 == consumerOffset) {
                 response.setCode(ResponseCode.SYSTEM_ERROR);
                 response.setRemark(String.format("THe consumer group <%s> not exist", group));
                 return response;
             }
 
-            long timeStampOffset =
-                    this.brokerController.getMessageStore().getOffsetInQueueByTime(topic, i, timeStamp);
+            long timeStampOffset = this.brokerController.getMessageStore().getOffsetInQueueByTime(topic, i, timeStamp);
             if (isForce || timeStampOffset < consumerOffset) {
                 offsetTable.put(mq, timeStampOffset);
-            }
-            else {
+            } else {
                 offsetTable.put(mq, consumerOffset);
             }
         }
@@ -195,19 +190,17 @@ public class Broker2Client {
                         this.brokerController.getRemotingServer().invokeOneWay(channel, request, 5000);
                         log.info("[reset-offset] reset offset success. topic={}, group={}, clientId={}",
                                 topic, group, channelInfoTable.get(channel).getClientId());
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         log.error("[reset-offset] reset offset exception. topic={}, group={}",
-                            new Object[] { topic, group }, e);
+                                new Object[]{topic, group}, e);
                     }
-                }
-                else {
+                } else {
                     // 如果有一个客户端是不支持该功能的，则直接返回错误，需要应用方升级。
                     response.setCode(ResponseCode.SYSTEM_ERROR);
                     response.setRemark("the client does not support this feature. version="
                             + MQVersion.getVersionDesc(version));
                     log.warn("[reset-offset] the client does not support this feature. version={}",
-                        RemotingHelper.parseChannelRemoteAddr(channel), MQVersion.getVersionDesc(version));
+                            RemotingHelper.parseChannelRemoteAddr(channel), MQVersion.getVersionDesc(version));
                     return response;
                 }
             }
@@ -216,10 +209,10 @@ public class Broker2Client {
         else {
             String errorInfo =
                     String.format(
-                        "Consumer not online, so can not reset offset, Group: %s Topic: %s Timestamp: %d",//
-                        requestHeader.getGroup(), //
-                        requestHeader.getTopic(), //
-                        requestHeader.getTimestamp());
+                            "Consumer not online, so can not reset offset, Group: %s Topic: %s Timestamp: %d",//
+                            requestHeader.getGroup(), //
+                            requestHeader.getTopic(), //
+                            requestHeader.getTimestamp());
             log.error(errorInfo);
             response.setCode(ResponseCode.CONSUMER_NOT_ONLINE);
             response.setRemark(errorInfo);
@@ -244,7 +237,7 @@ public class Broker2Client {
         requestHeader.setGroup(group);
         RemotingCommand request =
                 RemotingCommand.createRequestCommand(RequestCode.GET_CONSUMER_STATUS_FROM_CLIENT,
-                    requestHeader);
+                        requestHeader);
 
         Map<String, Map<MessageQueue, Long>> consumerStatusTable =
                 new HashMap<String, Map<MessageQueue, Long>>();
@@ -265,10 +258,9 @@ public class Broker2Client {
                 result.setRemark("the client does not support this feature. version="
                         + MQVersion.getVersionDesc(version));
                 log.warn("[get-consumer-status] the client does not support this feature. version={}",
-                    RemotingHelper.parseChannelRemoteAddr(channel), MQVersion.getVersionDesc(version));
+                        RemotingHelper.parseChannelRemoteAddr(channel), MQVersion.getVersionDesc(version));
                 return result;
-            }
-            else if (UtilAll.isBlank(originClientId) || originClientId.equals(clientId)) {
+            } else if (UtilAll.isBlank(originClientId) || originClientId.equals(clientId)) {
                 // 不指定 originClientId 则对所有的 client 进行处理；若指定 originClientId 则只对当前
                 // originClientId 进行处理
                 try {
@@ -276,26 +268,25 @@ public class Broker2Client {
                             this.brokerController.getRemotingServer().invokeSync(channel, request, 5000);
                     assert response != null;
                     switch (response.getCode()) {
-                    case ResponseCode.SUCCESS: {
-                        if (response.getBody() != null) {
-                            GetConsumerStatusBody body =
-                                    GetConsumerStatusBody.decode(response.getBody(),
-                                        GetConsumerStatusBody.class);
+                        case ResponseCode.SUCCESS: {
+                            if (response.getBody() != null) {
+                                GetConsumerStatusBody body =
+                                        GetConsumerStatusBody.decode(response.getBody(),
+                                                GetConsumerStatusBody.class);
 
-                            consumerStatusTable.put(clientId, body.getMessageQueueTable());
-                            log.info(
-                                "[get-consumer-status] get consumer status success. topic={}, group={}, channelRemoteAddr={}",
-                                    topic, group, clientId);
+                                consumerStatusTable.put(clientId, body.getMessageQueueTable());
+                                log.info(
+                                        "[get-consumer-status] get consumer status success. topic={}, group={}, channelRemoteAddr={}",
+                                        topic, group, clientId);
+                            }
                         }
+                        default:
+                            break;
                     }
-                    default:
-                        break;
-                    }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     log.error(
-                        "[get-consumer-status] get consumer status exception. topic={}, group={}, offset={}",
-                        new Object[] { topic, group }, e);
+                            "[get-consumer-status] get consumer status exception. topic={}, group={}, offset={}",
+                            new Object[]{topic, group}, e);
                 }
 
                 // 若指定 originClientId 相应的 client 处理完成，则退出循环

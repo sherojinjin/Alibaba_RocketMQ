@@ -219,7 +219,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
                                 ConsumeMessageOrderlyService.this.defaultMQPushConsumer
                                     .getConsumeMessageBatchMaxSize();
 
-                        List<MessageExt> msgs = this.processQueue.takeMessags(consumeBatchSize);
+                        List<MessageExt> msgs = this.processQueue.takeMessages(consumeBatchSize);
                         if (!msgs.isEmpty()) {
                             final ConsumeOrderlyContext context =
                                     new ConsumeOrderlyContext(this.messageQueue);
@@ -355,7 +355,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
                     consumeRequest.getMessageQueue().getTopic(), msgs.size());
                 break;
             case SUSPEND_CURRENT_QUEUE_A_MOMENT:
-                consumeRequest.getProcessQueue().makeMessageToCosumeAgain(msgs);
+                consumeRequest.getProcessQueue().makeMessageToConsumeAgain(msgs);
                 this.submitConsumeRequestLater(//
                     consumeRequest.getProcessQueue(), //
                     consumeRequest.getMessageQueue(), //
@@ -391,7 +391,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
                 continueConsume = false;
                 break;
             case SUSPEND_CURRENT_QUEUE_A_MOMENT:
-                consumeRequest.getProcessQueue().makeMessageToCosumeAgain(msgs);
+                consumeRequest.getProcessQueue().makeMessageToConsumeAgain(msgs);
                 this.submitConsumeRequestLater(//
                     consumeRequest.getProcessQueue(), //
                     consumeRequest.getMessageQueue(), //

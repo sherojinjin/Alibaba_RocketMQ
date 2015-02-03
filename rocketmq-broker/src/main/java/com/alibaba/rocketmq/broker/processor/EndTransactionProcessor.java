@@ -46,6 +46,7 @@ import com.alibaba.rocketmq.store.PutMessageResult;
  * @since 2013-7-26
  */
 public class EndTransactionProcessor implements NettyRequestProcessor {
+
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BrokerLoggerName);
 
     private final BrokerController brokerController;

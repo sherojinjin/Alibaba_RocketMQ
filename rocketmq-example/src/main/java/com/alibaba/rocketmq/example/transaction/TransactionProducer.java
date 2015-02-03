@@ -41,13 +41,13 @@ public class TransactionProducer {
         producer.start();
 
         String[] tags = new String[] { "TagA", "TagB", "TagC", "TagD", "TagE" };
-        TransactionExecutorImpl tranExecuter = new TransactionExecutorImpl();
+        TransactionExecutorImpl transactionExecutor = new TransactionExecutorImpl();
         for (int i = 0; i < 100; i++) {
             try {
                 Message msg =
                         new Message("TopicTest", tags[i % tags.length], "KEY" + i,
                             ("Hello RocketMQ " + i).getBytes());
-                SendResult sendResult = producer.sendMessageInTransaction(msg, tranExecuter, null);
+                SendResult sendResult = producer.sendMessageInTransaction(msg, transactionExecutor, null);
                 System.out.println(sendResult);
 
                 Thread.sleep(10);

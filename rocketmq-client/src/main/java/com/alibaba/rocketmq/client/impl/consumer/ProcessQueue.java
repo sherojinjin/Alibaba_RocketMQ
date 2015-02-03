@@ -278,7 +278,7 @@ public class ProcessQueue {
     }
 
 
-    public void makeMessageToCosumeAgain(List<MessageExt> msgs) {
+    public void makeMessageToConsumeAgain(List<MessageExt> msgs) {
         try {
             this.lockTreeMap.writeLock().lockInterruptibly();
             try {
@@ -294,7 +294,7 @@ public class ProcessQueue {
             }
         }
         catch (InterruptedException e) {
-            log.error("makeMessageToCosumeAgain exception", e);
+            log.error("makeMessageToConsumeAgain exception", e);
         }
     }
 
@@ -305,7 +305,7 @@ public class ProcessQueue {
      * @param batchSize
      * @return
      */
-    public List<MessageExt> takeMessags(final int batchSize) {
+    public List<MessageExt> takeMessages(final int batchSize) {
         List<MessageExt> result = new ArrayList<MessageExt>(batchSize);
         final long now = System.currentTimeMillis();
         try {
@@ -334,7 +334,7 @@ public class ProcessQueue {
             }
         }
         catch (InterruptedException e) {
-            log.error("takeMessags exception", e);
+            log.error("takeMessages exception", e);
         }
 
         return result;
