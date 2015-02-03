@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>rocketmq-stalker</artifactId>
+    <name>rocketmq-stalker ${parent.version}</name>
 
     <dependencies>
         <dependency>
