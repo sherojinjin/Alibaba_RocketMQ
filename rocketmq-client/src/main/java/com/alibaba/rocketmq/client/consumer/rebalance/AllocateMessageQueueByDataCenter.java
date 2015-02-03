@@ -122,7 +122,7 @@ public class AllocateMessageQueueByDataCenter implements AllocateMessageQueueStr
             LOGGER.error("Error fetching suspended consumers", e);
         } catch (MQClientException e) {
             if (e.getMessage().contains("DC_SELECTOR")) {
-                LOGGER.info(e.getMessage());
+                LOGGER.error(e.getMessage());
             } else {
                 LOGGER.error("Error fetching suspended consumers", e);
             }

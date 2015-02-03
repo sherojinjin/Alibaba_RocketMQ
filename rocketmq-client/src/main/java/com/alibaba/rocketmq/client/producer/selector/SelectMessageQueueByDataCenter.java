@@ -140,7 +140,11 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                                 LOGGER.warn("Unknown data center choosing strategy.");
                             }
                         } catch (Exception e) {
-                            LOGGER.error("get DC_SELECTOR params error", e);
+                            if (e.getMessage().contains("DC_SELECTOR")) {
+                                LOGGER.error(e.getMessage());
+                            } else {
+                                LOGGER.error("Failed to select message queue to send message.", e);
+                            }
                         }
                         //Sleep 60 seconds per loop, be it successful or not.
                         Thread.sleep(60 * 1000);
