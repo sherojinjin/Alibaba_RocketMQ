@@ -37,6 +37,8 @@ public class MonitorTask implements Runnable
 
         for (String topic : topicList)
         {
+            if (!topic.contains(MixAll.RETRY_GROUP_TOPIC_PREFIX))
+                continue;
             try
             {
                 results.addAll(consumerManager.findProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null,

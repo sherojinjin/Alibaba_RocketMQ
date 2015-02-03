@@ -21,6 +21,6 @@ public class MonitorThreadController
     {
         logger.debug(" start monitor ");
         long nextMinutes = 60 - (System.currentTimeMillis()/1000%60);
-        scheduledExecutorService.scheduleAtFixedRate(new MonitorTask(), nextMinutes, 60, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(new MonitorTask(), nextMinutes, 600, TimeUnit.SECONDS);
     }
 }
