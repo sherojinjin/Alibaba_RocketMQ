@@ -385,7 +385,6 @@ public class HAService {
 
 
         private boolean reportSlaveMaxOffset(final long maxOffset) {
-            LOGGER.info("Slave reports local maximum offset: " + maxOffset);
             reportOffset.clear();
             reportOffset.putLong(maxOffset);
             reportOffset.flip();
@@ -406,8 +405,6 @@ public class HAService {
 
             if (reportOffset.hasRemaining()) {
                 LOGGER.error("Slave failed to report maximum offset.");
-            } else {
-                LOGGER.info("Slave reporting maximum offset completes.");
             }
 
             return !this.reportOffset.hasRemaining();
