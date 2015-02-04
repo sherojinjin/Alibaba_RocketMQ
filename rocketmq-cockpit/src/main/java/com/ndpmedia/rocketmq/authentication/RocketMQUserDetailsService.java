@@ -1,8 +1,8 @@
 package com.ndpmedia.rocketmq.authentication;
 
 import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
-import com.ndpmedia.rocketmq.cockpit.log.CockpitLogger;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -22,7 +22,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
 {
     private CockpitDao cockpitDao;
 
-    private final Logger logger = CockpitLogger.getLogger();
+    private final Logger logger = LoggerFactory.getLogger(RocketMQUserDetailsService.class);
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
@@ -33,7 +33,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
             logger.debug("[login] try to login ====username===== " + username);
             Map<String, Object> map = getUser(username);
 
-            if (map == null )
+            if (map == null)
             {
                 throw new Exception(" this user need register first :" + username);
             }
@@ -44,8 +44,7 @@ public class RocketMQUserDetailsService implements UserDetailsService
             user = new User(username, map.get("password").toString(), true, true, true, true,
                     getAuthority(map.get("role").toString()));
             
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             logger.warn(" log faied !" + e.getMessage());
             throw new UsernameNotFoundException(" log faied !" + e.getMessage());

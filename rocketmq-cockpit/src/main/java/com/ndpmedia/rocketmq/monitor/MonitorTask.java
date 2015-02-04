@@ -1,13 +1,13 @@
 package com.ndpmedia.rocketmq.monitor;
 
 import com.alibaba.rocketmq.common.MixAll;
-import com.ndpmedia.rocketmq.cockpit.log.CockpitLogger;
 import com.ndpmedia.rocketmq.consumer.ConsumerManager;
 import com.ndpmedia.rocketmq.consumer.impl.ConsumerManagerImpl;
 import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
 import com.ndpmedia.rocketmq.topic.TopicManager;
 import com.ndpmedia.rocketmq.topic.impl.TopicManagerImpl;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class MonitorTask implements Runnable
     @Autowired
     private static TopicManager topicManager = new TopicManagerImpl();
 
-    private static Logger logger = CockpitLogger.getLogger();
+    private static Logger logger = LoggerFactory.getLogger(MonitorTask.class);
 
     @Override
     public void run()
@@ -41,8 +41,8 @@ public class MonitorTask implements Runnable
                 continue;
             try
             {
-                results.addAll(consumerManager.findProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null,
-                        null));
+                results.addAll(
+                        consumerManager.findProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null, null));
             } catch (Exception e)
             {
                 logger.warn("");

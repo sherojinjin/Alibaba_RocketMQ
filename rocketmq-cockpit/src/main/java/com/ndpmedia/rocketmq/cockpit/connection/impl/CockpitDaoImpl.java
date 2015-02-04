@@ -1,8 +1,8 @@
 package com.ndpmedia.rocketmq.cockpit.connection.impl;
 
 import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
-import com.ndpmedia.rocketmq.cockpit.log.CockpitLogger;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -25,7 +25,7 @@ public class CockpitDaoImpl<T> implements CockpitDao
 
     private DataSource dataSource;
 
-    private final Logger logger = CockpitLogger.getLogger();
+    private final Logger logger = LoggerFactory.getLogger(CockpitDaoImpl.class);
 
     public JdbcTemplate getJdbcTemplate()
     {

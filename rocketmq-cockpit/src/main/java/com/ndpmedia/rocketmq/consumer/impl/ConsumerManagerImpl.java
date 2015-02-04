@@ -7,11 +7,11 @@ import com.alibaba.rocketmq.common.protocol.body.Connection;
 import com.alibaba.rocketmq.common.protocol.body.ConsumerConnection;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
-import com.ndpmedia.rocketmq.cockpit.log.CockpitLogger;
 import com.ndpmedia.rocketmq.consumer.ConsumerManager;
 import com.ndpmedia.rocketmq.consumer.model.Consumer;
 import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,7 +21,7 @@ public class ConsumerManagerImpl implements ConsumerManager
 {
     private CockpitDao cockpitDao;
 
-    private final Logger logger = CockpitLogger.getLogger();
+    private final Logger logger = LoggerFactory.getLogger(ConsumerManagerImpl.class);
 
     @Override
     public List<Consumer> findConsumersByGroupName(String groupName)
@@ -37,7 +37,7 @@ public class ConsumerManagerImpl implements ConsumerManager
             ConsumerConnection cc = defaultMQAdminExt.examineConsumerConnectionInfo(groupName);
 
             // 打印连接
-//            int i = 1;
+            //            int i = 1;
             for (Connection conn : cc.getConnectionSet())
             {
                 Consumer consumer = new Consumer();
