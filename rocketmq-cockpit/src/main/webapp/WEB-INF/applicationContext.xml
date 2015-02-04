@@ -112,6 +112,10 @@
         <property name="producerManager" ref="producerManager" />
     </bean>
 
+    <bean id="monitor" class="com.ndpmedia.rocketmq.monitor.MonitorThreadController">
+
+    </bean>
+
     <bean id="captchaProducer" class="com.google.code.kaptcha.impl.DefaultKaptcha">
             <property name="config">
                 <bean class="com.google.code.kaptcha.util.Config">
