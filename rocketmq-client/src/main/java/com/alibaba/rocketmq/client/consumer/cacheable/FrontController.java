@@ -30,7 +30,8 @@ public class FrontController implements MessageListenerConcurrently {
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> messages,
                                                     ConsumeConcurrentlyContext context) {
         if (null == messages) {
-            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+            LOGGER.error("Found null while preparing to consume messages in batch.");
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         }
 
         for (MessageExt message : messages) {
