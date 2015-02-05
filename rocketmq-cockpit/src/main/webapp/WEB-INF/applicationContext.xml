@@ -45,7 +45,7 @@
         <!-- 归还连接时是否测试有效 -->
         <property name="testOnReturn" value="false" />
 
-        <property name="filters" value="stat,log4j" />
+        <property name="filters" value="stat" />
         <property name="proxyFilters">
             <list>
                 <ref bean="statFilter" />
