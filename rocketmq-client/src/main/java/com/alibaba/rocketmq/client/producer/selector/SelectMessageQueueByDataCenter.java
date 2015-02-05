@@ -77,35 +77,39 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                             Map<String, String> configMap = kvTable.getTable();
                             String strategy = configMap.get(NSConfigKey.DC_DISPATCH_STRATEGY.getKey());
 
-
                             if ("BY_LOCATION".equals(strategy)) {
-                                String locationRatio =
-                                        configMap.get(NSConfigKey.DC_DISPATCH_STRATEGY_LOCATION_RATIO.getKey());
+                                String locationRatio = configMap.get(NSConfigKey.DC_DISPATCH_STRATEGY_LOCATION_RATIO.getKey());
+                                if (null == locationRatio || locationRatio.trim().isEmpty()) {
+                                    dispatchStrategy = "AVERAGE";
+                                    break;
+                                }
+
                                 try {
                                     SelectMessageQueueByDataCenter.this.locationRatio = Float.parseFloat(locationRatio);
                                     dispatchStrategy = strategy;
                                     LOGGER.info("Data center choosing strategy set to: " + dispatchStrategy);
                                     LOGGER.info("Fetched location ratio: " + locationRatio);
                                 } catch (Exception e) {
-                                    LOGGER.warn("DC_DISPATCH_STRATEGY_LOCATION_RATIO parse error: {}", SelectMessageQueueByDataCenter.this.locationRatio);
+                                    LOGGER.warn("DC_DISPATCH_STRATEGY_LOCATION_RATIO parse error: {}",
+                                            SelectMessageQueueByDataCenter.this.locationRatio);
                                 }
                             } else if ("BY_RATIO".equals(strategy)) {
-                                String dispatch_ratio = configMap.get(NSConfigKey.DC_DISPATCH_RATIO.getKey());
-                                LOGGER.info("Fetched by-ratio values: " + dispatch_ratio);
-                                if (dispatch_ratio != null) {
-                                    String[] values = dispatch_ratio.split(",");
+                                String dispatchRatio = configMap.get(NSConfigKey.DC_DISPATCH_RATIO.getKey());
+                                LOGGER.info("Fetched by-ratio values: " + dispatchRatio);
+                                if (dispatchRatio != null && !dispatchRatio.trim().isEmpty()) {
+                                    String[] values = dispatchRatio.split(",");
                                     List<Pair<String, Float>> newList = new ArrayList<Pair<String, Float>>();
                                     for (String value : values) {
                                         String keyValue[] = value.split(":");
                                         if (keyValue.length != 2) {
-                                            LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
+                                            LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatchRatio);
                                             continue;
                                         }
                                         Float dcRatio = null;
                                         try {
                                             dcRatio = Float.parseFloat(keyValue[1]);
                                         } catch (NumberFormatException e) {
-                                            LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatch_ratio);
+                                            LOGGER.warn("DC_DISPATCH_RATIO parse error: {}", dispatchRatio);
                                             continue;
                                         }
 
@@ -139,11 +143,15 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
                                             LOGGER.info(item.getObject1() + " --> " + item.getObject2());
                                         }
                                     }
+                                } else {
+                                    dispatchStrategy = "AVERAGE";
                                 }
                             } else {
+                                dispatchStrategy = "AVERAGE";
                                 LOGGER.warn("Unknown data center choosing strategy.");
                             }
                         } catch (Exception e) {
+                            dispatchStrategy = "AVERAGE";
                             if (e.getMessage().contains("DC_SELECTOR")) {
                                 LOGGER.error(e.getMessage());
                             } else {
@@ -161,67 +169,81 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
 
     }
 
+    /**
+     * This method always return a message queue for producer to send message. Exceptions are strictly prohibited.
+     * @param mqs All available message queues.
+     * @param msg message to send.
+     * @param arg It may be null or instance of {@link com.alibaba.rocketmq.client.producer.SendCallback}.
+     * @return Message queue to send the message.
+     */
     @Override
     public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
-        float r = random.nextFloat();
-        List<MessageQueue> dataCenterQueues = new ArrayList<MessageQueue>();
-        if ("BY_LOCATION".equals(dispatchStrategy)) {
-            for (MessageQueue messageQueue : mqs) {
+        try {
+            float r = random.nextFloat();
+            List<MessageQueue> dataCenterQueues = new ArrayList<MessageQueue>();
+            if ("BY_LOCATION".equals(dispatchStrategy)) {
+                for (MessageQueue messageQueue : mqs) {
 
-                /**
-                 * Broker name pattern: ClusterName_{DataCenterNumber}_broker{BrokerNumber}[_optional_extra_info]
-                 * Sample broker name: DefaultCluster_1_broker1
-                 */
-                String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
-                if (3 > brokerNameSegments.length) {
-                    warningCounter.incrementAndGet();
-                    if (1 == warningCounter.longValue() || warningCounter.longValue() % OUTPUT_WARNING_PER_COUNT == 0) {
-                        LOGGER.warn("Issue: broker name is not properly named. Check " + messageQueue.getBrokerName());
+                    /**
+                     * Broker name pattern: ClusterName_{DataCenterNumber}_broker{BrokerNumber}[_optional_extra_info]
+                     * Sample broker name: DefaultCluster_1_broker1
+                     */
+                    String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
+                    if (3 > brokerNameSegments.length) {
+                        warningCounter.incrementAndGet();
+                        if (1 == warningCounter.longValue() || warningCounter.longValue() % OUTPUT_WARNING_PER_COUNT == 0) {
+                            LOGGER.warn("Issue: broker name is not properly named. Check " + messageQueue.getBrokerName());
+                        }
+                        //Round-robin all message queues as broker name is not properly named.
+                        break;
                     }
-                    //Round-robin all message queues as broker name is not properly named.
-                    break;
+
+                    if (r > locationRatio && !brokerNameSegments[1].equals(LOCAL_DATA_CENTER_ID)) {
+                        dataCenterQueues.add(messageQueue);
+                    } else if (r <= locationRatio && brokerNameSegments[1].equals(LOCAL_DATA_CENTER_ID)) {
+                        dataCenterQueues.add(messageQueue);
+                    }
+                }
+                return roundRobin(dataCenterQueues, mqs);
+            } else if ("BY_RATIO".equals(dispatchStrategy)) {
+                List<Pair<String, Float>> list = getDispatcherList();
+                String dc = list.get(0).getObject1();
+                for (Pair<String, Float> item : list) {
+                    if (r <= item.getObject2()) {
+                        dc = item.getObject1();
+                        break;
+                    }
                 }
 
-                if (r > locationRatio && !brokerNameSegments[1].equals(LOCAL_DATA_CENTER_ID)) {
-                    dataCenterQueues.add(messageQueue);
-                } else if (r <= locationRatio && brokerNameSegments[1].equals(LOCAL_DATA_CENTER_ID)) {
-                    dataCenterQueues.add(messageQueue);
+                for (MessageQueue messageQueue : mqs) {
+                    String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
+                    if (brokerNameSegments[1].equals(dc)) {
+                        dataCenterQueues.add(messageQueue);
+                    }
                 }
+                return roundRobin(dataCenterQueues, mqs);
+            } else {
+                LOGGER.warn("Consume averagely, please double check.");
+                return roundRobin(mqs, mqs);
             }
-        } else if ("BY_RATIO".equals(dispatchStrategy)) {
-            List<Pair<String, Float>> list = getDispatcherList();
-            String dc = list.get(0).getObject1();
-            for (Pair<String, Float> item : list) {
-                if (r <= item.getObject2()) {
-                    dc = item.getObject1();
-                    break;
-                }
-            }
-
-            for (MessageQueue messageQueue : mqs) {
-                String[] brokerNameSegments = messageQueue.getBrokerName().split("_");
-                if (brokerNameSegments[1].equals(dc)) {
-                    dataCenterQueues.add(messageQueue);
-                }
-            }
-        } else {
-            LOGGER.warn("Unknown strategy, please double check.");
+        } catch (Exception e) {
+            // Round robin all message queues, namely, average consuming in case of any error.
+            return roundRobin(mqs, mqs);
         }
+    }
 
-
-        // Round robin.
-        MessageQueue messageQueue = null;
-        if (!dataCenterQueues.isEmpty()) {
-            messageQueue = dataCenterQueues.get(roundRobin.incrementAndGet() % dataCenterQueues.size());
-        } else {
-            messageQueue = mqs.get(roundRobin.incrementAndGet() % mqs.size());
+    /**
+     * This method first tries to round robin <code>preferableMessageQueues</code> in case it's not null nor empty.
+     * If previous step fails, it tries to round robin all message queues specified by <code>totalMessageQueues</code>.
+     * @param preferableMessageQueues Preferable message queues.
+     * @param totalMessageQueues All message queues available.
+     * @return The chosen message queue.
+     */
+    private MessageQueue roundRobin(List<MessageQueue> preferableMessageQueues, List<MessageQueue> totalMessageQueues) {
+        if (null == preferableMessageQueues || preferableMessageQueues.isEmpty()) {
+            return totalMessageQueues.get(roundRobin.incrementAndGet() % totalMessageQueues.size());
         }
-
-        if ((roundRobin.longValue()) % 1000 == 0) {
-            LOGGER.info("Choosing broker: " + messageQueue.getBrokerName());
-        }
-
-        return messageQueue;
+        return preferableMessageQueues.get(roundRobin.incrementAndGet() % preferableMessageQueues.size());
     }
 
     public List<Pair<String, Float>> getDispatcherList() {
