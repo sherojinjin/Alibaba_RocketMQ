@@ -42,9 +42,9 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <jdbc.url>jdbc:mysql://yscheduler.cgs2bjzqxcxl.us-east-1.rds.amazonaws.com:3306/cockpit?useUnicode=true&amp;characterEncoding=UTF-8</jdbc.url>
-                <jdbc.userName>cockpit</jdbc.userName>
-                <jdbc.password>Pyh66tVA2y7RD7ft</jdbc.password>
+                <jdbc.url>jdbc:mysql://localhost:3306/cockpit?useUnicode=true&amp;characterEncoding=UTF-8</jdbc.url>
+                <jdbc.userName>root</jdbc.userName>
+                <jdbc.password>changeIt</jdbc.password>
             </properties>
         </profile>
     </profiles>
