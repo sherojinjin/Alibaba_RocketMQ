@@ -26,7 +26,12 @@ import com.alibaba.rocketmq.common.protocol.body.KVTable;
 import com.alibaba.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -119,11 +124,10 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
 
                                     //Convert percent to percentile.
                                     if (newList.size() > 0) {
-                                        for (int i = 1; i < newList.size() - 1; i++) {
+                                        for (int i = 1; i < newList.size(); i++) {
                                             Pair<String, Float> pair = newList.get(i);
                                             pair.setObject2(pair.getObject2() + newList.get(i - 1).getObject2());
                                         }
-
 
                                         List<Pair<String, Float>> tmpList = getDispatcherList();
                                         setDispatcherList(newList);
@@ -187,9 +191,9 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
         } else if ("BY_RATIO".equals(dispatchStrategy)) {
             List<Pair<String, Float>> list = getDispatcherList();
             String dc = list.get(0).getObject1();
-            for (int i = 0; i < list.size() - 2; i++) {
-                if (r > list.get(i).getObject2()) {
-                    dc = list.get(i + 1).getObject1();
+            for (Pair<String, Float> item : list) {
+                if (r <= item.getObject2()) {
+                    dc = item.getObject1();
                     break;
                 }
             }

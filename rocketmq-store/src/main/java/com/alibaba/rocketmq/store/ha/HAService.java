@@ -27,7 +27,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -389,7 +393,7 @@ public class HAService {
             reportOffset.putLong(maxOffset);
             reportOffset.flip();
 
-            for (int i = 0; i < 3 && this.reportOffset.hasRemaining();) {
+            for (int i = 0; i < 3 && this.reportOffset.hasRemaining(); ) {
                 try {
                     if (0 == this.socketChannel.write(this.reportOffset)) {
                         i++;
@@ -557,9 +561,6 @@ public class HAService {
                 this.currentReportedOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
                 this.lastWriteTimestamp = System.currentTimeMillis();
                 this.lastReadTimestamp = System.currentTimeMillis();
-                if (null != socketChannel) {
-                    reportSlaveMaxOffset(currentReportedOffset);
-                }
             }
 
             return this.socketChannel != null;
