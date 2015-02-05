@@ -31,29 +31,30 @@ public class MonitorTask implements Runnable
     @Override
     public void run()
     {
-        Set<String> topicList = topicManager.list();
-
-        List<ConsumerProgress> results = new ArrayList<ConsumerProgress>();
-
-        for (String topic : topicList)
+        try
         {
-            if (!topic.contains(MixAll.RETRY_GROUP_TOPIC_PREFIX))
-                continue;
-            try
+            Set<String> topicList = topicManager.list();
+
+            List<ConsumerProgress> results = new ArrayList<ConsumerProgress>();
+
+            for (String topic : topicList)
             {
+                if (!topic.contains(MixAll.RETRY_GROUP_TOPIC_PREFIX))
+                    continue;
                 results.addAll(
                         consumerManager.findProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null, null));
-            } catch (Exception e)
-            {
-                logger.warn("");
-            }
-        }
 
-        for (ConsumerProgress cp : results)
+            }
+
+            for (ConsumerProgress cp : results)
+            {
+                if (null == cp || null == cp.getMessageQueue() || null == cp.getOffsetWrapper())
+                    continue;
+                logger.info(cp.toString());
+            }
+        } catch (Exception e)
         {
-            if (null == cp || null == cp.getMessageQueue() || null == cp.getOffsetWrapper())
-                continue;
-            logger.info(cp.toString());
+            logger.warn(" monitor had some problem" + e.getMessage());
         }
 
         System.gc();
