@@ -626,7 +626,7 @@ public class CommitLog {
                     }
                     service.putRequest(request);
 
-                    service.getWaitNotifyObject().wakeupAll();
+                    service.getWaitNotifyObject().wakeUpAll();
 
                     boolean flushOK =
                             // TODO 此处参数与刷盘公用是否合适

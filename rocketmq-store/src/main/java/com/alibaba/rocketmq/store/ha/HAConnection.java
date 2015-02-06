@@ -135,11 +135,10 @@ public class HAConnection {
 
                     // 检测心跳间隔时间，超过则强制断开
                     long interval = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now()
-                                    - this.lastReadTimestamp;
-                    if (interval > HAConnection.this.haService.getDefaultMessageStore()
-                            .getMessageStoreConfig().getHaHousekeepingInterval()) {
-                        log.warn("ha housekeeping, found this connection[" + HAConnection.this.clientAddr
-                                + "] expired, " + interval);
+                            - this.lastReadTimestamp;
+                    if (interval > HAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig()
+                            .getHaHousekeepingInterval()) {
+                        log.warn("ha housekeeping, found this connection[" + HAConnection.this.clientAddr + "] expired, " + interval);
                         break;
                     }
                 } catch (Exception e) {
@@ -189,6 +188,7 @@ public class HAConnection {
                                 .now();
                         // 接收Slave上传的offset
                         if ((this.byteBufferRead.position() - this.processPosition) >= SIZE_OF_LONG) {
+                            //读取最后一次完整的offset, long type, 8 bits.
                             int pos = this.byteBufferRead.position() - (this.byteBufferRead.position() % SIZE_OF_LONG);
                             long readOffset = this.byteBufferRead.getLong(pos - SIZE_OF_LONG);
                             this.processPosition = pos;
@@ -197,8 +197,7 @@ public class HAConnection {
                             HAConnection.this.slaveAckOffset = readOffset;
                             if (HAConnection.this.slaveRequestOffset < 0) {
                                 HAConnection.this.slaveRequestOffset = readOffset;
-                                log.info("slave[" + HAConnection.this.clientAddr + "] request offset "
-                                        + readOffset);
+                                log.info("slave[" + HAConnection.this.clientAddr + "] request offset " + readOffset);
                             }
 
                             // 通知前端线程
@@ -269,8 +268,7 @@ public class HAConnection {
                     // Slave如果本地没有数据，请求的Offset为0，那么master则从物理文件最后一个文件开始传送数据
                     if (-1 == this.nextTransferFromWhere) {
                         if (0 == HAConnection.this.slaveRequestOffset) {
-                            long masterOffset = HAConnection.this.haService.getDefaultMessageStore().getCommitLog()
-                                    .getMaxOffset();
+                            long masterOffset = HAConnection.this.haService.getDefaultMessageStore().getCommitLog().getMaxOffset();
                             masterOffset = masterOffset - (masterOffset % HAConnection.this.haService
                                     .getDefaultMessageStore().getMessageStoreConfig().getMappedFileSizeCommitLog());
                             if (masterOffset < 0) {
