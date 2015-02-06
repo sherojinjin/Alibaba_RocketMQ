@@ -71,6 +71,9 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
             ip = "localhost";
         }
 
+        if (ip.startsWith("."))
+            ip = ip.substring(1);
+
         return ip;
     }
 
@@ -85,7 +88,7 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
         cookie.setPath("/");
         cookie.setDomain(getIpAddr(request));
         cookie.setHttpOnly(true);
-        cookie.setMaxAge(SECONDS_OF_ONE_MINUTE * TEN);
+        cookie.setMaxAge(3600);
         System.out.println(cookie.getName() + " -[]- " + cookie.getValue());
         return cookie;
     }
