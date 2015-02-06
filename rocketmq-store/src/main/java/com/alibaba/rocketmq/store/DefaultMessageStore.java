@@ -15,29 +15,6 @@
  */
 package com.alibaba.rocketmq.store;
 
-import static com.alibaba.rocketmq.store.config.BrokerRole.SLAVE;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.common.ServiceThread;
 import com.alibaba.rocketmq.common.SystemClock;
 import com.alibaba.rocketmq.common.ThreadFactoryImpl;
@@ -57,6 +34,28 @@ import com.alibaba.rocketmq.store.index.IndexService;
 import com.alibaba.rocketmq.store.index.QueryOffsetResult;
 import com.alibaba.rocketmq.store.schedule.ScheduleMessageService;
 import com.alibaba.rocketmq.store.stats.BrokerStatsManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static com.alibaba.rocketmq.store.config.BrokerRole.SLAVE;
 
 
 /**
@@ -276,7 +275,7 @@ public class DefaultMessageStore implements MessageStore {
                             maxCLOffsetInConsumeQueue);
 
                         DefaultMessageStore.this.commitLog.removeQueurFromTopicQueueTable(nextQT.getValue()
-                            .getTopic(), nextQT.getValue().getQueueId());
+                                .getTopic(), nextQT.getValue().getQueueId());
 
                         nextQT.getValue().destroy();
                         itQT.remove();
@@ -551,7 +550,7 @@ public class DefaultMessageStore implements MessageStore {
                                         diskFallRecorded = true;
                                         long fallBehind = consumeQueue.getMaxPhysicOffset() - offsetPy;
                                         brokerStatsManager.recordDiskFallBehind(group, topic, queueId,
-                                            fallBehind);
+                                                fallBehind);
                                     }
                                 }
                                 else {
@@ -1729,6 +1728,16 @@ public class DefaultMessageStore implements MessageStore {
             for (boolean doNext = true; doNext;) {
                 SelectMapedBufferResult result = DefaultMessageStore.this.commitLog.getData(reputFromOffset);
                 if (result != null) {
+
+                    // In case reputFromOffset == 0, the mapped file fetched may be the last one on master due to
+                    // <code>returnFirstOnNotFound</code> being true regarding {@link CommitLog#getData(long, boolean)}.
+                    // So we need to set value of reputOffset to startOffset of the fetched mapped file. Otherwise,
+                    // <code>reputFromOffset</code> will be a relative value while {@link CommitLog#getData(long)}
+                    // expects an absolute value of commit log logic position.
+                    if (0 == reputFromOffset) {
+                        reputFromOffset = result.getStartOffset();
+                    }
+
                     try {
                         for (int readSize = 0; readSize < result.getSize() && doNext;) {
                             DispatchRequest dispatchRequest =
@@ -1743,7 +1752,7 @@ public class DefaultMessageStore implements MessageStore {
                                 this.reputFromOffset += size;
                                 readSize += size;
                                 DefaultMessageStore.this.storeStatsService
-                                    .getSinglePutMessageTopicTimesTotal(dispatchRequest.getTopic())
+                                        .getSinglePutMessageTopicTimesTotal(dispatchRequest.getTopic())
                                     .incrementAndGet();
                                 DefaultMessageStore.this.storeStatsService.getSinglePutMessageTopicSizeTotal(
                                     dispatchRequest.getTopic()).addAndGet(dispatchRequest.getMsgSize());
