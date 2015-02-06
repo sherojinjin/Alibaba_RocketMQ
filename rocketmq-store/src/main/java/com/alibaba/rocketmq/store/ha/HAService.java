@@ -522,7 +522,7 @@ public class HAService {
 
 
         private boolean reportSlaveMaxOffsetPlus() {
-            boolean result = false;
+            boolean result = true;
             // 只要本地有更新，就汇报最大物理Offset
             long currentPhyOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
             if (currentPhyOffset > this.currentReportedOffset) {
