@@ -611,7 +611,7 @@ public class HAService {
                         }
 
                         // 只要本地有更新，就汇报最大物理Offset
-                        if (reportSlaveMaxOffsetPlus()) {
+                        if (!reportSlaveMaxOffsetPlus()) {
                             continue;
                         }
 
