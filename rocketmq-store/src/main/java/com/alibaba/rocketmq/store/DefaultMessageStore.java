@@ -1734,7 +1734,7 @@ public class DefaultMessageStore implements MessageStore {
                     // So we need to set value of reputOffset to startOffset of the fetched mapped file. Otherwise,
                     // <code>reputFromOffset</code> will be a relative value while {@link CommitLog#getData(long)}
                     // expects an absolute value of commit log logic position.
-                    if (0 == reputFromOffset) {
+                    if (0 == reputFromOffset || reputFromOffset < result.getStartOffset()) {
                         reputFromOffset = result.getStartOffset();
                     }
 
