@@ -71,7 +71,7 @@ public class WaitNotifyObject {
     /**
      * 广播方式唤醒
      */
-    public void wakeupAll() {
+    public void wakeUpAll() {
         synchronized (this) {
             boolean needNotify = false;
 

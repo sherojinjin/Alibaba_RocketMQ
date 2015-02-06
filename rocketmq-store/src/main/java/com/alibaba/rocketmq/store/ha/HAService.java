@@ -347,25 +347,24 @@ public class HAService {
         private final ByteBuffer reportOffset = ByteBuffer.allocate(SIZE_OF_LONG);
         private SocketChannel socketChannel;
         private Selector selector;
-        private long lastWriteTimestamp = System.currentTimeMillis();
+        private long lastWriteTimestamp = defaultMessageStore.getSystemClock().now();
 
         /**
          * To fix this issue: https://github.com/alibaba/RocketMQ/issues/9
          */
-        private long lastReadTimestamp = System.currentTimeMillis();
+        private long lastReadTimestamp = defaultMessageStore.getSystemClock().now();
 
         // Slave向Master汇报Offset，汇报到哪里
         private long currentReportedOffset = 0;
         private int dispatchPosition = 0;
+
         // 从Master接收数据Buffer
         private ByteBuffer byteBufferRead = ByteBuffer.allocate(READ_MAX_BUFFER_SIZE);
         private ByteBuffer byteBufferBackup = ByteBuffer.allocate(READ_MAX_BUFFER_SIZE);
 
-
         public HAClient() throws IOException {
             this.selector = RemotingUtil.openSelector();
         }
-
 
         public void updateMasterAddress(final String newAddr) {
             String currentAddr = this.masterAddress.get();
@@ -375,15 +374,11 @@ public class HAService {
             }
         }
 
-
         private boolean isTimeToReportOffset() {
             long current = HAService.this.defaultMessageStore.getSystemClock().now();
             long interval = Math.min(current - this.lastWriteTimestamp, current - lastReadTimestamp);
             boolean needHeartbeat = (interval > HAService.this.defaultMessageStore.getMessageStoreConfig()
                     .getHaSendHeartbeatInterval());
-            if (needHeartbeat) {
-                LOGGER.info("It's time to report offset.");
-            }
             return needHeartbeat;
         }
 
@@ -558,9 +553,9 @@ public class HAService {
                 }
 
                 // 每次连接时，要重新拿到最大的Offset
-                this.currentReportedOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
-                this.lastWriteTimestamp = System.currentTimeMillis();
-                this.lastReadTimestamp = System.currentTimeMillis();
+                this.currentReportedOffset = defaultMessageStore.getMaxPhyOffset();
+                this.lastWriteTimestamp = defaultMessageStore.getSystemClock().now();
+                this.lastReadTimestamp = defaultMessageStore.getSystemClock().now();
             }
 
             return this.socketChannel != null;
@@ -624,8 +619,7 @@ public class HAService {
                         long current = HAService.this.getDefaultMessageStore().getSystemClock().now();
                         long interval = Math.min(current - lastWriteTimestamp, current - lastReadTimestamp);
                         if (isTimeToReportOffset()) {
-                            LOGGER.warn("HAClient, housekeeping, found this connection[" + this.masterAddress
-                                    + "] expired, " + interval);
+                            LOGGER.warn("HAClient, housekeeping, found this connection[" + this.masterAddress + "] expired, " + interval);
                             this.closeMaster();
                             LOGGER.warn("HAClient, master not response some time, so close connection");
                         }
@@ -637,7 +631,6 @@ public class HAService {
                     this.waitForRunning(1000 * 5);
                 }
             }
-
             LOGGER.info(this.getServiceName() + " service end");
         }
 

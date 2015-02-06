@@ -1678,6 +1678,11 @@ public class DefaultMessageStore implements MessageStore {
             for (boolean doNext = true; doNext; ) {
                 SelectMappedBufferResult result = DefaultMessageStore.this.commitLog.getData(reputFromOffset);
                 if (result != null) {
+
+                    if (0 == reputFromOffset) {
+                        reputFromOffset = result.getStartOffset();
+                    }
+
                     try {
                         for (int readSize = 0; readSize < result.getSize() && doNext; ) {
                             DispatchRequest dispatchRequest = DefaultMessageStore.this.commitLog.
