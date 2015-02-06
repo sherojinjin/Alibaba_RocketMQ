@@ -24,7 +24,7 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
         Cookie[] cookies = request.getCookies();
 
         for (Cookie c : cookies) {
-            System.out.println(c.getName() + " [request.getRemoteHost()] " + c.getValue());
+            System.out.println(c.getName() + " [] " + c.getValue());
         }
 
         try {
@@ -85,6 +85,7 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
         cookie.setPath("/");
         cookie.setDomain(getIpAddr(request));
         cookie.setHttpOnly(true);
+        cookie.setMaxAge(SECONDS_OF_ONE_MINUTE * TEN);
         System.out.println(cookie.getName() + " -[]- " + cookie.getValue());
         return cookie;
     }
