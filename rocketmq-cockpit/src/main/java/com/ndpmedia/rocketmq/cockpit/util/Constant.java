@@ -7,6 +7,10 @@ public interface Constant
 {
     String EMPTY_STRING = "";
 
+    String SLASH_SEPARATOR_STRING = "/";
+
+    String BACKSLASH_SEPARATOR_STRING = "\\";
+
     int ZERO = 0;
 
     int ONE = 1;

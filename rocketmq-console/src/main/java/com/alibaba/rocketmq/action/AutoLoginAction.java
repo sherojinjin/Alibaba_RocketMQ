@@ -30,14 +30,17 @@ import java.util.List;
 public class AutoLoginAction {
 
     private static final String COOKIE_ENCRYPTION_KEY = "C0ckp1t";
+
     @Autowired
     private AuthenticationManager myAuthenticationManager;
 
     @RequestMapping(value = "/login.do", method = {RequestMethod.GET, RequestMethod.POST})
-    public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void login(HttpServletRequest request, HttpServletResponse response) throws IOException
+    {
 
         boolean hasLoggedIn = false;
-        try {
+        try
+        {
             UsernamePasswordAuthenticationToken token = getToken(request);
 
             token.setDetails(new WebAuthenticationDetails(request));
@@ -47,20 +50,24 @@ public class AutoLoginAction {
 
             response.sendRedirect("../cluster/list.do");
             hasLoggedIn = true;
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             e.printStackTrace();
-        } finally {
-            if (!hasLoggedIn) {
-                response.sendRedirect(request.getScheme() + "://" + request.getServerName() + ":"
-                        + request.getServerPort() + "/");
+        } finally
+        {
+            if (!hasLoggedIn)
+            {
+                response.sendRedirect(
+                        request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + "/");
             }
         }
     }
 
-
-    private Collection<GrantedAuthority> getAuthority(String role) {
+    private Collection<GrantedAuthority> getAuthority(String role)
+    {
         List<GrantedAuthority> authList = new ArrayList<GrantedAuthority>();
-        if (role.contains(";")) {
+        if (role.contains(";"))
+        {
             String[] roles = role.split(";");
             for (String ro : roles)
                 authList.add(new SimpleGrantedAuthority(ro));
@@ -77,24 +84,18 @@ public class AutoLoginAction {
         Collection<? extends GrantedAuthority> authorities = null;
 
         Cookie[] cookies = request.getCookies();
+
         for (Cookie c : cookies) {
-            if ("JSESSIONID".equals(c.getName())) {
-                continue;
+            if (c.getName().equals("j_username")) {
+                uid = decode(c);
             }
 
-            String value = new String(SslHelper.decrypt(COOKIE_ENCRYPTION_KEY, c.getValue()));
-            System.out.println(c.getName() + " [request.getRemoteHost()] " + value);
-
-            if (c.getName().contains("username")) {
-                uid = value;
+            if (c.getName().equals("j_password")) {
+                password = decode(c);
             }
 
-            if (c.getName().contains("password")) {
-                password = value;
-            }
-
-            if (c.getName().contains("authority")) {
-                authorities = getAuthority(value);
+            if (c.getName().equals("j_authority")) {
+                authorities = getAuthority(decode(c));
             }
         }
 
@@ -102,6 +103,11 @@ public class AutoLoginAction {
                 authorities);
 
         return token;
+    }
+
+    private String decode(Cookie c) throws Exception
+    {
+        return new String(SslHelper.decrypt(COOKIE_ENCRYPTION_KEY, c.getValue()));
     }
 
     public AuthenticationManager getMyAuthenticationManager() {

@@ -85,10 +85,10 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
 
     public static Cookie getCookie(HttpServletRequest request, String key, String value) throws Exception {
         Cookie cookie = new Cookie(key, SslHelper.encrypt(COOKIE_ENCRYPTION_KEY, value));
-        cookie.setPath("/");
+        cookie.setPath(SLASH_SEPARATOR_STRING);
         cookie.setDomain(getIpAddr(request));
         cookie.setHttpOnly(true);
-        cookie.setMaxAge(3600);
+//        cookie.setMaxAge(3600);
         System.out.println(cookie.getName() + " -[]- " + cookie.getValue());
         return cookie;
     }
