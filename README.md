@@ -1,7 +1,7 @@
 ## RocketMQ -- Alibaba's MQ [![Build Status](https://travis-ci.org/alibaba/RocketMQ.svg?branch=master)](https://travis-ci.org/alibaba/RocketMQ)
-**RocketMQ is a faster, reliable, scalable, easier to use message oriented middleware breeding from alibaba massive messaging business.**
+**RocketMQ is a fast, reliable, scalable, easy to use message oriented middleware breeding from alibaba massive messaging business.**
 
-It offers a variety of features as following:
+It offers a variety of features as follows:
 
 * Reliable FIFO and strict sequential messaging
 * Pub/Sub and P2P messaging model
