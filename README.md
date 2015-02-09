@@ -29,7 +29,7 @@ It offers a variety of features as following:
 
 ## How can I develop with RocketMQ?
 * [Download the latest release package](https://github.com/alibaba/RocketMQ/releases)
-* [Reference the latest doc.](https://github.com/alibaba/RocketMQ/issues/1)
+* [Get the latest document & Who using RocketMQ](https://github.com/alibaba/RocketMQ/issues/1)
 * [`Using RocketMQ in Aliyun`](http://www.aliyun.com/product/ons)
 * [`Docker images`](https://registry.hub.docker.com/u/vongosling/rocketmq/)
 * [Integrate with Alibaba JStorm](https://github.com/alibaba/jstorm)
