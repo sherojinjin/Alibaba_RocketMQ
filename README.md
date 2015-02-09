@@ -1,6 +1,6 @@
-## RocketMQ -- a faster, reliable, scalable, easier to use message oriented middleware, breeding from alibaba massive messaging business. 
+## RocketMQ -- Alibaba's MQ [![Build Status](https://travis-ci.org/alibaba/RocketMQ.svg?branch=master)](https://travis-ci.org/alibaba/RocketMQ)
+**RocketMQ is a faster, reliable, scalable, easier to use message oriented middleware breeding from alibaba massive messaging business.**
 
-RocketMQ is a faster, reliable, scalable, easier to use message oriented middleware breeding from alibaba massive messaging business.
 It offers a variety of features as following:
 
 * Reliable FIFO and strict sequential messaging
@@ -13,15 +13,16 @@ It offers a variety of features as following:
 * Feature-rich administrative dashboard for configuration and monitoring
 
 
-[![Build Status](https://travis-ci.org/alibaba/RocketMQ.svg?branch=develop)](https://travis-ci.org/alibaba/RocketMQ)
+----------
 
-
+## Learn it & Contact us
 * Homepage: <https://github.com/alibaba/RocketMQ>
 * Mailing list: <https://groups.google.com/forum/?hl=en#!forum/rocketmq>
 * Documentation: <https://github.com/alibaba/RocketMQ/wiki>
 * Wiki: <https://github.com/alibaba/RocketMQ/wiki>
 * Issues: <https://github.com/alibaba/RocketMQ/issues>
-* Other social tools: weibo <http://q.weibo.com/1628465> or QQ group: 5776652
+* QQ Group: [5776652](http://url.cn/Knxm0o)
+* Weibo <http://q.weibo.com/1628465>
  
 
 ----------
@@ -29,22 +30,31 @@ It offers a variety of features as following:
 ## How can I develop with RocketMQ?
 * [Download the latest release package](https://github.com/alibaba/RocketMQ/releases)
 * [Reference the latest doc.](https://github.com/alibaba/RocketMQ/issues/1)
-* [`Cloud environment`](http://www.aliyun.com/product/ons)
+* [`Using RocketMQ in Aliyun`](http://www.aliyun.com/product/ons)
 * [`Docker images`](https://registry.hub.docker.com/u/vongosling/rocketmq/)
-* [Integrate with alibaba JStorm](https://github.com/alibaba/jstorm)
-* [Integrate with alibaba Canal](https://github.com/alibaba/canal)
+* [Integrate with Alibaba JStorm](https://github.com/alibaba/jstorm)
+* [Integrate with Alibaba Canal](https://github.com/alibaba/canal)
 
 ----------
 
-## Contributors
+## Development team in Alibaba
 * vintagewang([@vintagewang](https://github.com/vintagewang))
 * vongosling([@vongosling](https://github.com/vongosling))
-* lizhanhui([@lizhanhui](https://github.com/lizhanhui))
-* lansheng  
-* manhong  
-* longji  
-* fuchong  
+* manhong
+* lansheng
+* longji
+* fuchong
 * mouyu
+
+----------
+
+## Contributors in RocketMQ community
+* [@lizhanhui](https://github.com/lizhanhui) fixed several important bugs.
+* [@vongosling](https://github.com/vongosling) developed [rocketmq-storm](https://github.com/rocketmq/rocketmq-storm) for rocketmq
+* [@majinkai](https://github.com/majinkai) developed [rocketmq-flume](https://github.com/rocketmq/rocketmq-flume) for rocketmq
+* [@kangliqiang](https://github.com/kangliqiang) developed [rocketmq-client4cpp](https://github.com/rocketmq/rocketmq-client4cpp) for rocketmq
+* [@yankai913](https://github.com/yankai913) developed [rocketmq-console](https://github.com/rocketmq/rocketmq-console) for rocketmq
+* [@calvinzhan](https://github.com/calvinzhan) developed [rocketmq-jmsclient](https://github.com/rocketmq/rocketmq-jmsclient) for rocketmq
 
 ----------
 
