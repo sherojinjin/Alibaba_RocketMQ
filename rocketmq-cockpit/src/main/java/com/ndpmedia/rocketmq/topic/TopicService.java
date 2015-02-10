@@ -1,5 +1,7 @@
 package com.ndpmedia.rocketmq.topic;
 
+import com.ndpmedia.rocketmq.topic.model.Topic;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
@@ -24,12 +26,12 @@ public interface TopicService
 
     @POST
     @Path("/topic")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    void add(@FormParam("topic") String topic, @FormParam("key")String key) throws IOException;
+    @Consumes(MediaType.APPLICATION_JSON)
+    boolean add(Topic topic) throws IOException;
 
 
     @DELETE
     @Path("/topic")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    void delete(@FormParam("topic") String topic) throws IOException;
+    boolean delete(@FormParam("topic") String topic, @FormParam("clusterName") String clusterName) throws IOException;
 }

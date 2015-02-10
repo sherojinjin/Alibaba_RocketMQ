@@ -81,7 +81,7 @@
     </bean>
 
     <bean id="topicManager" class="com.ndpmedia.rocketmq.topic.impl.TopicManagerImpl">
-
+        <property name="cockpitDao" ref="cockpitDao" />
     </bean>
 
     <bean id="consumerManager" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerManagerImpl">

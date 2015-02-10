@@ -1,5 +1,7 @@
 package com.ndpmedia.rocketmq.topic;
 
+import com.ndpmedia.rocketmq.topic.model.Topic;
+
 import java.util.Set;
 
 /**
@@ -17,13 +19,13 @@ public interface TopicManager
      * add a new topic to local database and name server.
      * @return  topic list
      */
-    public boolean add(String topic, String key, int nums);
+    public boolean add(Topic topic);
 
     /**
      * delete topic from name server and local database.
      * @return  topic list
      */
-    public boolean delete();
+    public boolean delete(String topic, String clusterName);
 
     /**
      * get the topic list from local database.
