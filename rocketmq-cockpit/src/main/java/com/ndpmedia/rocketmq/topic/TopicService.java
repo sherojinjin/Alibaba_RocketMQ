@@ -15,7 +15,6 @@ import java.util.Set;
 public interface TopicService
 {
     @GET
-    @POST
     @Path("/topics")
     Set<String> list();
 
@@ -27,11 +26,10 @@ public interface TopicService
     @POST
     @Path("/topic")
     @Consumes(MediaType.APPLICATION_JSON)
-    boolean add(Topic topic) throws IOException;
+    void add(Topic topic) throws IOException;
 
-
-    @DELETE
+    @POST
     @Path("/topic")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    boolean delete(@FormParam("topic") String topic, @FormParam("clusterName") String clusterName) throws IOException;
+    void delete(@FormParam("topic") String topic, @FormParam("cluster_name") String clusterName) throws IOException;
 }

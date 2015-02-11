@@ -4,7 +4,6 @@ import com.ndpmedia.rocketmq.topic.TopicManager;
 import com.ndpmedia.rocketmq.topic.TopicService;
 import com.ndpmedia.rocketmq.topic.model.Topic;
 
-import javax.ws.rs.FormParam;
 import java.io.IOException;
 import java.util.Set;
 
@@ -20,22 +19,25 @@ public class TopicServiceImpl implements TopicService
     }
 
     @Override
-    public String lookUp(@FormParam("topic") String topic) throws IOException
+    public String lookUp(String topic) throws IOException
     {
         return null;
     }
 
     @Override
-    public boolean add(Topic topic) throws IOException
+    public void add(Topic topic) throws IOException
     {
-        return topicManager.add(topic);
+        System.out.println(topic);
+        topicManager.add(topic);
     }
 
     @Override
-    public boolean delete(@FormParam("topic") String topic, @FormParam("clusterName") String clusterName) throws
+    public void delete(String topic, String clusterName) throws
             IOException
     {
-        return topicManager.delete(topic, clusterName);
+        System.out.println(topic);
+        System.out.println(clusterName);
+        topicManager.delete(topic, clusterName);
     }
 
     public TopicManager getTopicManager() {

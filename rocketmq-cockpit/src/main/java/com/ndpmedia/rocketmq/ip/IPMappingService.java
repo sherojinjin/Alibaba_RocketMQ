@@ -30,5 +30,4 @@ public interface IPMappingService {
     @Path("/ip")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     void delete(@FormParam("innerIP") String innerIP) throws IOException;
-
 }
