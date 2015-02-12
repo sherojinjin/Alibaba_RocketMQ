@@ -2,6 +2,7 @@ package com.ndpmedia.rocketmq.topic;
 
 import com.ndpmedia.rocketmq.topic.model.Topic;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,7 +26,7 @@ public interface TopicManager
      * delete topic from name server and local database.
      * @return  topic list
      */
-    public boolean delete(String topic, String clusterName);
+    public boolean delete(Map<String, Object> fieldMap);
 
     /**
      * get the topic list from local database.

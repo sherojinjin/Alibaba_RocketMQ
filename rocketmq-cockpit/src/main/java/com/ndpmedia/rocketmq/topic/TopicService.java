@@ -1,11 +1,10 @@
 package com.ndpmedia.rocketmq.topic;
 
 import com.ndpmedia.rocketmq.topic.model.Topic;
-import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,6 +30,6 @@ public interface TopicService
 
     @DELETE
     @Path("/topic")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    void delete(@FormParam("topic") String topic, @FormParam("cluster_name") String clusterName) ;
+    @Consumes(MediaType.APPLICATION_JSON)
+    void delete(Map<String, Object> fieldMap) ;
 }

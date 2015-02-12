@@ -6,6 +6,7 @@ import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
 import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
 import com.ndpmedia.rocketmq.cockpit.util.CollectionUtil;
+import com.ndpmedia.rocketmq.cockpit.util.SqlParamsUtil;
 import com.ndpmedia.rocketmq.topic.TopicManager;
 import com.ndpmedia.rocketmq.topic.model.Topic;
 import com.ndpmedia.rocketmq.topic.model.TopicTypeUtil;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Set;
 
 @Service("topicManager")
@@ -123,10 +125,7 @@ public class TopicManagerImpl implements TopicManager
     {
         try
         {
-            String sql = " insert into topic(topic, cluster_name , write_queue_num, read_queue_num, broker_address, " +
-                    "order_type, create_time) values" +
-                    "(:topic, :cluster_name , :write_queue_num , :read_queue_num, :broker_address, :order," +
-                    " :create_time) ";
+            String sql = SqlParamsUtil.getSQL("topic.add", null);
             cockpitDao.add(sql, topic);
         } catch (Exception e)
         {
@@ -137,13 +136,16 @@ public class TopicManagerImpl implements TopicManager
     }
 
     @Override
-    public boolean delete(String topic, String clusterName)
+    public boolean delete(Map<String, Object> fieldMap)
     {
-        return deleteTopicConfig(topic, clusterName) && deleteTopic(topic, clusterName);
+        return deleteTopicConfig(fieldMap) && deleteTopic(fieldMap);
     }
 
-    private boolean deleteTopicConfig(String topic, String clusterName)
+    private boolean deleteTopicConfig(Map<String, Object> fieldMap)
     {
+        String topic = fieldMap.get("topic").toString();
+        String clusterName = fieldMap.get("cluster_name").toString();
+
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
         defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
         try
@@ -167,11 +169,11 @@ public class TopicManagerImpl implements TopicManager
         return true;
     }
 
-    private boolean deleteTopic(String topic, String clusterName)
+    private boolean deleteTopic(Map<String, Object> fieldMap )
     {
         try{
-            String sql = " DELETE FROM topic WHERE topic ='%s' AND cluster_name = '%s'";
-            cockpitDao.del(String.format(sql, topic, clusterName));
+            String sql = SqlParamsUtil.getSQL("topic.delete", fieldMap);
+            cockpitDao.del(sql);
         }catch (Exception e)
         {
             logger.warn("[DELETE][TOPIC][DATABASE] try to delete topic failed." + e);

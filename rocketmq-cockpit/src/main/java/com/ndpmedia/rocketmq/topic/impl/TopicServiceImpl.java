@@ -4,6 +4,7 @@ import com.ndpmedia.rocketmq.topic.TopicManager;
 import com.ndpmedia.rocketmq.topic.TopicService;
 import com.ndpmedia.rocketmq.topic.model.Topic;
 
+import java.util.Map;
 import java.util.Set;
 
 public class TopicServiceImpl implements TopicService
@@ -31,11 +32,9 @@ public class TopicServiceImpl implements TopicService
     }
 
     @Override
-    public void delete(String topic, String clusterName)
+    public void delete(Map<String, Object> fieldMap)
     {
-        System.out.println(topic);
-        System.out.println(clusterName);
-        topicManager.delete(topic, clusterName);
+        topicManager.delete(fieldMap);
     }
 
     public TopicManager getTopicManager() {

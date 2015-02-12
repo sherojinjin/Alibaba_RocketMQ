@@ -1,7 +1,7 @@
 package com.ndpmedia.rocketmq.cockpit.util;
 
 /**
- * Created by Administrator on 2015/1/14.
+ * base constant.
  */
 public interface Constant
 {
@@ -10,6 +10,8 @@ public interface Constant
     String SLASH_SEPARATOR_STRING = "/";
 
     String BACKSLASH_SEPARATOR_STRING = "\\";
+
+    String DOLLER = "$";
 
     int ZERO = 0;
 

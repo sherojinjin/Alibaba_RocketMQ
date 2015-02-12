@@ -54,11 +54,11 @@ $(document).ready(function() {
         }
         $.ajax({
             async: false,
-            data: {topic: topic, cluster_name: cluster_name},
+            data: JSON.stringify({topic: topic, cluster_name: cluster_name}),
             url: "rocketmq/topic",
             type: "DELETE",
             dataType: "json",
-            contentType: "application/x-www-form-urlencoded",
+            contentType: "application/json",
             complete: function() {
                 row.remove();
             }
