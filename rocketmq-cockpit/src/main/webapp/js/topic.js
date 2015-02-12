@@ -24,7 +24,7 @@ $(document).ready(function() {
         var order = $("input.order").val();
         if ($.trim(topic) === "") {
             return false;
-        } else if ($.trim(cluster_name) === "" || $.trim(broker_address) == "") {
+        } else if ($.trim(cluster_name) === "" && $.trim(broker_address) == "") {
             return false;
         } else {
             $.ajax({
