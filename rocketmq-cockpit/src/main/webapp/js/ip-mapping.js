@@ -32,10 +32,11 @@ $(document).ready(function() {
         var innerIP = $(this).parent().prev().prev().html();
         $.ajax({
             async: false,
-            data: {innerIP: innerIP},
+            data: JSON.stringify({inner_ip: innerIP}),
             url: "rocketmq/ip",
             type: "DELETE",
             dataType: "application/json",
+            contentType: "application/json",
             complete: function() {
                 row.remove();
             }

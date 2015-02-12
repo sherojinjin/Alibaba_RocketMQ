@@ -6,6 +6,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Produces(MediaType.APPLICATION_JSON)
 public interface IPMappingService {
@@ -28,6 +29,6 @@ public interface IPMappingService {
 
     @DELETE
     @Path("/ip")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    void delete(@FormParam("innerIP") String innerIP) throws IOException;
+    @Consumes(MediaType.APPLICATION_JSON)
+    void delete(Map<String, Object> params) throws IOException;
 }

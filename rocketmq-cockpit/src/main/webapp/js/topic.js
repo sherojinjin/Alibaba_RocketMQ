@@ -36,7 +36,8 @@ $(document).ready(function() {
                         data: JSON.stringify({"topic":topic,"write_queue_num":write_queue_num,"read_queue_num":read_queue_num,
                         "broker_address":broker_address, "cluster_name":cluster_name, "order":order}),
                         success: function() {
-
+                            var item = $("<tr><td>" + topic + "</td><td><input type='text' class='form-control re_cluster_name' placeholder='remove_cluster_name'></td><td><a class='removeItem' href='javascript:;'>Remove</a></td></tr>");
+                            $(".table-content").append(item);
                         },
                         error: function() {
 

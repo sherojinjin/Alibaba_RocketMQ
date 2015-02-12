@@ -6,6 +6,7 @@ import com.ndpmedia.rocketmq.ip.model.IPPair;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class IPMappingServiceImpl implements IPMappingService {
 
@@ -22,8 +23,8 @@ public class IPMappingServiceImpl implements IPMappingService {
     }
 
     @Override
-    public void delete(String innerIP) throws IOException {
-        ipMappingManager.remove(innerIP);
+    public void delete(Map<String, Object> params) throws IOException {
+        ipMappingManager.remove(params);
     }
 
     @Override
