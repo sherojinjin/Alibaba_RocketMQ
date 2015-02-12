@@ -9,6 +9,8 @@ import com.ndpmedia.rocketmq.cockpit.util.CollectionUtil;
 import com.ndpmedia.rocketmq.topic.TopicManager;
 import com.ndpmedia.rocketmq.topic.model.Topic;
 import com.ndpmedia.rocketmq.topic.model.TopicTypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -16,6 +18,8 @@ import java.util.Set;
 @Service("topicManager")
 public class TopicManagerImpl implements TopicManager
 {
+    private final Logger logger = LoggerFactory.getLogger(TopicManagerImpl.class);
+
     private CockpitDao cockpitDao;
 
     @Override
@@ -99,6 +103,7 @@ public class TopicManagerImpl implements TopicManager
             }
         } catch (Exception e)
         {
+            logger.warn("[ADD][TOPIC][MQADMIN]try to add topic failed." + e);
             return false;
         } finally
         {
@@ -125,6 +130,7 @@ public class TopicManagerImpl implements TopicManager
             cockpitDao.add(sql, topic);
         } catch (Exception e)
         {
+            logger.warn("[ADD][TOPIC][DATABASE] try to add topic failed." + e);
             return false;
         }
         return true;
@@ -152,6 +158,7 @@ public class TopicManagerImpl implements TopicManager
             defaultMQAdminExt.deleteTopicInBroker(masterSet, topic);
         } catch (Exception e)
         {
+            logger.warn("[DELETE][TOPIC][MQADMIN] try to delete topic failed." + e);
             return false;
         } finally
         {
@@ -167,6 +174,7 @@ public class TopicManagerImpl implements TopicManager
             cockpitDao.del(String.format(sql, topic, clusterName));
         }catch (Exception e)
         {
+            logger.warn("[DELETE][TOPIC][DATABASE] try to delete topic failed." + e);
             return false;
         }
         return true;

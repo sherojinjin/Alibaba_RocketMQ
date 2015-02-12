@@ -25,11 +25,21 @@ $(document).ready(function() {
         if ($.trim(topic) === "" || $.trim(broker_address) == "") {
             return false;
         } else {
-            $.post("rocketmq/topic", JSON.stringify({"topic":topic,"write_queue_num":write_queue_num,
-            "read_queue_num":read_queue_num,
-                                                          "broker_address":broker_address, "cluster_name":cluster_name, "order":order}), function() {
+            $.ajax({
+                        async: false,
+                        url: "rocketmq/topic",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: 'application/json',
+                        data: JSON.stringify({"topic":topic,"write_queue_num":write_queue_num,"read_queue_num":read_queue_num,
+                        "broker_address":broker_address, "cluster_name":cluster_name, "order":order}),
+                        success: function() {
 
-                        });
+                        },
+                        error: function() {
+
+                        }
+                    });
         }
     });
 
@@ -45,7 +55,8 @@ $(document).ready(function() {
             data: {topic: topic, cluster_name: cluster_name},
             url: "rocketmq/topic",
             type: "DELETE",
-            dataType: "application/json",
+            dataType: "json",
+            contentType: "application/x-www-form-urlencoded",
             complete: function() {
                 row.remove();
             }

@@ -4,7 +4,6 @@ import com.ndpmedia.rocketmq.topic.TopicManager;
 import com.ndpmedia.rocketmq.topic.TopicService;
 import com.ndpmedia.rocketmq.topic.model.Topic;
 
-import java.io.IOException;
 import java.util.Set;
 
 public class TopicServiceImpl implements TopicService
@@ -19,21 +18,20 @@ public class TopicServiceImpl implements TopicService
     }
 
     @Override
-    public String lookUp(String topic) throws IOException
+    public String lookUp(String topic)
     {
         return null;
     }
 
     @Override
-    public void add(Topic topic) throws IOException
+    public void add(Topic topic)
     {
         System.out.println(topic);
         topicManager.add(topic);
     }
 
     @Override
-    public void delete(String topic, String clusterName) throws
-            IOException
+    public void delete(String topic, String clusterName)
     {
         System.out.println(topic);
         System.out.println(clusterName);
