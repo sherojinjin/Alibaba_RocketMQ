@@ -27,7 +27,6 @@ $(document).ready(function() {
         } else if ($.trim(cluster_name) === "" || $.trim(broker_address) == "") {
             return false;
         } else {
-        }
             $.ajax({
                         async: false,
                         url: "rocketmq/topic",
