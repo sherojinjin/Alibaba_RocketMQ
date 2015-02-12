@@ -247,9 +247,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
             try {
                 sslContext = SslHelper.getSSLContext(SslRole.CLIENT);
             } catch (SSLContextCreationException e) {
-                log.error(e.getMessage());
-                e.printStackTrace();
-                System.exit(1);
+                log.error("Failed to create SSL context.", e);
             }
         }
     }

@@ -18,8 +18,8 @@ import java.util.Set;
  * main thread.
  * contains:check topic;check consumer group name;find all topic diff.
  */
-public class MonitorTask implements Runnable
-{
+public class MonitorTask implements Runnable {
+
     @Autowired
     private ConsumerManager consumerManager = new ConsumerManagerImpl();
 
@@ -29,54 +29,41 @@ public class MonitorTask implements Runnable
     private static Logger logger = LoggerFactory.getLogger(MonitorTask.class);
 
     @Override
-    public void run()
-    {
-        try
-        {
+    public void run() {
+        try {
             Set<String> topicList = topicManager.list();
 
             List<ConsumerProgress> results = new ArrayList<ConsumerProgress>();
 
-            for (String topic : topicList)
-            {
+            for (String topic : topicList) {
                 if (!topic.contains(MixAll.RETRY_GROUP_TOPIC_PREFIX))
                     continue;
-                results.addAll(
-                        consumerManager.findProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null, null));
-
+                results.addAll(consumerManager.findProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null, null));
             }
 
-            for (ConsumerProgress cp : results)
-            {
+            for (ConsumerProgress cp : results) {
                 if (null == cp || null == cp.getMessageQueue() || null == cp.getOffsetWrapper())
                     continue;
                 logger.info(cp.toString());
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.warn(" monitor had some problem" + e.getMessage());
         }
-
-        System.gc();
     }
 
-    public ConsumerManager getConsumerManager()
-    {
+    public ConsumerManager getConsumerManager() {
         return consumerManager;
     }
 
-    public void setConsumerManager(ConsumerManager consumerManager)
-    {
+    public void setConsumerManager(ConsumerManager consumerManager) {
         this.consumerManager = consumerManager;
     }
 
-    public TopicManager getTopicManager()
-    {
+    public TopicManager getTopicManager() {
         return topicManager;
     }
 
-    public void setTopicManager(TopicManager topicManager)
-    {
+    public void setTopicManager(TopicManager topicManager) {
         this.topicManager = topicManager;
     }
 }

@@ -17,7 +17,6 @@ public class MonitorThreadController implements Constant
     static
     {
         long nextMinutes = SECONDS_OF_ONE_MINUTE - (System.currentTimeMillis() / THOUSAND % SECONDS_OF_ONE_MINUTE);
-        scheduledExecutorService
-                .scheduleWithFixedDelay(new MonitorTask(), nextMinutes, TEN * SECONDS_OF_ONE_MINUTE, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(new MonitorTask(), nextMinutes, TEN * SECONDS_OF_ONE_MINUTE, TimeUnit.SECONDS);
     }
 }

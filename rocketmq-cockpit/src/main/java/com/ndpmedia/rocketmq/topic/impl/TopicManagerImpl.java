@@ -18,39 +18,33 @@ import java.util.Map;
 import java.util.Set;
 
 @Service("topicManager")
-public class TopicManagerImpl implements TopicManager
-{
+public class TopicManagerImpl implements TopicManager {
     private final Logger logger = LoggerFactory.getLogger(TopicManagerImpl.class);
 
     private CockpitDao cockpitDao;
 
     @Override
-    public Set<String> list()
-    {
+    public Set<String> list() {
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
 
         defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
 
-        try
-        {
+        try {
             defaultMQAdminExt.start();
 
             TopicList topicList = defaultMQAdminExt.fetchAllTopicList();
 
             return topicList.getTopicList();
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
-        } finally
-        {
+        } finally {
             defaultMQAdminExt.shutdown();
         }
         return null;
     }
 
     @Override
-    public boolean add(Topic topic)
-    {
+    public boolean add(Topic topic) {
         return addTopicConfig(topic) && addTopic(topic);
     }
 
@@ -60,55 +54,45 @@ public class TopicManagerImpl implements TopicManager
      * @param topic
      * @return
      */
-    private boolean addTopicConfig(Topic topic)
-    {
+    private boolean addTopicConfig(Topic topic) {
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
         defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
-        try
-        {
+        try {
             defaultMQAdminExt.start();
             TopicConfig topicConfig = TopicTypeUtil.changeTopicToTopicConfig(topic);
 
-            if (null != topic.getBroker_address() && !topic.getBroker_address().isEmpty())
-            {
+            if (null != topic.getBroker_address() && !topic.getBroker_address().isEmpty()) {
                 defaultMQAdminExt.createAndUpdateTopicConfig(topic.getBroker_address(), topicConfig);
-                if (topic.isOrder())
-                {
+                if (topic.isOrder()) {
                     // 注册顺序消息到 nameserver
                     String brokerName = CommandUtil.fetchBrokerNameByAddr(defaultMQAdminExt, topic.getBroker_address());
                     String orderConf = brokerName + ":" + topicConfig.getWriteQueueNums();
                     defaultMQAdminExt.createOrUpdateOrderConf(topicConfig.getTopicName(), orderConf, false);
                 }
-            } else
-            {
+            } else {
                 Set<String> masterSet = CommandUtil
                         .fetchMasterAddrByClusterName(defaultMQAdminExt, topic.getCluster_name());
-                for (String address : masterSet)
-                {
+                for (String address : masterSet) {
                     defaultMQAdminExt.createAndUpdateTopicConfig(address, topicConfig);
                 }
 
-                if (topic.isOrder())
-                {
+                if (topic.isOrder()) {
                     // 注册顺序消息到 nameserver
                     Set<String> brokerNameSet = CommandUtil
                             .fetchBrokerNameByClusterName(defaultMQAdminExt, topic.getCluster_name());
                     StringBuilder orderConf = new StringBuilder();
                     String splitor = "";
-                    for (String s : brokerNameSet)
-                    {
+                    for (String s : brokerNameSet) {
                         orderConf.append(splitor).append(s).append(":").append(topicConfig.getWriteQueueNums());
                         splitor = ";";
                     }
                     defaultMQAdminExt.createOrUpdateOrderConf(topicConfig.getTopicName(), orderConf.toString(), true);
                 }
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.warn("[ADD][TOPIC][MQADMIN]try to add topic failed." + e);
             return false;
-        } finally
-        {
+        } finally {
             defaultMQAdminExt.shutdown();
         }
 
@@ -121,14 +105,11 @@ public class TopicManagerImpl implements TopicManager
      * @param topic
      * @return
      */
-    private boolean addTopic(Topic topic)
-    {
-        try
-        {
+    private boolean addTopic(Topic topic) {
+        try {
             String sql = SqlParamsUtil.getSQL("topic.add", null);
             cockpitDao.add(sql, topic);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.warn("[ADD][TOPIC][DATABASE] try to add topic failed." + e);
             return false;
         }
@@ -136,20 +117,17 @@ public class TopicManagerImpl implements TopicManager
     }
 
     @Override
-    public boolean delete(Map<String, Object> fieldMap)
-    {
+    public boolean delete(Map<String, Object> fieldMap) {
         return deleteTopicConfig(fieldMap) && deleteTopic(fieldMap);
     }
 
-    private boolean deleteTopicConfig(Map<String, Object> fieldMap)
-    {
+    private boolean deleteTopicConfig(Map<String, Object> fieldMap) {
         String topic = fieldMap.get("topic").toString();
         String clusterName = fieldMap.get("cluster_name").toString();
 
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
         defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
-        try
-        {
+        try {
             defaultMQAdminExt.start();
             Set<String> nameServerAddress = CollectionUtil
                     .changeListToSet(defaultMQAdminExt.getNameServerAddressList());
@@ -158,24 +136,20 @@ public class TopicManagerImpl implements TopicManager
             // 删除 broker 上的 topic 信息
             Set<String> masterSet = CommandUtil.fetchMasterAddrByClusterName(defaultMQAdminExt, clusterName);
             defaultMQAdminExt.deleteTopicInBroker(masterSet, topic);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.warn("[DELETE][TOPIC][MQADMIN] try to delete topic failed." + e);
             return false;
-        } finally
-        {
+        } finally {
             defaultMQAdminExt.shutdown();
         }
         return true;
     }
 
-    private boolean deleteTopic(Map<String, Object> fieldMap )
-    {
-        try{
+    private boolean deleteTopic(Map<String, Object> fieldMap) {
+        try {
             String sql = SqlParamsUtil.getSQL("topic.delete", fieldMap);
             cockpitDao.del(sql);
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.warn("[DELETE][TOPIC][DATABASE] try to delete topic failed." + e);
             return false;
         }
@@ -183,18 +157,15 @@ public class TopicManagerImpl implements TopicManager
     }
 
     @Override
-    public Set<String> dList()
-    {
+    public Set<String> dList() {
         return null;
     }
 
-    public CockpitDao getCockpitDao()
-    {
+    public CockpitDao getCockpitDao() {
         return cockpitDao;
     }
 
-    public void setCockpitDao(CockpitDao cockpitDao)
-    {
+    public void setCockpitDao(CockpitDao cockpitDao) {
         this.cockpitDao = cockpitDao;
     }
 }

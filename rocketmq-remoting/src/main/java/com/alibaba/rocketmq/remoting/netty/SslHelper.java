@@ -119,6 +119,11 @@ public class SslHelper {
                                     + customClientKeyStore.getCanonicalPath());
                         } else {
                             clientKeyStoreInputStream = classLoader.getResourceAsStream(CLIENT_KEY_STORE_FILE_NAME);
+
+                            if (null == clientKeyStoreInputStream) {
+                                LOGGER.error("Unexpected null!!!!");
+                            }
+
                             LOGGER.info("Development environment, using built-in client key store.");
                         }
 

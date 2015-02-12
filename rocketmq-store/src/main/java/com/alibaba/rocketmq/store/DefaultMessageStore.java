@@ -1300,8 +1300,7 @@ public class DefaultMessageStore implements MessageStore {
                 if (physicRatio > DiskSpaceWarningLevelRatio) {
                     boolean diskOK = DefaultMessageStore.this.runningFlags.getAndMakeDiskFull();
                     if (diskOK) {
-                        DefaultMessageStore.log.error("physic disk maybe full soon " + physicRatio
-                                + ", so mark disk full");
+                        DefaultMessageStore.log.error("physic disk maybe full soon " + physicRatio + ", so mark disk full");
                         System.gc();
                     }
 
@@ -1311,8 +1310,7 @@ public class DefaultMessageStore implements MessageStore {
                 } else {
                     boolean diskOK = DefaultMessageStore.this.runningFlags.getAndMakeDiskOK();
                     if (!diskOK) {
-                        DefaultMessageStore.log.info("physic disk space OK " + physicRatio
-                                + ", so mark disk ok");
+                        DefaultMessageStore.log.info("physic disk space OK " + physicRatio + ", so mark disk ok");
                     }
                 }
 
@@ -1332,8 +1330,7 @@ public class DefaultMessageStore implements MessageStore {
                 if (logicsRatio > DiskSpaceWarningLevelRatio) {
                     boolean diskok = DefaultMessageStore.this.runningFlags.getAndMakeDiskFull();
                     if (diskok) {
-                        DefaultMessageStore.log.error("logics disk maybe full soon " + logicsRatio
-                                + ", so mark disk full");
+                        DefaultMessageStore.log.error("logics disk maybe full soon " + logicsRatio + ", so mark disk full");
                         System.gc();
                     }
 
