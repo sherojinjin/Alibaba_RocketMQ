@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS topic (
   unit BOOL NOT NULL DEFAULT FALSE ,
   has_unit_subscription BOOL NOT NULL DEFAULT FALSE ,
   broker_address VARCHAR(255),
-  `order` BOOL DEFAULT FALSE,
+  order_type BOOL DEFAULT FALSE,
   create_time BIGINT NOT NULL DEFAULT 0,
   update_time BIGINT NOT NULL DEFAULT 0
 ) ENGINE = INNODB;

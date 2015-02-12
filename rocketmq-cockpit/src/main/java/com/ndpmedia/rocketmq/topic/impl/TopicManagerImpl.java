@@ -124,7 +124,7 @@ public class TopicManagerImpl implements TopicManager
         try
         {
             String sql = " insert into topic(topic, cluster_name , write_queue_num, read_queue_num, broker_address, " +
-                    "order, create_time) values" +
+                    "order_type, create_time) values" +
                     "(:topic, :cluster_name , :write_queue_num , :read_queue_num, :broker_address, :order," +
                     " :create_time) ";
             cockpitDao.add(sql, topic);
