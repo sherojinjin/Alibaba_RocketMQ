@@ -22,9 +22,12 @@ $(document).ready(function() {
         var broker_address = $("input.broker_address").val();
         var cluster_name = $("input.cluster_name").val();
         var order = $("input.order").val();
-        if ($.trim(topic) === "" || $.trim(broker_address) == "") {
+        if ($.trim(topic) === "") {
+            return false;
+        } else if ($.trim(cluster_name) === "" || $.trim(broker_address) == "") {
             return false;
         } else {
+        }
             $.ajax({
                         async: false,
                         url: "rocketmq/topic",
