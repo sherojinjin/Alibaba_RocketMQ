@@ -112,6 +112,10 @@
         <property name="producerManager" ref="producerManager" />
     </bean>
 
+    <bean id="toolSpring" class="com.ndpmedia.rocketmq.cockpit.util.ToolSpring">
+
+    </bean>
+
     <bean id="monitor" class="com.ndpmedia.rocketmq.monitor.MonitorThreadController">
 
     </bean>

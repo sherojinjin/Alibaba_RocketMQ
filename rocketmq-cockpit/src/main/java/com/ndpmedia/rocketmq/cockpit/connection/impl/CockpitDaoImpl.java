@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * cockpit dao implement.
  */
-public class CockpitDaoImpl<T> implements CockpitDao
+public class CockpitDaoImpl implements CockpitDao
 {
     private JdbcTemplate jdbcTemplate;
 

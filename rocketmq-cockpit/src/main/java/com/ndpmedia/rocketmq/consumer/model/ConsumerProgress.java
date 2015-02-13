@@ -8,16 +8,25 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
  */
 public class ConsumerProgress
 {
-    private MessageQueue messageQueue;
-    private OffsetWrapper offsetWrapper;
+    private String topic;
+    private String brokerName;
+    private int queueId;
+    private long brokerOffset;
+    private long consumerOffset;
+    // 消费的最后一条消息对应的时间戳
+    private long lastTimestamp;
     private long diff;
 
     public ConsumerProgress() {
     }
 
     public ConsumerProgress(MessageQueue messageQueue, OffsetWrapper offsetWrapper, long diff) {
-        this.messageQueue = messageQueue;
-        this.offsetWrapper = offsetWrapper;
+        this.topic = messageQueue.getTopic();
+        this.brokerName = messageQueue.getBrokerName();
+        this.queueId = messageQueue.getQueueId();
+        this.brokerOffset = offsetWrapper.getBrokerOffset();
+        this.consumerOffset = offsetWrapper.getConsumerOffset();
+        this.lastTimestamp = offsetWrapper.getLastTimestamp();
         this.diff = diff;
     }
 
@@ -29,30 +38,76 @@ public class ConsumerProgress
         this.diff = diff;
     }
 
-    public MessageQueue getMessageQueue() {
-
-        return messageQueue;
+    public String getTopic()
+    {
+        return topic;
     }
 
-    public OffsetWrapper getOffsetWrapper() {
-        return offsetWrapper;
+    public void setTopic(String topic)
+    {
+        this.topic = topic;
     }
 
-    public void setOffsetWrapper(OffsetWrapper offsetWrapper) {
-        this.offsetWrapper = offsetWrapper;
+    public String getBrokerName()
+    {
+        return brokerName;
     }
 
-    public void setMessageQueue(MessageQueue messageQueue) {
-        this.messageQueue = messageQueue;
+    public void setBrokerName(String brokerName)
+    {
+        this.brokerName = brokerName;
+    }
+
+    public int getQueueId()
+    {
+        return queueId;
+    }
+
+    public void setQueueId(int queueId)
+    {
+        this.queueId = queueId;
+    }
+
+    public long getBrokerOffset()
+    {
+        return brokerOffset;
+    }
+
+    public void setBrokerOffset(long brokerOffset)
+    {
+        this.brokerOffset = brokerOffset;
+    }
+
+    public long getConsumerOffset()
+    {
+        return consumerOffset;
+    }
+
+    public void setConsumerOffset(long consumerOffset)
+    {
+        this.consumerOffset = consumerOffset;
+    }
+
+    public long getLastTimestamp()
+    {
+        return lastTimestamp;
+    }
+
+    public void setLastTimestamp(long lastTimestamp)
+    {
+        this.lastTimestamp = lastTimestamp;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "ConsumerProgress{" +
-                "messageQueue=" + messageQueue +
-                ", offsetWrapper=OffsetWrapper [brokerOffset=" + offsetWrapper.getBrokerOffset() +
-                ", consumerOffset=" + offsetWrapper.getConsumerOffset() +
-                ", lastTimestamp=" + offsetWrapper.getLastTimestamp() + "]" +
+                "topic='" + topic + '\'' +
+                ", brokerName='" + brokerName + '\'' +
+                ", queueId=" + queueId +
+                ", brokerOffset=" + brokerOffset +
+                ", consumerOffset=" + consumerOffset +
+                ", lastTimestamp=" + lastTimestamp +
                 ", diff=" + diff +
                 '}';
     }

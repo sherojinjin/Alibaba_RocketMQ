@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS topic (
   has_unit_subscription BOOL NOT NULL DEFAULT FALSE ,
   broker_address VARCHAR(255),
   order_type BOOL DEFAULT FALSE,
+  allow BOOL DEFAULT FALSE,
   create_time BIGINT NOT NULL DEFAULT 0,
   update_time BIGINT NOT NULL DEFAULT 0
 ) ENGINE = INNODB;
@@ -70,4 +71,16 @@ CREATE TABLE IF NOT EXISTS cockpit_user_login (
   login_status INT NOT NULL DEFAULT 1,
   retry INT NOT NULL DEFAULT 0,
   lock_time BIGINT NOT NULL DEFAULT 0
+) ENGINE = INNODB;
+
+CREATE TABLE IF NOT EXISTS cockpit_message_backlog (
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    topic VARCHAR(255) NOT NULL,
+    broker_name VARCHAR(255) NOT NULL,
+    queue_id INT NOT NULL,
+    broker_offset BIGINT NOT NULL DEFAULT 0,
+    consumer_offset BIGINT NOT NULL DEFAULT 0,
+    last_timestamp BIGINT NOT NULL DEFAULT 0,
+    diff BIGINT NOT NULL DEFAULT 0,
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = INNODB;

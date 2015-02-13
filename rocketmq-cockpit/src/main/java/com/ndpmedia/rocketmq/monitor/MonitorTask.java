@@ -1,11 +1,12 @@
 package com.ndpmedia.rocketmq.monitor;
 
 import com.alibaba.rocketmq.common.MixAll;
+import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
+import com.ndpmedia.rocketmq.cockpit.util.SqlParamsUtil;
+import com.ndpmedia.rocketmq.cockpit.util.ToolSpring;
 import com.ndpmedia.rocketmq.consumer.ConsumerManager;
-import com.ndpmedia.rocketmq.consumer.impl.ConsumerManagerImpl;
 import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
 import com.ndpmedia.rocketmq.topic.TopicManager;
-import com.ndpmedia.rocketmq.topic.impl.TopicManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,32 +22,53 @@ import java.util.Set;
 public class MonitorTask implements Runnable {
 
     @Autowired
-    private ConsumerManager consumerManager = new ConsumerManagerImpl();
+    private ConsumerManager consumerManager;
 
     @Autowired
-    private static TopicManager topicManager = new TopicManagerImpl();
+    private TopicManager topicManager;
+
+    @Autowired
+    private CockpitDao cockpitDao;
 
     private static Logger logger = LoggerFactory.getLogger(MonitorTask.class);
 
+    public MonitorTask()
+    {
+        init();
+    }
+
+    private void init(){
+        topicManager = (TopicManager) ToolSpring.getBean("topicManager");
+        consumerManager = (ConsumerManager)ToolSpring.getBean("consumerManager");
+        cockpitDao = (CockpitDao)ToolSpring.getBean("cockpitDao");
+    }
+
     @Override
-    public void run() {
-        try {
+    public void run()
+    {
+        try
+        {
             Set<String> topicList = topicManager.list();
 
             List<ConsumerProgress> results = new ArrayList<ConsumerProgress>();
 
-            for (String topic : topicList) {
+            for (String topic : topicList)
+            {
                 if (!topic.contains(MixAll.RETRY_GROUP_TOPIC_PREFIX))
                     continue;
-                results.addAll(consumerManager.findProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null, null));
-            }
+                results = consumerManager.findProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null, null);
 
-            for (ConsumerProgress cp : results) {
-                if (null == cp || null == cp.getMessageQueue() || null == cp.getOffsetWrapper())
-                    continue;
-                logger.info(cp.toString());
+                for (ConsumerProgress cp : results)
+                {
+                    if (null == cp || null == cp.getTopic() || null == cp.getBrokerName())
+                        continue;
+                    logger.info(cp.toString());
+                    String sql = SqlParamsUtil.getSQL("message.diff", null);
+                    cockpitDao.add(sql, cp);
+                }
             }
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             logger.warn(" monitor had some problem" + e.getMessage());
         }
     }
@@ -65,5 +87,15 @@ public class MonitorTask implements Runnable {
 
     public void setTopicManager(TopicManager topicManager) {
         this.topicManager = topicManager;
+    }
+
+    public CockpitDao getCockpitDao()
+    {
+        return cockpitDao;
+    }
+
+    public void setCockpitDao(CockpitDao cockpitDao)
+    {
+        this.cockpitDao = cockpitDao;
     }
 }
