@@ -28,7 +28,7 @@ import java.io.File;
  * @since 2013-7-21
  */
 public class MessageStoreConfig {
-    // 存储跟目录
+    // 存储根目录
     @ImportantField
     private String storePathRootDir = System.getProperty("user.home") + File.separator + "store";
 
