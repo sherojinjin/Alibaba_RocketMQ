@@ -4,6 +4,7 @@ import com.ndpmedia.rocketmq.topic.model.Topic;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,7 +17,7 @@ public interface TopicService
 {
     @GET
     @Path("/topics")
-    Set<String> list();
+    List<Topic> list();
 
     @GET
     @Path("/topic")
@@ -32,4 +33,9 @@ public interface TopicService
     @Path("/topic")
     @Consumes(MediaType.APPLICATION_JSON)
     void delete(Map<String, Object> fieldMap) ;
+
+    @PUT
+    @Path("/topic")
+    @Consumes(MediaType.APPLICATION_JSON)
+    void update(Map<String, Object> fieldMap);
 }

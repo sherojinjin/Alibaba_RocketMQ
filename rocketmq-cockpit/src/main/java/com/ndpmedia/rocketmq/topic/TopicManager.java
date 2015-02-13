@@ -2,6 +2,7 @@ package com.ndpmedia.rocketmq.topic;
 
 import com.ndpmedia.rocketmq.topic.model.Topic;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,5 +33,5 @@ public interface TopicManager
      * get the topic list from local database.
      * @return  topic list
      */
-    public Set<String> dList();
+    public List<Topic> dList();
 }

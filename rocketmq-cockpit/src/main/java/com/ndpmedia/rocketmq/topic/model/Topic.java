@@ -8,6 +8,7 @@ public class Topic
     public static int DefaultReadQueueNums = 16;
     public static int DefaultWriteQueueNums = 16;
 
+    private int id;
     private String topic;
     private String cluster_name ;
     private String broker_address;
@@ -16,6 +17,7 @@ public class Topic
     private long create_time;
     private long update_time;
     private boolean order;
+    private boolean allow;
 
     public String getTopic()
     {
@@ -95,6 +97,26 @@ public class Topic
     public void setOrder(boolean order)
     {
         this.order = order;
+    }
+
+    public boolean isAllow()
+    {
+        return allow;
+    }
+
+    public void setAllow(boolean allow)
+    {
+        this.allow = allow;
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     @Override

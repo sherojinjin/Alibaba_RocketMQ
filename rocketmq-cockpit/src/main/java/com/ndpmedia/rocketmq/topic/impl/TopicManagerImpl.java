@@ -9,11 +9,14 @@ import com.ndpmedia.rocketmq.cockpit.util.CollectionUtil;
 import com.ndpmedia.rocketmq.cockpit.util.SqlParamsUtil;
 import com.ndpmedia.rocketmq.topic.TopicManager;
 import com.ndpmedia.rocketmq.topic.model.Topic;
+import com.ndpmedia.rocketmq.topic.model.TopicRowMapper;
 import com.ndpmedia.rocketmq.topic.model.TopicTypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -157,8 +160,17 @@ public class TopicManagerImpl implements TopicManager {
     }
 
     @Override
-    public Set<String> dList() {
-        return null;
+    public List<Topic> dList() {
+        List<Topic> topics = new ArrayList<Topic>();
+        try{
+            String sql = SqlParamsUtil.getSQL("topic.all", null);
+            TopicRowMapper<Topic> topicRowMapper = new TopicRowMapper<Topic>();
+            topics = cockpitDao.getBeanList(sql, topicRowMapper);
+        }catch (Exception e){
+            logger.warn("[QUERY][TOPIC][DATABASE]get database topics failed." + e);
+        }
+
+        return topics;
     }
 
     public CockpitDao getCockpitDao() {

@@ -4,6 +4,7 @@ import com.ndpmedia.rocketmq.topic.TopicManager;
 import com.ndpmedia.rocketmq.topic.TopicService;
 import com.ndpmedia.rocketmq.topic.model.Topic;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,9 +13,9 @@ public class TopicServiceImpl implements TopicService
     private TopicManager topicManager;
 
     @Override
-    public Set<String> list()
+    public List<Topic> list()
     {
-        Set<String> lists = topicManager.list();
+        List<Topic> lists = topicManager.dList();
         return lists;
     }
 
@@ -27,7 +28,6 @@ public class TopicServiceImpl implements TopicService
     @Override
     public void add(Topic topic)
     {
-        System.out.println(topic);
         topicManager.add(topic);
     }
 
@@ -35,6 +35,12 @@ public class TopicServiceImpl implements TopicService
     public void delete(Map<String, Object> fieldMap)
     {
         topicManager.delete(fieldMap);
+    }
+
+    @Override
+    public void update(Map<String, Object> fieldMap)
+    {
+
     }
 
     public TopicManager getTopicManager() {

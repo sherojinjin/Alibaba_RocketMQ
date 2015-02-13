@@ -26,8 +26,9 @@
       <table class="table table-hover table-bordered">
         <thead>
         <tr>
+          <td>id</td>
           <td>topic</td>
-          <td></td>
+          <td>input (when u want to remove)</td>
           <td>Operation</td>
         </tr>
         </thead>

@@ -5,9 +5,16 @@ $(document).ready(function() {
         data.forEach(function(topic) {
             var incLink = $("<input type='text' class='form-control re_cluster_name' placeholder='remove_cluster_name'>");
             var operationLink = $("<a class='removeItem' href='javascript:;'>Remove</a>");
-            var operation = $("<td></td>").append(operationLink);
+            var approveLink = $("<a class='approveItem' href='javascript:;'>Approve</a>");
+
+            var operation = $("<td></td>");
+            if (!topic.allow){
+                operation.append(approveLink);
+                operation.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+            }
+            operation.append(operationLink);
             var inc = $("<td></td>").append(incLink);
-            var item = $("<tr><td>" + topic + "</td></tr>");
+            var item = $("<tr><td>" + topic.id + "</td><td>" + topic.topic + "</td></tr>");
             item.append(inc);
             item.append(operation);
             $(".table-content").append(item);
@@ -65,4 +72,23 @@ $(document).ready(function() {
             }
         });
     });
+
+    $(".approveItem").live("click", function() {
+            var row = $(this).parent().parent();
+            var id = row.children().eq(0).html();
+            if ($.trim(id) === "" ) {
+                        return false;
+            }
+            $.ajax({
+                async: false,
+                data: JSON.stringify({id: id}),
+                url: "rocketmq/topic",
+                type: "PUT",
+                dataType: "json",
+                contentType: "application/json",
+                complete: function() {
+                    row.remove();
+                }
+            });
+        });
 });
