@@ -28,7 +28,6 @@
         <tr>
           <td>id</td>
           <td>topic</td>
-          <td>input (when u want to remove)</td>
           <td>Operation</td>
         </tr>
         </thead>

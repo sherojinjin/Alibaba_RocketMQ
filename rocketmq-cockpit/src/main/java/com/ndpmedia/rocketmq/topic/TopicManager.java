@@ -18,6 +18,12 @@ public interface TopicManager
     public Set<String> list();
 
     /**
+     *
+     * @param fieldMap
+     * @return
+     */
+    public Topic lookUp(Map<String, Object> fieldMap);
+    /**
      * add a new topic to local database and name server.
      * @return  topic list
      */
@@ -28,6 +34,20 @@ public interface TopicManager
      * @return  topic list
      */
     public boolean delete(Map<String, Object> fieldMap);
+
+    /**
+     * allow the topic to use.
+     * @param fieldMap
+     * @return
+     */
+    public boolean register(Map<String, Object> fieldMap);
+
+    /**
+     * change topic params on data base
+     * @param fieldMap
+     * @return
+     */
+    public boolean update(Map<String, Object> fieldMap);
 
     /**
      * get the topic list from local database.

@@ -40,7 +40,7 @@ public class TopicServiceImpl implements TopicService
     @Override
     public void update(Map<String, Object> fieldMap)
     {
-
+        topicManager.register(fieldMap);
     }
 
     public TopicManager getTopicManager() {
