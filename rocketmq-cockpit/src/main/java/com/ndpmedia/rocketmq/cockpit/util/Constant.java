@@ -13,6 +13,10 @@ public interface Constant
 
     String DOLLER = "$";
 
+    String COLON = ":";
+
+    String SEMICOLON = ";";
+
     int ZERO = 0;
 
     int ONE = 1;
