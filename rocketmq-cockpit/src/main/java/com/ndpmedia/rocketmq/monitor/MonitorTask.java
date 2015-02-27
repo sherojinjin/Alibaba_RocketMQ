@@ -62,7 +62,7 @@ public class MonitorTask implements Runnable {
                 {
                     if (null == cp || null == cp.getTopic() || null == cp.getBrokerName())
                         continue;
-                    logger.info(cp.toString());
+                    logger.debug(cp.toString());
                     String sql = SqlParamsUtil.getSQL("message.diff", null);
                     cockpitDao.add(sql, cp);
                 }
