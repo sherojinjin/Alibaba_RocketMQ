@@ -26,7 +26,7 @@
       <table class="table table-hover table-bordered">
         <thead>
         <tr>
-          <td>id</td>
+          <td style="display:none">id</td>
           <td>topic</td>
           <td>Operation</td>
         </tr>

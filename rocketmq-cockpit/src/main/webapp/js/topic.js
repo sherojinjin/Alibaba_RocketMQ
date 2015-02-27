@@ -12,7 +12,7 @@ $(document).ready(function() {
                 operation.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
             }
             operation.append(operationLink);
-            var item = $("<tr><td>" + topic.id + "</td><td>" + topic.topic + "</td></tr>");
+            var item = $("<tr><td style='display:none'>" + topic.id + "</td><td>" + topic.topic + "</td></tr>");
             item.append(operation);
             $(".table-content").append(item);
         });

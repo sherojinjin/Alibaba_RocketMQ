@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.Properties;
 
 /**
@@ -105,17 +104,12 @@ public class RocketMQLoginFilter implements Filter, LoginConstant {
     private boolean checkVerificationCode(HttpServletRequest request) {
         HttpSession session = request.getSession();
         try {
-            Enumeration<String> s = request.getParameterNames();
-            while (s.hasMoreElements()) {
-                String temp = s.nextElement();
-                System.out.println("[name]:" + temp + "[values]:" + request.getParameter(temp));
-            }
             String kaptcha = request.getParameter(LOGIN_PARAMETER_KAPTCHA);
             if (null == kaptcha || kaptcha.isEmpty())
                 return false;
-            System.out.println(LOGIN_PARAMETER_KAPTCHA + " [=] " + kaptcha);
+            logger.debug(LOGIN_PARAMETER_KAPTCHA + " [=] " + kaptcha);
             String code = (String) session.getAttribute(Constants.KAPTCHA_SESSION_KEY);
-            System.out.println(Constants.KAPTCHA_SESSION_KEY + " [=] " + code);
+            logger.debug(Constants.KAPTCHA_SESSION_KEY + " [=] " + code);
             if (kaptcha.equals(code))
                 return false;
         } catch (Exception e) {

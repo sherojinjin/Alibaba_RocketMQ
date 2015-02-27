@@ -2,6 +2,8 @@ package com.ndpmedia.rocketmq.authentication;
 
 import com.alibaba.rocketmq.remoting.netty.SslHelper;
 import com.ndpmedia.rocketmq.cockpit.util.LoginConstant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
@@ -18,16 +20,14 @@ import java.util.Collection;
  */
 public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthenticationSuccessHandler
         implements LoginConstant {
+    private final Logger logger = LoggerFactory.getLogger(RocketMQUserLoginSuccessHanlder.class);
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws ServletException, IOException {
-        Cookie[] cookies = request.getCookies();
-
-        for (Cookie c : cookies) {
-            System.out.println(c.getName() + " [] " + c.getValue());
-        }
-
-        try {
+            Authentication authentication) throws ServletException, IOException
+    {
+        try
+        {
             Cookie users = getCookie(request, LOGIN_PARAMETER_USERNAME, request.getParameter(LOGIN_PARAMETER_USERNAME));
             Cookie pass = getCookie(request, LOGIN_PARAMETER_PASSWORD, request.getParameter(LOGIN_PARAMETER_PASSWORD));
             Collection<? extends GrantedAuthority> c = authentication.getAuthorities();
@@ -36,7 +36,7 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
             for (GrantedAuthority g : c) {
                 if (flag > 0)
                     grant.append(";");
-                System.out.println(g.getAuthority());
+
                 grant.append(g.getAuthority());
                 flag++;
             }
@@ -52,7 +52,7 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
         super.onAuthenticationSuccess(request, response, authentication);
     }
 
-    public static String getIpAddr(HttpServletRequest request) {
+    public String getIpAddr(HttpServletRequest request) {
         String ip = getServerIP(request);
         if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("x-forwarded-for");
@@ -77,19 +77,19 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
         return ip;
     }
 
-    private static String getServerIP(HttpServletRequest request) {
+    private String getServerIP(HttpServletRequest request) {
         String temp = request.getServerName();
 
         return temp;
     }
 
-    public static Cookie getCookie(HttpServletRequest request, String key, String value) throws Exception {
+    public Cookie getCookie(HttpServletRequest request, String key, String value) throws Exception {
         Cookie cookie = new Cookie(key, SslHelper.encrypt(COOKIE_ENCRYPTION_KEY, value));
         cookie.setPath(SLASH_SEPARATOR_STRING);
         cookie.setDomain(getIpAddr(request));
         cookie.setHttpOnly(true);
 //        cookie.setMaxAge(3600);
-        System.out.println(cookie.getName() + " -[]- " + cookie.getValue());
+        logger.debug(cookie.getName() + " -[]- " + cookie.getValue());
         return cookie;
     }
 }

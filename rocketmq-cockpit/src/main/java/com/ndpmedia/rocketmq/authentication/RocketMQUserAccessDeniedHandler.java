@@ -23,7 +23,7 @@ public class RocketMQUserAccessDeniedHandler implements AccessDeniedHandler, Log
     {
         response.sendRedirect(accessDeniedURL);
         String deniedMessage = accessDeniedException.getMessage();
-        String rp = request.getRequestURI();
+
         request.getSession().setAttribute(ACCESS_DENIED_MSG, deniedMessage);
     }
 
