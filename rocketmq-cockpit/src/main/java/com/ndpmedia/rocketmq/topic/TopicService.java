@@ -6,7 +6,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * topic service.
@@ -38,4 +37,9 @@ public interface TopicService
     @Path("/topic")
     @Consumes(MediaType.APPLICATION_JSON)
     void update(Map<String, Object> fieldMap);
+
+    @POST
+    @Path("/topicP")
+    @Consumes(MediaType.APPLICATION_JSON)
+    List<Object> messageDiff(Map<String, Object> fieldMap);
 }

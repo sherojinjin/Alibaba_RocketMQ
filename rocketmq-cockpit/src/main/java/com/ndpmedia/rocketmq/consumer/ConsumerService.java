@@ -15,13 +15,11 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public interface ConsumerService
 {
-    @GET
     @POST
     @Path("/cJson")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     List<Consumer> list(@FormParam("groupName") String groupName);
 
-    @GET
     @POST
     @Path("/cpJson")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)

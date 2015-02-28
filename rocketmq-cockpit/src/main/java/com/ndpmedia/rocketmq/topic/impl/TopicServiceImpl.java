@@ -6,7 +6,6 @@ import com.ndpmedia.rocketmq.topic.model.Topic;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class TopicServiceImpl implements TopicService
 {
@@ -41,6 +40,12 @@ public class TopicServiceImpl implements TopicService
     public void update(Map<String, Object> fieldMap)
     {
         topicManager.register(fieldMap);
+    }
+
+    @Override
+    public List<Object> messageDiff(Map<String, Object> fieldMap)
+    {
+        return null;
     }
 
     public TopicManager getTopicManager() {

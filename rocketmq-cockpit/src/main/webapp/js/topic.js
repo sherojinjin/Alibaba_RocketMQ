@@ -18,7 +18,6 @@ $(document).ready(function() {
         });
     });
 
-
     $(".addTopic").click(function() {
         var topic = $("input.topic").val();
         var write_queue_num = $("input.write_queue_num").val();
