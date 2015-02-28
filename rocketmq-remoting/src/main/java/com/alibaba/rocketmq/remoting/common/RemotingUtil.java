@@ -53,7 +53,7 @@ public class RemotingUtil {
 
     public static final String OS_NAME = System.getProperty("os.name");
 
-    public static final String WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain", "config.graphene.cool-update.com");
+    public static final String WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain", "config.graphene.spellso.com");
     public static final String WS_IP_MAPPING_ADDR = "http://" + WS_DOMAIN_NAME + ":80/rocketmq/ip?innerIP=";
 
     private static boolean isLinuxPlatform = false;
