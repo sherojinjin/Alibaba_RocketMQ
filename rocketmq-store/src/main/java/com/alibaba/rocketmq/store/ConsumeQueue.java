@@ -566,11 +566,11 @@ public class ConsumeQueue {
      * 获取当前队列中的消息总数
      */
     public long getMessageTotalInQueue() {
-        return this.getMaxOffsetInQuque() - this.getMinOffsetInQuque();
+        return this.getMaxOffsetInQueue() - this.getMinOffsetInQuque();
     }
 
 
-    public long getMaxOffsetInQuque() {
+    public long getMaxOffsetInQueue() {
         return this.mappedFileQueue.getMaxOffset() / CQStoreUnitSize;
     }
 }

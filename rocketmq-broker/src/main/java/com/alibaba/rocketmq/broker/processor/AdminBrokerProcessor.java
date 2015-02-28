@@ -447,11 +447,11 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                 this.brokerController.getConsumerManager().getConsumerGroupInfo(
                     requestHeader.getConsumerGroup());
         if (consumerGroupInfo != null) {
-            ConsumerConnection bodydata = new ConsumerConnection();
-            bodydata.setConsumeFromWhere(consumerGroupInfo.getConsumeFromWhere());
-            bodydata.setConsumeType(consumerGroupInfo.getConsumeType());
-            bodydata.setMessageModel(consumerGroupInfo.getMessageModel());
-            bodydata.getSubscriptionTable().putAll(consumerGroupInfo.getSubscriptionTable());
+            ConsumerConnection bodyData = new ConsumerConnection();
+            bodyData.setConsumeFromWhere(consumerGroupInfo.getConsumeFromWhere());
+            bodyData.setConsumeType(consumerGroupInfo.getConsumeType());
+            bodyData.setMessageModel(consumerGroupInfo.getMessageModel());
+            bodyData.getSubscriptionTable().putAll(consumerGroupInfo.getSubscriptionTable());
 
             for (Map.Entry<Channel, ClientChannelInfo> channelClientChannelInfoEntry :
                     consumerGroupInfo.getChannelInfoTable().entrySet()) {
@@ -463,10 +463,10 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                 connection.setVersion(info.getVersion());
                 connection.setClientAddr(RemotingHelper.parseChannelRemoteAddr(info.getChannel()));
 
-                bodydata.getConnectionSet().add(connection);
+                bodyData.getConnectionSet().add(connection);
             }
 
-            byte[] body = bodydata.encode();
+            byte[] body = bodyData.encode();
             response.setBody(body);
             response.setCode(ResponseCode.SUCCESS);
             response.setRemark(null);
@@ -799,9 +799,8 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                 (GetMaxOffsetRequestHeader) request
                     .decodeCommandCustomHeader(GetMaxOffsetRequestHeader.class);
 
-        long offset =
-                this.brokerController.getMessageStore().getMaxOffsetInQueue(requestHeader.getTopic(),
-                        requestHeader.getQueueId());
+        long offset = this.brokerController.getMessageStore().getMaxOffsetInQueue(requestHeader.getTopic(),
+                requestHeader.getQueueId());
 
         responseHeader.setOffset(offset);
 
