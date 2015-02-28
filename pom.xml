@@ -90,29 +90,29 @@
 	</properties>
 
 	<distributionManagement>
-		<repository>
-			<id>nexus-release</id>
-			<name>Local Nexus Repository</name>
-			<url>http://172.30.10.200:8081/nexus/content/repositories/releases/</url>
-		</repository>
-
-		<snapshotRepository>
-			<id>nexus-snapshot</id>
-			<name>Local Nexus Repository</name>
-			<url>http://172.30.10.200:8081/nexus/content/repositories/snapshots/</url>
-		</snapshotRepository>
-
         <repository>
             <id>nexus-release-corp</id>
             <name>Local Nexus Repository</name>
             <url>http://172.30.10.160:8081/nexus/content/repositories/releases/</url>
         </repository>
 
+		<repository>
+			<id>nexus-release</id>
+			<name>Local Nexus Repository</name>
+			<url>http://172.30.10.200:8081/nexus/content/repositories/releases/</url>
+		</repository>
+
         <snapshotRepository>
             <id>nexus-snapshot-corp</id>
             <name>Local Nexus Repository</name>
             <url>http://172.30.10.160:8081/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
+
+		<snapshotRepository>
+			<id>nexus-snapshot</id>
+			<name>Local Nexus Repository</name>
+			<url>http://172.30.10.200:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
 	</distributionManagement>
 
 	<build>
