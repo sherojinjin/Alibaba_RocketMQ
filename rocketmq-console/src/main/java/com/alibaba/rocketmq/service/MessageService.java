@@ -178,9 +178,9 @@ public class MessageService extends AbstractService {
             if (StringUtils.isNotBlank(fallbackHours)) {
                 h = Long.parseLong(fallbackHours);
             }
-            long end = System.currentTimeMillis() - (h * 60 * 60 * 1000);
-            long begin = end - (6 * 60 * 60 * 1000);
-            QueryResult queryResult = defaultMQAdminExt.queryMessage(topicName, msgKey, 32, begin, end);
+            //long end = System.currentTimeMillis() - (h * 60 * 60 * 1000);
+            //long begin = end - (6 * 60 * 60 * 1000);
+            QueryResult queryResult = defaultMQAdminExt.queryMessage(topicName, msgKey, 32, 0, Long.MAX_VALUE);
 
             // System.out.printf("%-50s %-4s  %s\n",//
             // "#Message ID",//
