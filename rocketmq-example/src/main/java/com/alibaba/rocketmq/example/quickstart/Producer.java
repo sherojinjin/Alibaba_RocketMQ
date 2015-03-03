@@ -37,6 +37,9 @@ public class Producer {
                         ("Hello RocketMQ " + i).getBytes()// body
                 );
                 msg.putUserProperty("id", "aaa");
+
+                //Unique key may be used to query message using command line and web console.
+                msg.setKeys("Key-A");
                 SendResult sendResult = producer.send(msg);
                 System.out.println(sendResult);
             } catch (Exception e) {
