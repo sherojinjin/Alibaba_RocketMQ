@@ -171,6 +171,8 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
 
     /**
      * This method always return a message queue for producer to send message. Exceptions are strictly prohibited.
+     *
+     * TODO Use <code>arg</code> to support order message.
      * @param mqs All available message queues.
      * @param msg message to send.
      * @param arg It may be null or instance of {@link com.alibaba.rocketmq.client.producer.SendCallback}.
@@ -234,14 +236,14 @@ public class SelectMessageQueueByDataCenter implements MessageQueueSelector {
 
     /**
      * This method first tries to round robin <code>preferableMessageQueues</code> in case it's not null nor empty.
-     * If previous step fails, it tries to round robin all message queues specified by <code>totalMessageQueues</code>.
+     * If previous step fails, it tries to round robin all message queues specified by <code>availableMessageQueues</code>.
      * @param preferableMessageQueues Preferable message queues.
-     * @param totalMessageQueues All message queues available.
+     * @param availableMessageQueues All message queues available.
      * @return The chosen message queue.
      */
-    private MessageQueue roundRobin(List<MessageQueue> preferableMessageQueues, List<MessageQueue> totalMessageQueues) {
+    private MessageQueue roundRobin(List<MessageQueue> preferableMessageQueues, List<MessageQueue> availableMessageQueues) {
         if (null == preferableMessageQueues || preferableMessageQueues.isEmpty()) {
-            return totalMessageQueues.get(roundRobin.incrementAndGet() % totalMessageQueues.size());
+            return availableMessageQueues.get(roundRobin.incrementAndGet() % availableMessageQueues.size());
         }
         return preferableMessageQueues.get(roundRobin.incrementAndGet() % preferableMessageQueues.size());
     }
