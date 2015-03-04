@@ -1,6 +1,7 @@
 package com.ndpmedia.rocketmq.nameserver.model;
 
 public class KV {
+
     private String nameSpace;
 
     private String key;
