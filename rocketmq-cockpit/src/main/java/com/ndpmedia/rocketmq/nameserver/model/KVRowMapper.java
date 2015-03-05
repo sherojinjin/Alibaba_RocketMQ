@@ -10,6 +10,7 @@ public class KVRowMapper implements RowMapper<KV> {
     @Override
     public KV mapRow(ResultSet resultSet, int i) throws SQLException {
         KV kv = new KV();
+        kv.setId(resultSet.getLong("id"));
         kv.setNameSpace(resultSet.getString("name_space"));
         kv.setKey(resultSet.getString("key"));
         kv.setValue(resultSet.getString("value"));
