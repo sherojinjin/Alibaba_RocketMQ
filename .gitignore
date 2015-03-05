@@ -2,7 +2,6 @@
 
 #Ignore Intellij Idea files.
 target
-log*
 .idea
 *.iml
 
