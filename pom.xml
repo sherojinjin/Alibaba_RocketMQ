@@ -33,6 +33,7 @@
         <module>rocketmq-stalker</module>
         <module>rocketmq-cockpit</module>
         <module>rocketmq-console</module>
+        <module>rocketmq-paxos</module>
     </modules>
 
 	<developers>

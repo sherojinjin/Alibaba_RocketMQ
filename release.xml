@@ -30,6 +30,7 @@
 				<include>com.alibaba.rocketmq:rocketmq-example</include>
 				<include>com.alibaba.rocketmq:rocketmq-babel</include>
                 <include>com.alibaba.rocketmq:rocketmq-stalker</include>
+                <include>com.alibaba.rocketmq:rocketmq-paxos</include>
 			</includes>
 			<binaries>
 				<outputDirectory>lib/</outputDirectory>
