@@ -39,6 +39,9 @@ public class VerificationTool {
                     System.arraycopy(args, 2, topics, 0, args.length - 2);
                     verifyReceive(args[1], topics);
                 }
+            } else {
+                System.out.println("Unknown operation! Only send and receive are supported.");
+                printUsage();
             }
         } catch (Exception e) {
             e.printStackTrace();
