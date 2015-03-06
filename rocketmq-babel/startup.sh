@@ -1,6 +1,6 @@
 #!/bin/sh
 #JAVA_HOME="/usr/java/jdk1.6.0_31"
-APP_LOG=/home/dev/dumps/logs
+APP_LOG=/dianyi/app/justniffer/logs
 if [ ! -d "$APP_LOG" ]; then
   mkdir $APP_LOG -p
 fi
