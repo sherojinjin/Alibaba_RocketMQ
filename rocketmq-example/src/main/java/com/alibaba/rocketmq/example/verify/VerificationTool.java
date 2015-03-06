@@ -53,6 +53,7 @@ public class VerificationTool {
 
     private static void verifySend(String topic) throws Exception {
         DefaultMQProducer producer = new DefaultMQProducer("PG_Verify");
+        producer.start();
         byte[] messageData = new byte[1024];
         Arrays.fill(messageData, (byte) 'T');
         Message message = new Message(topic, messageData);
