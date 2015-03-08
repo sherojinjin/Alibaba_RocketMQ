@@ -31,6 +31,12 @@ public class NameServerKVServiceImpl implements NameServerKVService {
             "FROM name_server_kv AS ns_kv " +
             "JOIN name_server_kv_status_lu AS status_lu ON ns_kv.status_id = status_lu.id";
 
+    private static final String SQL_QUERY_ALL_BY_STATUS =
+            "SELECT ns_kv.id, name_space, `key`, `value`, status_lu.name AS status " +
+                    "FROM name_server_kv AS ns_kv " +
+                    "JOIN name_server_kv_status_lu AS status_lu ON ns_kv.status_id = status_lu.id " +
+                    "WHERE ns_kv.status_id IN (%s)";
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -64,5 +70,41 @@ public class NameServerKVServiceImpl implements NameServerKVService {
     @Override
     public List<KV> list() {
         return jdbcTemplate.query(SQL_QUERY_ALL, new KVRowMapper());
+    }
+
+    @Override
+    public List<KV> list(KVStatus... statuses) {
+        if (null == statuses) {
+            return list();
+        } else {
+            int[] statusArray = new int[statuses.length];
+            int i = 0;
+            for (KVStatus status : statuses) {
+                statusArray[i++] = status.getId();
+            }
+            return jdbcTemplate.query(String.format(SQL_QUERY_ALL_BY_STATUS, arrayToString(statusArray)), new KVRowMapper());
+        }
+    }
+
+    private static String arrayToString(int[] array) {
+        if (null == array || 0 == array.length) {
+            return "";
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            if (0 != i) {
+                stringBuilder.append(", ").append(array[i]);
+            } else {
+                stringBuilder.append(array[i]);
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
+    public static void main(String[] args) {
+        String s = "abc %s";
+        System.out.println(String.format(SQL_QUERY_ALL_BY_STATUS, arrayToString(new int[] {1, 2, 3})));
     }
 }
