@@ -3,7 +3,7 @@
 <html>
 <head>
     <title>Name Server Management</title>
-    <%@include file="../include/base-path.jsp"%>
+    <%@include file="../../include/base-path.jsp"%>
     <base href="<%=basePath%>%">
     <link rel="shortcut icon" href="favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -36,7 +36,7 @@
                     <tbody class="table-striped table-content">
                         <c:forEach items="${list}" var="item">
                             <tr>
-                                <td>${item.namespace}</td>
+                                <td>${item.nameSpace}</td>
                                 <td>${item.key}</td>
                                 <td>${item.value}</td>
                                 <td>${item.status}</td>
