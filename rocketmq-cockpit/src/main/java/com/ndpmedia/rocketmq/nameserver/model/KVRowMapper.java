@@ -14,6 +14,7 @@ public class KVRowMapper implements RowMapper<KV> {
         kv.setNameSpace(resultSet.getString("name_space"));
         kv.setKey(resultSet.getString("key"));
         kv.setValue(resultSet.getString("value"));
+        kv.setStatus(KVStatus.valueOf(resultSet.getString("status")));
         return kv;
     }
 }

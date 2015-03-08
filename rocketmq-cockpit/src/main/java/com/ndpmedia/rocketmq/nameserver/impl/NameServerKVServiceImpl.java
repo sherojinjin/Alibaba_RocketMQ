@@ -3,31 +3,33 @@ package com.ndpmedia.rocketmq.nameserver.impl;
 import com.ndpmedia.rocketmq.nameserver.NameServerKVService;
 import com.ndpmedia.rocketmq.nameserver.model.KV;
 import com.ndpmedia.rocketmq.nameserver.model.KVRowMapper;
+import com.ndpmedia.rocketmq.nameserver.model.KVStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * TODO implement this.
- */
 @Service("nameServerKVService")
 public class NameServerKVServiceImpl implements NameServerKVService {
 
     private static final String SQL_ADD =
-            "INSERT INTO name_server_kv(id, name_space, `key`, `value`) VALUES (NULL, ?, ?, ?)";
-
-    private static final String SQL_DELETE = "DELETE FROM name_server_kv WHERE id = ?";
+            "INSERT INTO name_server_kv(id, name_space, `key`, `value`, status_id) VALUES (NULL, ?, ?, ?, ?)";
 
     private static final String SQL_UPDATE =
-            "UPDATE name_server_kv SET name_space = ?, `key` = ?, `value` = ? WHERE id = ?";
+            "UPDATE name_server_kv SET name_space = ?, `key` = ?, `value` = ?, status_id = ? WHERE id = ?";
 
 
-    private static final String SQL_QUERY_BY_ID = "SELECT id, name_space, `key`, `value` FROM name_server_kv WHERE id = ?";
+    private static final String SQL_QUERY_BY_ID =
+            "SELECT ns_kv.id, name_space, `key`, `value`, status_lu.name AS status " +
+            "FROM name_server_kv AS ns_kv " +
+            "JOIN name_server_kv_status_lu AS status_lu ON ns_kv.status_id = status_lu.id  " +
+            "WHERE ns_kv.id = ?";
 
-    private static final String SQL_QUERY_ALL = "SELECT id, name_space, `key`, `value` FROM name_server_kv";
-
+    private static final String SQL_QUERY_ALL =
+            "SELECT ns_kv.id, name_space, `key`, `value`, status_lu.name AS status " +
+            "FROM name_server_kv AS ns_kv " +
+            "JOIN name_server_kv_status_lu AS status_lu ON ns_kv.status_id = status_lu.id";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -39,17 +41,19 @@ public class NameServerKVServiceImpl implements NameServerKVService {
 
     @Override
     public void delete(KV kv) {
-        delete(kv.getId());
+        kv.setStatus(KVStatus.DELETED);
+        update(kv);
     }
 
     @Override
     public void delete(long id) {
-        jdbcTemplate.update(SQL_DELETE, id);
+        delete(get(id));
     }
 
     @Override
     public void update(KV kv) {
-        jdbcTemplate.update(SQL_UPDATE, kv.getNameSpace(), kv.getKey(), kv.getValue(), kv.getId());
+        jdbcTemplate.update(SQL_UPDATE, kv.getNameSpace(), kv.getKey(), kv.getValue(), kv.getId(),
+                kv.getStatus().getId());
     }
 
     @Override

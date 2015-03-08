@@ -10,6 +10,8 @@ public class KV {
 
     private String value;
 
+    private KVStatus status = KVStatus.DRAFT;
+
     public long getId() {
         return id;
     }
@@ -40,5 +42,13 @@ public class KV {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public KVStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(KVStatus status) {
+        this.status = status;
     }
 }
