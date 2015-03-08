@@ -8,8 +8,10 @@
     <link rel="shortcut icon" href="favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="http://libs.baidu.com/jquery/1.7.0/jquery.js"></script>
-    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
     <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.datatables.net/1.10.5/css/jquery.dataTables.min.css" rel="stylesheet">
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js" type="application/javascript"></script>
+    <script src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js" type="application/javascript"></script>
 </head>
 <body>
     <div class="container-fluid">

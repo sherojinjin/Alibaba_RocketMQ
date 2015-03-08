@@ -40,7 +40,6 @@ public class NameServerController {
         return modelAndView;
     }
 
-
     @RequestMapping(value = "/kv", method = RequestMethod.PUT)
     public String add(@ModelAttribute KV kv) {
         nameServerKVService.add(kv);
