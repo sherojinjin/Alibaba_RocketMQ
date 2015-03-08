@@ -16,38 +16,32 @@ import java.util.Properties;
 /**
  * try to process login message when login failed.
  */
-public class RocketMQUserLoginFailedHandler extends SimpleUrlAuthenticationFailureHandler implements LoginConstant
-{
+public class RocketMQUserLoginFailedHandler extends SimpleUrlAuthenticationFailureHandler implements LoginConstant {
     private static Properties config;
 
     private final Logger logger = LoggerFactory.getLogger(RocketMQUserLoginFailedHandler.class);
 
-    static
-    {
+    static {
         config = FileManager.getConfig();
     }
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-            AuthenticationException exception) throws IOException, ServletException
-    {
+                                        AuthenticationException exception) throws IOException, ServletException {
         String username = request.getParameter(LOGIN_PARAMETER_USERNAME);
         int retryTime = ZERO;
         int retryTimeMAX = FIVE;
 
-        try
-        {
+        try {
             retryTime = Integer.parseInt(EMPTY_STRING + request.getSession().getAttribute(username));
             retryTimeMAX = Integer.parseInt(config.getProperty(PROPERTIES_KEY_LOGIN_RETRY_TIME));
-        } catch (NumberFormatException e)
-        {
+        } catch (NumberFormatException e) {
             logger.warn("[config.properties] please check your properties.");
         }
 
         logger.warn("[login] login failed , this user [" + username + "] already retry " + retryTime);
         request.getSession().setAttribute(username, retryTime + ONE);
-        if (retryTime >= retryTimeMAX)
-        {
+        if (retryTime >= retryTimeMAX) {
             exception.addSuppressed(new Exception(" the user : [" + username + "] is locked !"));
         }
         this.setDefaultFailureUrl("/cockpit/login");

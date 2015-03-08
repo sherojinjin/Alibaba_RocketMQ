@@ -3,8 +3,7 @@ package com.ndpmedia.rocketmq.cockpit.util;
 /**
  * base constant.
  */
-public interface Constant
-{
+public interface Constant {
     String EMPTY_STRING = "";
 
     String SLASH_SEPARATOR_STRING = "/";

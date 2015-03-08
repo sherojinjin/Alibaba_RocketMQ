@@ -7,15 +7,12 @@ import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
 
 import java.util.List;
 
-public class ConsumerServiceImpl implements ConsumerService
-{
+public class ConsumerServiceImpl implements ConsumerService {
     private ConsumerManager consumerManager;
 
     @Override
-    public List<Consumer> list(String groupName)
-    {
-        if (null != groupName && !groupName.isEmpty())
-        {
+    public List<Consumer> list(String groupName) {
+        if (null != groupName && !groupName.isEmpty()) {
             List<Consumer> consumers = consumerManager.findConsumersByGroupName(groupName);
             return consumers;
         }
@@ -23,10 +20,8 @@ public class ConsumerServiceImpl implements ConsumerService
     }
 
     @Override
-    public List<ConsumerProgress> list(String groupName, String topic, String broker)
-    {
-        if (null == groupName)
-        {
+    public List<ConsumerProgress> list(String groupName, String topic, String broker) {
+        if (null == groupName) {
             System.err.println("");
             return null;
         }
@@ -36,13 +31,11 @@ public class ConsumerServiceImpl implements ConsumerService
         return progressList;
     }
 
-    public void setConsumerManager(ConsumerManager consumerManager)
-    {
+    public void setConsumerManager(ConsumerManager consumerManager) {
         this.consumerManager = consumerManager;
     }
 
-    public ConsumerManager getConsumerManager()
-    {
+    public ConsumerManager getConsumerManager() {
         return consumerManager;
     }
 }

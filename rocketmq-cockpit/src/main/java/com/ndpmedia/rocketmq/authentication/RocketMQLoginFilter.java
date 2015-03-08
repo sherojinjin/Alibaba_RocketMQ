@@ -26,21 +26,18 @@ public class RocketMQLoginFilter implements Filter, LoginConstant {
 
     private final Logger logger = LoggerFactory.getLogger(RocketMQLoginFilter.class);
 
-    static
-    {
+    static {
         config = FileManager.getConfig();
     }
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException
-    {
+    public void init(FilterConfig filterConfig) throws ServletException {
 
     }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException
-    {
+            throws IOException, ServletException {
         logger.debug("[personal filter]check verification code and retry times. ");
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
@@ -48,8 +45,7 @@ public class RocketMQLoginFilter implements Filter, LoginConstant {
 
         session.removeAttribute(LOGIN_SESSION_ERROR_KEY);
 
-        if (checkRetryTimes(request))
-        {
+        if (checkRetryTimes(request)) {
             logger.warn("[personal filter] retry too many times !");
             session.setAttribute(LOGIN_SESSION_ERROR_KEY, LOGIN_TOO_MANY_TIMES_MSG);
             request.getRequestDispatcher(LOGIN_PAGE_PATH).forward(request, response);

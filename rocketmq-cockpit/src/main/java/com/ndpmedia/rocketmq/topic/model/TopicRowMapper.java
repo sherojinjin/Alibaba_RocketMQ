@@ -8,11 +8,9 @@ import java.sql.SQLException;
 /**
  * Created by Administrator on 2015/2/13.
  */
-public class TopicRowMapper<T> implements RowMapper
-{
+public class TopicRowMapper<T> implements RowMapper {
     @Override
-    public Topic mapRow(ResultSet rs, int rowNum) throws SQLException
-    {
+    public Topic mapRow(ResultSet rs, int rowNum) throws SQLException {
         Topic topic = new Topic();
 
         topic.setId(rs.getInt("id"));

@@ -10,12 +10,10 @@ import java.util.concurrent.TimeUnit;
  * monitor controller.
  * control monitor thread run one time per minute;
  */
-public class MonitorThreadController implements Constant
-{
+public class MonitorThreadController implements Constant {
     private static ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-    static
-    {
+    static {
         long nextMinutes = SECONDS_OF_ONE_MINUTE - (System.currentTimeMillis() / THOUSAND % SECONDS_OF_ONE_MINUTE);
         scheduledExecutorService.scheduleWithFixedDelay(new MonitorTask(), nextMinutes, TEN * SECONDS_OF_ONE_MINUTE, TimeUnit.SECONDS);
     }

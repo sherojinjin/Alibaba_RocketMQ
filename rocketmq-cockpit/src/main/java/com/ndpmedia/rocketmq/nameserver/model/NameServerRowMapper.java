@@ -8,8 +8,7 @@ import java.sql.SQLException;
 /**
  * the row mapper for name server.
  */
-public class NameServerRowMapper<T> implements RowMapper
-{
+public class NameServerRowMapper<T> implements RowMapper {
     @Override
     public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
         NameServer nameServer = new NameServer();

@@ -8,8 +8,7 @@ import java.util.List;
 /**
  * the interface of consumer manager.
  */
-public interface ConsumerManager
-{
+public interface ConsumerManager {
     public List<Consumer> findConsumersByGroupName(String groupName);
 
     public List<ConsumerProgress> findProgress(String groupName, String topic, String broker);

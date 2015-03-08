@@ -3,8 +3,7 @@ package com.ndpmedia.rocketmq.ip.model;
 /**
  * Created by lizhanhui on 11/26/14.
  */
-public class IPPair
-{
+public class IPPair {
     private int id;
 
     private String innerIP;
@@ -15,10 +14,10 @@ public class IPPair
 
     private long update_time;
 
-    public IPPair() {}
+    public IPPair() {
+    }
 
-    public IPPair(String innerIP, String publicIP)
-    {
+    public IPPair(String innerIP, String publicIP) {
         this.innerIP = innerIP;
         this.publicIP = publicIP;
         this.create_time = System.currentTimeMillis();
@@ -65,8 +64,7 @@ public class IPPair
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "IPPair{" +
                 "id=" + id +
                 ", innerIP='" + innerIP + '\'' +

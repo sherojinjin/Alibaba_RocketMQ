@@ -8,16 +8,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * try to open cockpit topic index.jsp.
  * it have:
  * 1 find topics
- *
  */
 
 @Controller
 @RequestMapping(value = "/topic")
-public class TopicController
-{
-    @RequestMapping(value = "/" ,method = RequestMethod.GET)
-    public String showIndex()
-    {
+public class TopicController {
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public String showIndex() {
         return "topic/index";
     }
 }

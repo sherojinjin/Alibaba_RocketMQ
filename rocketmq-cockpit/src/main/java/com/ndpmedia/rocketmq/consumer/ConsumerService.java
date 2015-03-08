@@ -3,7 +3,11 @@ package com.ndpmedia.rocketmq.consumer;
 import com.ndpmedia.rocketmq.consumer.model.Consumer;
 import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -13,8 +17,7 @@ import java.util.List;
  */
 
 @Produces(MediaType.APPLICATION_JSON)
-public interface ConsumerService
-{
+public interface ConsumerService {
     @POST
     @Path("/cJson")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -23,6 +26,6 @@ public interface ConsumerService
     @POST
     @Path("/cpJson")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    List<ConsumerProgress> list(@FormParam("groupName") String groupName,@FormParam("topic") String topic,
-                                @FormParam("broker")String broker);
+    List<ConsumerProgress> list(@FormParam("groupName") String groupName, @FormParam("topic") String topic,
+                                @FormParam("broker") String broker);
 }

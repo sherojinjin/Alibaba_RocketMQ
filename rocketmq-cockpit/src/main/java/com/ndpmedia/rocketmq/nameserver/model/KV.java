@@ -55,7 +55,7 @@ public class KV implements Comparable {
     @Override
     public int compareTo(Object o) {
         if (o instanceof KV) {
-            KV that = (KV)o;
+            KV that = (KV) o;
             if (0 == this.nameSpace.compareTo(that.getNameSpace())) {
                 return this.key.compareTo(that.getKey());
             } else {

@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service("nameServerManager")
-public class NameServerManagerImpl implements NameServerManager
-{
+public class NameServerManagerImpl implements NameServerManager {
 
     private CockpitDao cockpitDao;
 
@@ -31,19 +30,14 @@ public class NameServerManagerImpl implements NameServerManager
     }
 
     @Override
-    public Set<String> listNames()
-    {
+    public Set<String> listNames() {
         Set<String> names = new HashSet<String>();
-        try
-        {
+        try {
             List<NameServer> lists = list();
-            for(NameServer nameServer:lists)
-            {
+            for (NameServer nameServer : lists) {
                 names.add(nameServer.getUrl());
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -78,7 +72,7 @@ public class NameServerManagerImpl implements NameServerManager
 
             cockpitDao.del(sql);
         } catch (Exception e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }
 
         return list();

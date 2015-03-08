@@ -2,7 +2,14 @@ package com.ndpmedia.rocketmq.topic;
 
 import com.ndpmedia.rocketmq.topic.model.Topic;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +19,7 @@ import java.util.Map;
  * The API interface
  */
 @Produces(MediaType.APPLICATION_JSON)
-public interface TopicService
-{
+public interface TopicService {
     @GET
     @Path("/topics")
     List<Topic> list();
@@ -21,17 +27,17 @@ public interface TopicService
     @GET
     @Path("/topic")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    String lookUp(@FormParam("topic") String topic) ;
+    String lookUp(@FormParam("topic") String topic);
 
     @POST
     @Path("/topic")
     @Consumes(MediaType.APPLICATION_JSON)
-    void add(Topic topic) ;
+    void add(Topic topic);
 
     @DELETE
     @Path("/topic")
     @Consumes(MediaType.APPLICATION_JSON)
-    void delete(Map<String, Object> fieldMap) ;
+    void delete(Map<String, Object> fieldMap);
 
     @PUT
     @Path("/topic")

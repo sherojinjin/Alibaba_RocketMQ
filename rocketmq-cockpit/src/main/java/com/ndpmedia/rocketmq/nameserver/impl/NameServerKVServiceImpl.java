@@ -30,14 +30,14 @@ public class NameServerKVServiceImpl implements NameServerKVService {
 
     private static final String SQL_QUERY_BY_ID =
             "SELECT ns_kv.id, name_space, `key`, `value`, status_lu.name AS status " +
-            "FROM name_server_kv AS ns_kv " +
-            "JOIN name_server_kv_status_lu AS status_lu ON ns_kv.status_id = status_lu.id  " +
-            "WHERE ns_kv.id = ?";
+                    "FROM name_server_kv AS ns_kv " +
+                    "JOIN name_server_kv_status_lu AS status_lu ON ns_kv.status_id = status_lu.id  " +
+                    "WHERE ns_kv.id = ?";
 
     private static final String SQL_QUERY_ALL =
             "SELECT ns_kv.id, name_space, `key`, `value`, status_lu.name AS status " +
-            "FROM name_server_kv AS ns_kv " +
-            "JOIN name_server_kv_status_lu AS status_lu ON ns_kv.status_id = status_lu.id";
+                    "FROM name_server_kv AS ns_kv " +
+                    "JOIN name_server_kv_status_lu AS status_lu ON ns_kv.status_id = status_lu.id";
 
     private static final String SQL_QUERY_ALL_BY_STATUS =
             "SELECT ns_kv.id, name_space, `key`, `value`, status_lu.name AS status " +

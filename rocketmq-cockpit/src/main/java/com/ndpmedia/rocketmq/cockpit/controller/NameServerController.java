@@ -38,7 +38,7 @@ public class NameServerController {
 
     @RequestMapping(value = "/kv/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public void apply(@PathVariable("id")long id)
+    public void apply(@PathVariable("id") long id)
             throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
         KV kv = nameServerKVService.get(id);
         if (null != kv) {

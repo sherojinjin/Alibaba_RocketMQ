@@ -17,8 +17,7 @@ import java.util.Map;
 /**
  * cockpit dao implement.
  */
-public class CockpitDaoImpl implements CockpitDao
-{
+public class CockpitDaoImpl implements CockpitDao {
     private JdbcTemplate jdbcTemplate;
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -27,33 +26,27 @@ public class CockpitDaoImpl implements CockpitDao
 
     private final Logger logger = LoggerFactory.getLogger(CockpitDaoImpl.class);
 
-    public JdbcTemplate getJdbcTemplate()
-    {
+    public JdbcTemplate getJdbcTemplate() {
         return jdbcTemplate;
 
     }
 
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate)
-    {
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public NamedParameterJdbcTemplate getNamedParameterJdbcTemplate()
-    {
+    public NamedParameterJdbcTemplate getNamedParameterJdbcTemplate() {
         return namedParameterJdbcTemplate;
     }
 
-    public void setNamedParameterJdbcTemplate(NamedParameterJdbcTemplate namedParameterJdbcTemplate)
-    {
+    public void setNamedParameterJdbcTemplate(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     @Override
-    public Map<String, Object> getFirstRow(String sql)
-    {
+    public Map<String, Object> getFirstRow(String sql) {
         List<Map<String, Object>> list = getList(sql);
-        if (list != null)
-        {
+        if (list != null) {
             return list.get(0);
         }
 
@@ -61,57 +54,49 @@ public class CockpitDaoImpl implements CockpitDao
     }
 
     @Override
-    public List<Map<String, Object>> getList(String sql)
-    {
+    public List<Map<String, Object>> getList(String sql) {
         logger.debug("[sql] try to query : sql = [" + sql + " ]");
         return jdbcTemplate.queryForList(sql);
     }
 
     @Override
-    public int add(String sql)
-    {
+    public int add(String sql) {
         logger.debug("[sql] try to query : sql = [" + sql + " ]");
         return jdbcTemplate.update(sql);
     }
 
     @Override
-    public int add(String sql, Map<String, ?> params)
-    {
+    public int add(String sql, Map<String, ?> params) {
         logger.debug("[sql] try to query : sql = [" + sql + " ]");
         return namedParameterJdbcTemplate.update(sql, params);
     }
 
     @Override
-    public int add(String sql, Object object)
-    {
+    public int add(String sql, Object object) {
         logger.debug("[sql] try to query : sql = [" + sql + " ]");
         SqlParameterSource source = new BeanPropertySqlParameterSource(object);
         return namedParameterJdbcTemplate.update(sql, source);
     }
 
     @Override
-    public int del(String sql)
-    {
+    public int del(String sql) {
         logger.debug("[sql] try to query : sql = [" + sql + " ]");
         return jdbcTemplate.update(sql);
     }
 
     @Override
-    public <T> List<T> getBeanList(String sql, RowMapper<T> rowMapper)
-    {
+    public <T> List<T> getBeanList(String sql, RowMapper<T> rowMapper) {
         List<T> list = new ArrayList<T>();
         logger.debug("[sql] try to query : sql = [" + sql + " ]");
         list.addAll(namedParameterJdbcTemplate.query(sql, rowMapper));
         return list;
     }
 
-    public DataSource getDataSource()
-    {
+    public DataSource getDataSource() {
         return dataSource;
     }
 
-    public void setDataSource(DataSource dataSource)
-    {
+    public void setDataSource(DataSource dataSource) {
         this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         this.dataSource = dataSource;
     }

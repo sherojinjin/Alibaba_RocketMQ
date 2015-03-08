@@ -14,32 +14,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 @Service("consumerManager")
-public class ConsumerManagerImpl implements ConsumerManager
-{
+public class ConsumerManagerImpl implements ConsumerManager {
     private CockpitDao cockpitDao;
 
     private final Logger logger = LoggerFactory.getLogger(ConsumerManagerImpl.class);
 
     @Override
-    public List<Consumer> findConsumersByGroupName(String groupName)
-    {
+    public List<Consumer> findConsumersByGroupName(String groupName) {
         List<Consumer> consumers = new ArrayList<Consumer>();
 
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
 
         defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
-        try
-        {
+        try {
             defaultMQAdminExt.start();
             ConsumerConnection cc = defaultMQAdminExt.examineConsumerConnectionInfo(groupName);
 
             // 打印连接
             //            int i = 1;
-            for (Connection conn : cc.getConnectionSet())
-            {
+            for (Connection conn : cc.getConnectionSet()) {
                 Consumer consumer = new Consumer();
                 consumer.setClientAddr(conn.getClientAddr());
                 consumer.setClientId(conn.getClientId());
@@ -74,21 +74,16 @@ public class ConsumerManagerImpl implements ConsumerManager
 //            logger.debug("ConsumeType: %s\n", cc.getConsumeType());
 //            logger.debug("MessageModel: %s\n", cc.getMessageModel());
 //            logger.debug("ConsumeFromWhere: %s\n", cc.getConsumeFromWhere());
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally
-        {
+        } finally {
             defaultMQAdminExt.shutdown();
         }
         return consumers;
     }
 
     @Override
-    public List<ConsumerProgress> findProgress(String groupName, String topic, String broker)
-    {
+    public List<ConsumerProgress> findProgress(String groupName, String topic, String broker) {
         List<ConsumerProgress> progressList = new ArrayList<ConsumerProgress>();
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
 
@@ -108,13 +103,11 @@ public class ConsumerManagerImpl implements ConsumerManager
             for (MessageQueue mq : mqList) {
                 OffsetWrapper offsetWrapper = consumeStats.getOffsetTable().get(mq);
 
-                if (null != topic && !topic.equals(mq.getTopic()))
-                {
+                if (null != topic && !topic.equals(mq.getTopic())) {
                     continue;
                 }
 
-                if (null != broker && !broker.equals(mq.getBrokerName()))
-                {
+                if (null != broker && !broker.equals(mq.getBrokerName())) {
                     continue;
                 }
 
@@ -133,42 +126,34 @@ public class ConsumerManagerImpl implements ConsumerManager
 //            logger.debug("Consume TPS: %d\n", consumeStats.getConsumeTps());
 //            logger.debug("Diff Total: %d\n", diffTotal);
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
-        }
-        finally {
+        } finally {
             defaultMQAdminExt.shutdown();
         }
         return progressList;
     }
 
     @Override
-    public List<String> findConsumerGroupNames()
-    {
+    public List<String> findConsumerGroupNames() {
         List<String> list = null;
-        try
-        {
+        try {
             String sql = " SELECT group_name FROM consumer_group GROUP BY group_name ";
             List<Map<String, Object>> re = cockpitDao.getList(sql);
-            for (Map<String, Object> map:re)
-            {
+            for (Map<String, Object> map : re) {
                 list.add(map.get("group_name").toString());
             }
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
 
         }
         return list;
     }
 
-    public CockpitDao getCockpitDao()
-    {
+    public CockpitDao getCockpitDao() {
         return cockpitDao;
     }
 
-    public void setCockpitDao(CockpitDao cockpitDao)
-    {
+    public void setCockpitDao(CockpitDao cockpitDao) {
         this.cockpitDao = cockpitDao;
     }
 }

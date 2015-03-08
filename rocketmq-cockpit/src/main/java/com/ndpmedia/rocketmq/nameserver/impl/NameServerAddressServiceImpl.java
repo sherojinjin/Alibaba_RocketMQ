@@ -5,7 +5,8 @@ import com.ndpmedia.rocketmq.nameserver.NameServerAddressService;
 import com.ndpmedia.rocketmq.nameserver.NameServerManager;
 import com.ndpmedia.rocketmq.nameserver.model.NameServer;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 public class NameServerAddressServiceImpl implements NameServerAddressService {
 
