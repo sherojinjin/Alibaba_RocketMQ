@@ -13,9 +13,31 @@ $(document).ready(function() {
         });
     });
 
+    $(".addKV").click(function() {
+        var nameSpace = $(".nameSpace").val();
+        var key = $(".key").val();
+        var value = $(".value").val();
 
-    $(".applyKV").on('click', function() {
-        alert("Apply Clicked");
+        $.ajax({
+            url: "cockpit/ajax/name-server/kv",
+            type: "PUT",
+            data: {nameSpace: nameSpace, key: key, value: value},
+            success: function(data) {
+                var operationLink = $("<a href='javascript:;' rel='" + data.id  + "' class='applyKV'>Apply</a>");
+                var operation = $("<td></td>").append(operationLink);
+                var item = $("<tr><td>" + nameSpace + "</td><td>" + key + "</td><td>" + value + "</td><td>"
+                + data.status + "</td></tr>");
+                item.append(operation);
+                $(".table-content").append(item);
+
+                $(".nameSpace").val("");
+                $(".key").val("");
+                $(".value").val("");
+            },
+            error: function() {
+                alert("Adding KV fails.");
+            }
+        });
     });
 
 });

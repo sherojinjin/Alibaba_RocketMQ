@@ -9,9 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="http://libs.baidu.com/jquery/1.7.0/jquery.js"></script>
     <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
-    <link href="//cdn.datatables.net/1.10.5/css/jquery.dataTables.min.css" rel="stylesheet">
     <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js" type="application/javascript"></script>
-    <script src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js" type="application/javascript"></script>
     <script src="js/name-server-kv.js" type="application/javascript"></script>
 </head>
 <body>
@@ -40,6 +38,28 @@
                     </tbody>
                 </table>
                 <div class="clear-both"></div>
+            </div>
+        </div>
+
+        <div class="clear-both"></div>
+
+        <div class="row">
+            <div class="col-xs-8 col-xs-offset-2 text-left table-responsive">
+                <div class="col-xs-3">
+                    <input type="text" class="form-control nameSpace" placeholder="Name Space">
+                </div>
+
+                <div class="col-xs-3">
+                    <input type="text" class="form-control key" placeholder="Key">
+                </div>
+
+                <div class="col-xs-4">
+                    <input type="text" class="form-control value" placeholder="Value">
+                </div>
+
+                <div class="col-xs-2">
+                    <button type="submit" class="btn btn-primary addKV">Add</button>
+                </div>
             </div>
         </div>
     </div>

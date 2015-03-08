@@ -28,10 +28,12 @@ public class NameServerKVServiceController {
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
-    public void add(@ModelAttribute KV kv, HttpServletRequest request, HttpServletResponse response) {
-        nameServerKVService.add(kv);
+    public KV add(@ModelAttribute KV kv, HttpServletRequest request, HttpServletResponse response) {
+        long id = nameServerKVService.add(kv);
+        kv.setId(id);
         response.setStatus(HttpStatus.OK.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        return kv;
     }
 
     @RequestMapping

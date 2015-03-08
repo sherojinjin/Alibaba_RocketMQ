@@ -1,13 +1,20 @@
 package com.ndpmedia.rocketmq.nameserver.impl;
 
+import com.mysql.jdbc.Statement;
 import com.ndpmedia.rocketmq.nameserver.NameServerKVService;
 import com.ndpmedia.rocketmq.nameserver.model.KV;
 import com.ndpmedia.rocketmq.nameserver.model.KVRowMapper;
 import com.ndpmedia.rocketmq.nameserver.model.KVStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,8 +49,21 @@ public class NameServerKVServiceImpl implements NameServerKVService {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public void add(KV kv) {
-        jdbcTemplate.update(SQL_ADD, kv.getNameSpace(), kv.getKey(), kv.getValue(), kv.getStatus().getId());
+    public long add(final KV kv) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(new PreparedStatementCreator() {
+            @Override
+            public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                PreparedStatement preparedStatement = con.prepareStatement(SQL_ADD, Statement.RETURN_GENERATED_KEYS);
+                int idx = 0;
+                preparedStatement.setString(++idx, kv.getNameSpace());
+                preparedStatement.setString(++idx, kv.getKey());
+                preparedStatement.setString(++idx, kv.getValue());
+                preparedStatement.setInt(++idx, kv.getStatus().getId());
+                return preparedStatement;
+            }
+        }, keyHolder);
+        return keyHolder.getKey().longValue();
     }
 
     @Override

@@ -6,7 +6,8 @@ import com.ndpmedia.rocketmq.nameserver.model.KVStatus;
 import java.util.List;
 
 public interface NameServerKVService {
-    void add(KV kv);
+
+    long add(KV kv);
 
     void delete(KV kv);
 
