@@ -1,6 +1,6 @@
 package com.ndpmedia.rocketmq.nameserver.model;
 
-public class KV {
+public class KV implements Comparable {
 
     private long id;
 
@@ -50,5 +50,19 @@ public class KV {
 
     public void setStatus(KVStatus status) {
         this.status = status;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof KV) {
+            KV that = (KV)o;
+            if (0 == this.nameSpace.compareTo(that.getNameSpace())) {
+                return this.key.compareTo(that.getKey());
+            } else {
+                return this.nameSpace.compareTo(that.getNameSpace());
+            }
+        }
+
+        return 0;
     }
 }

@@ -13,7 +13,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
 
 @Controller
 @RequestMapping(value = "/name-server")
@@ -50,11 +54,13 @@ public class NameServerController {
     }
 
     @RequestMapping(value = "/kv/{id}", method = RequestMethod.GET)
-    public String apply(@PathVariable("id")long id)
+    @ResponseBody
+    public String apply(@PathVariable("id")long id, HttpServletResponse response)
             throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
         KV kv = nameServerKVService.get(id);
         DefaultMQAdminExt mqAdmin = new DefaultMQAdminExt();
         mqAdmin.createAndUpdateKvConfig(kv.getNameSpace(), kv.getKey(), kv.getValue());
-        return "forward:/cockpit/name-server/kv";
+        response.setContentType(MediaType.APPLICATION_JSON);
+        return "{'result':'OK'}";
     }
 }

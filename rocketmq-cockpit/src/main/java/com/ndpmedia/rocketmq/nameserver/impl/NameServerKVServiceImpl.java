@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service("nameServerKVService")
@@ -69,7 +70,9 @@ public class NameServerKVServiceImpl implements NameServerKVService {
 
     @Override
     public List<KV> list() {
-        return jdbcTemplate.query(SQL_QUERY_ALL, new KVRowMapper());
+        List<KV> kvList = jdbcTemplate.query(SQL_QUERY_ALL, new KVRowMapper());
+        Collections.sort(kvList);
+        return kvList;
     }
 
     @Override
@@ -82,7 +85,10 @@ public class NameServerKVServiceImpl implements NameServerKVService {
             for (KVStatus status : statuses) {
                 statusArray[i++] = status.getId();
             }
-            return jdbcTemplate.query(String.format(SQL_QUERY_ALL_BY_STATUS, arrayToString(statusArray)), new KVRowMapper());
+            List<KV> kvList = jdbcTemplate.query(String.format(SQL_QUERY_ALL_BY_STATUS, arrayToString(statusArray)),
+                    new KVRowMapper());
+            Collections.sort(kvList);
+            return kvList;
         }
     }
 
@@ -101,10 +107,5 @@ public class NameServerKVServiceImpl implements NameServerKVService {
         }
 
         return stringBuilder.toString();
-    }
-
-    public static void main(String[] args) {
-        String s = "abc %s";
-        System.out.println(String.format(SQL_QUERY_ALL_BY_STATUS, arrayToString(new int[] {1, 2, 3})));
     }
 }
