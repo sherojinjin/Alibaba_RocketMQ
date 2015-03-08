@@ -5,8 +5,10 @@ import com.ndpmedia.rocketmq.nameserver.model.KV;
 import com.ndpmedia.rocketmq.nameserver.model.KVStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,10 +26,19 @@ public class NameServerKVServiceController {
     @Qualifier("nameServerKVService")
     private NameServerKVService nameServerKVService;
 
+    @RequestMapping(method = RequestMethod.PUT)
+    @ResponseBody
+    public void add(@ModelAttribute KV kv, HttpServletRequest request, HttpServletResponse response) {
+        nameServerKVService.add(kv);
+        response.setStatus(HttpStatus.OK.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    }
+
     @RequestMapping
     @ResponseBody
     public List<KV> list(HttpServletRequest request, HttpServletResponse response) {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(HttpStatus.OK.value());
         return nameServerKVService.list();
     }
 

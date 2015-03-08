@@ -43,7 +43,7 @@ public class NameServerKVServiceImpl implements NameServerKVService {
 
     @Override
     public void add(KV kv) {
-        jdbcTemplate.update(SQL_ADD, kv.getNameSpace(), kv.getKey(), kv.getValue());
+        jdbcTemplate.update(SQL_ADD, kv.getNameSpace(), kv.getKey(), kv.getValue(), kv.getStatus().getId());
     }
 
     @Override

@@ -12,6 +12,7 @@
     <link href="//cdn.datatables.net/1.10.5/css/jquery.dataTables.min.css" rel="stylesheet">
     <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js" type="application/javascript"></script>
     <script src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js" type="application/javascript"></script>
+    <script src="js/name-server-kv.js" type="application/javascript"></script>
 </head>
 <body>
     <div class="container-fluid">
@@ -36,17 +37,6 @@
                         </tr>
                     </thead>
                     <tbody class="table-striped table-content">
-                        <c:forEach items="${list}" var="item">
-                            <tr>
-                                <td>${item.nameSpace}</td>
-                                <td>${item.key}</td>
-                                <td>${item.value}</td>
-                                <td>${item.status}</td>
-                                <td>
-                                    <a href="name-server/kv/${item.id}">Apply</a>
-                                </td>
-                            </tr>
-                        </c:forEach>
                     </tbody>
                 </table>
                 <div class="clear-both"></div>

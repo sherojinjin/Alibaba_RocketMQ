@@ -17,8 +17,15 @@ INSERT INTO ip_mapping(inner_ip, public_ip) VALUES ('10.1.36.12',	'52.0.87.252')
 INSERT INTO ip_mapping(inner_ip, public_ip) VALUES ('10.1.36.11',	'54.173.209.191');
 INSERT INTO ip_mapping(inner_ip, public_ip) VALUES ('10.2.36.10',	'54.179.161.99');
 
-INSERT INTO cockpit_user(username, password, role) VALUES ('root', '320734fbb627d6884a1284acbdaa5db9', 'ROLE_ADMIN');
-INSERT INTO cockpit_user(username, password, role) VALUES ('xutao', '23dc3038d25ef09f3ad7c0552b40ef9f', 'ROLE_USER');
+INSERT INTO team(id, name) VALUES (1, "TP");
+INSERT INTO team(id, name) VALUES (2, "YeahTool");
+INSERT INTO team(id, name) VALUES (3, "Facebook");
+
+INSERT INTO cockpit_user(id, username, password, role) VALUES (1, 'root', '320734fbb627d6884a1284acbdaa5db9', 'ROLE_ADMIN');
+INSERT INTO cockpit_user(id, username, password, role) VALUES (2, 'xutao', '23dc3038d25ef09f3ad7c0552b40ef9f', 'ROLE_USER');
+
+INSERT INTO team_user_xref(team_id, user_id) VALUES (1, 1);
+INSERT INTO team_user_xref(team_id, user_id) VALUES (1, 2);
 
 INSERT INTO topic(topic, broker_address) VALUES ('T_QuickStart', '54.94.212.186:10911');
 INSERT INTO topic(topic, broker_address) VALUES ('T_QuickStart', '54.94.203.40:10911');
