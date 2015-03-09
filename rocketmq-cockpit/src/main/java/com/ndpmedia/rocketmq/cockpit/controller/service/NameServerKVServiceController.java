@@ -1,9 +1,9 @@
 package com.ndpmedia.rocketmq.cockpit.controller.service;
 
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
-import com.ndpmedia.rocketmq.nameserver.NameServerKVService;
-import com.ndpmedia.rocketmq.nameserver.model.KV;
-import com.ndpmedia.rocketmq.nameserver.model.KVStatus;
+import com.ndpmedia.rocketmq.cockpit.service.NameServerKVService;
+import com.ndpmedia.rocketmq.cockpit.model.KV;
+import com.ndpmedia.rocketmq.cockpit.model.KVStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;

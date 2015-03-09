@@ -1,10 +1,9 @@
-package com.ndpmedia.rocketmq.nameserver.impl;
+package com.ndpmedia.rocketmq.cockpit.service.impl;
 
 import com.mysql.jdbc.Statement;
-import com.ndpmedia.rocketmq.nameserver.NameServerKVService;
-import com.ndpmedia.rocketmq.nameserver.model.KV;
-import com.ndpmedia.rocketmq.nameserver.model.KVRowMapper;
-import com.ndpmedia.rocketmq.nameserver.model.KVStatus;
+import com.ndpmedia.rocketmq.cockpit.service.NameServerKVService;
+import com.ndpmedia.rocketmq.cockpit.model.KV;
+import com.ndpmedia.rocketmq.cockpit.model.KVStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;

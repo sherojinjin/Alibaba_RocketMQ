@@ -1,7 +1,7 @@
-package com.ndpmedia.rocketmq.nameserver;
+package com.ndpmedia.rocketmq.cockpit.service;
 
-import com.ndpmedia.rocketmq.nameserver.model.KV;
-import com.ndpmedia.rocketmq.nameserver.model.KVStatus;
+import com.ndpmedia.rocketmq.cockpit.model.KV;
+import com.ndpmedia.rocketmq.cockpit.model.KVStatus;
 
 import java.util.List;
 

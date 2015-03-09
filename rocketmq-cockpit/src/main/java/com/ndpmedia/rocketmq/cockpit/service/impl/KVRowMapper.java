@@ -1,5 +1,7 @@
-package com.ndpmedia.rocketmq.nameserver.model;
+package com.ndpmedia.rocketmq.cockpit.service.impl;
 
+import com.ndpmedia.rocketmq.cockpit.model.KV;
+import com.ndpmedia.rocketmq.cockpit.model.KVStatus;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

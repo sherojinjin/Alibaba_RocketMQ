@@ -14,7 +14,6 @@ public class NameServerAddressServiceImpl implements NameServerAddressService {
 
     @Override
     public String listNameServer() {
-        StringBuilder stringBuilder = new StringBuilder(256);
         Set<String> nameServers = nameServerManager.listNames();
         Joiner joiner = Joiner.on(";").skipNulls();
         return joiner.join(nameServers);

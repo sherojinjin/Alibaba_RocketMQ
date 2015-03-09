@@ -1,4 +1,4 @@
-package com.ndpmedia.rocketmq.nameserver.model;
+package com.ndpmedia.rocketmq.cockpit.model;
 
 public enum KVStatus {
 
