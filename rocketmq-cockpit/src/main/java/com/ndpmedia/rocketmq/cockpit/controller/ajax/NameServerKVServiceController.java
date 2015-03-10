@@ -1,9 +1,10 @@
-package com.ndpmedia.rocketmq.cockpit.controller.service;
+package com.ndpmedia.rocketmq.cockpit.controller.ajax;
 
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
-import com.ndpmedia.rocketmq.cockpit.service.NameServerKVService;
 import com.ndpmedia.rocketmq.cockpit.model.KV;
 import com.ndpmedia.rocketmq.cockpit.model.KVStatus;
+import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.NameServerKVMapper;
+import com.ndpmedia.rocketmq.cockpit.service.NameServerKVService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,9 @@ public class NameServerKVServiceController {
     @Autowired
     @Qualifier("nameServerKVService")
     private NameServerKVService nameServerKVService;
+
+    @Autowired
+    private NameServerKVMapper nameServerKVMapper;
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
@@ -72,6 +76,19 @@ public class NameServerKVServiceController {
     @ResponseBody
     public List<KV> list(@PathVariable(value = "status") String status) {
         return nameServerKVService.list(KVStatus.valueOf(status));
+    }
+
+    @RequestMapping(value = "/mybatis", method = RequestMethod.GET)
+    @ResponseBody
+    public List<KV> listByMybatis() {
+        return nameServerKVMapper.list();
+    }
+
+
+    @RequestMapping(value = "/mybatis/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public KV listByMybatis(@PathVariable("id") long id) {
+        return nameServerKVMapper.get(id);
     }
 
 }

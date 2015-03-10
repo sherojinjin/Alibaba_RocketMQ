@@ -3,10 +3,19 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:task="http://www.springframework.org/schema/task"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/task
                            http://www.springframework.org/schema/task/spring-task.xsd
+                           http://mybatis.org/schema/mybatis-spring
+                           http://mybatis.org/schema/mybatis-spring.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop.xsd
                            http://www.springframework.org/schema/context
                            http://www.springframework.org/schema/context/spring-context.xsd">
     <context:property-placeholder location="classpath*:config.properties" />
@@ -14,16 +23,18 @@
     <task:annotation-driven executor="myExecutor" scheduler="myScheduler"/>
     <task:executor id="myExecutor" pool-size="10" rejection-policy="CALLER_RUNS"/>
     <task:scheduler id="myScheduler" pool-size="1"/>
+    <tx:annotation-driven transaction-manager="transactionManager" />
 
+    <mybatis:scan base-package="com.ndpmedia.rocketmq.cockpit.mybatis.mapper" />
 
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
         <property name="DriverClassName" value="${jdbc.driverClassName}" />
         <!-- JDBC连接串 -->
-        <property name="url" value="${jdbc.url}" />
+        <property name="url" value="jdbc:mysql://localhost:3306/cockpit" />
         <!-- 数据库用户名称 -->
-        <property name="username" value="${jdbc.userName}" />
+        <property name="username" value="root" />
         <!-- 数据库密码 -->
-        <property name="password" value="${jdbc.password}" />
+        <property name="password" value="password" />
         <!-- 连接池最大使用连接数量 -->
         <property name="maxActive" value="20" />
         <!-- 初始化大小 -->
@@ -53,16 +64,25 @@
         </property>
     </bean>
 
-
     <bean id="statFilter" class="com.alibaba.druid.filter.stat.StatFilter">
         <property name="mergeSql" value="true" />
         <property name="logSlowSql" value="true" />
         <property name="slowSqlMillis" value="2000" />
     </bean>
 
-
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="typeAliasesPackage" value="com.ndpmedia.rocketmq.cockpit.model" />
+    </bean>
+
+    <!-- transaction manager, use JtaTransactionManager for global tx -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
     </bean>
 
     <bean id="cockpitDao" class="com.ndpmedia.rocketmq.cockpit.connection.impl.CockpitDaoImpl">
