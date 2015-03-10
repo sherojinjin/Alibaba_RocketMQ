@@ -4,16 +4,16 @@ CREATE TABLE IF NOT EXISTS name_server (
   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   ip VARCHAR(64) NOT NULL,
   port SMALLINT NOT NULL DEFAULT 9876,
-  create_time BIGINT NOT NULL DEFAULT 0,
-  update_time BIGINT NOT NULL DEFAULT 0
+  create_time DATETIME NOT NULL ,
+  update_time DATETIME NOT NULL
 ) ENGINE = INNODB;
 
 CREATE TABLE IF NOT EXISTS ip_mapping(
   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   inner_ip VARCHAR(64) NOT NULL,
   public_ip VARCHAR(64) NOT NULL,
-  create_time BIGINT NOT NULL DEFAULT 0,
-  update_time BIGINT NOT NULL DEFAULT 0
+  create_time DATETIME NOT NULL ,
+  update_time DATETIME NOT NULL
 ) ENGINE = INNODB;
 
 CREATE TABLE IF NOT EXISTS topic (
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS topic (
   broker_address VARCHAR(255),
   order_type BOOL DEFAULT FALSE,
   allow BOOL DEFAULT FALSE,
-  create_time BIGINT NOT NULL DEFAULT 0,
-  update_time BIGINT NOT NULL DEFAULT 0
+  create_time DATETIME NOT NULL ,
+  update_time DATETIME NOT NULL
 ) ENGINE = INNODB;
 
 
@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS consumer_group (
   retry_max_times INT NOT NULL DEFAULT 3,
   retry_queue_num MEDIUMINT NOT NULL DEFAULT 3,
   consume_from_min_enable BOOL NOT NULL DEFAULT TRUE,
-  create_time DATETIME NOT NULL DEFAULT 0,
-  update_time DATETIME NOT NULL DEFAULT 0
+  create_time DATETIME NOT NULL,
+  update_time DATETIME NOT NULL
 ) ENGINE = INNODB;
 
 CREATE TABLE IF NOT EXISTS cockpit_message_backlog (
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS cockpit_message_backlog (
     consumer_offset BIGINT NOT NULL DEFAULT 0,
     last_timestamp BIGINT NOT NULL DEFAULT 0,
     diff BIGINT NOT NULL DEFAULT 0,
-    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    create_time DATETIME NOT NULL
 ) ENGINE = INNODB;
 
 CREATE TABLE name_server_kv (

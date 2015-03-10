@@ -96,10 +96,6 @@
         <property name="cockpitDao" ref="cockpitDao" />
     </bean>
 
-    <bean id="ipMappingManager" class="com.ndpmedia.rocketmq.ip.impl.IPMappingManagerImpl">
-        <property name="cockpitDao" ref="cockpitDao" />
-    </bean>
-
     <bean id="topicManager" class="com.ndpmedia.rocketmq.topic.impl.TopicManagerImpl">
         <property name="cockpitDao" ref="cockpitDao" />
     </bean>
@@ -116,10 +112,6 @@
         <property name="nameServerManager" ref="nameServerManager" />
     </bean>
 
-    <bean id="ipMappingBean" class="com.ndpmedia.rocketmq.ip.impl.IPMappingServiceImpl">
-        <property name="ipMappingManager" ref="ipMappingManager" />
-    </bean>
-
     <bean id="topicBean" class="com.ndpmedia.rocketmq.topic.impl.TopicServiceImpl">
         <property name="topicManager" ref="topicManager" />
     </bean>
@@ -132,13 +124,9 @@
         <property name="producerManager" ref="producerManager" />
     </bean>
 
-    <bean id="toolSpring" class="com.ndpmedia.rocketmq.cockpit.util.ToolSpring">
+    <bean id="toolSpring" class="com.ndpmedia.rocketmq.cockpit.util.ToolSpring" />
 
-    </bean>
-
-    <bean id="monitor" class="com.ndpmedia.rocketmq.monitor.MonitorThreadController">
-
-    </bean>
+    <bean id="monitor" class="com.ndpmedia.rocketmq.monitor.MonitorThreadController" />
 
     <bean id="captchaProducer" class="com.google.code.kaptcha.impl.DefaultKaptcha">
             <property name="config">
