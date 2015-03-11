@@ -16,9 +16,11 @@ if (null != errSMSG){
     <h1>Cockpit Home</h1>
 
     <ul>
-        <li><a href="cockpit/name-server/">Manage Name Server</a></li>
+        <li><a href="cockpit/name-server/">Manage Name Server List</a></li>
+        <li><a href="cockpit/name-server/kv">Manage Name Server KV List</a> </li>
         <li><a href="cockpit/ip/">Manage IP Mapping</a></li>
         <li><a href="cockpit/broker/">Broker Status</a></li>
+        <li><a href="cockpit/topic/">Topic Management</a></li>
     </ul>
 
     <h1>Console Home</h1>

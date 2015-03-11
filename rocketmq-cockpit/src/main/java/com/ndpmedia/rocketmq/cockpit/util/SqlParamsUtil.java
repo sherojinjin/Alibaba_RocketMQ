@@ -11,17 +11,13 @@ import java.util.Set;
  * then change the $$begin part.
  * get the runnable sql.
  */
-public class SqlParamsUtil implements Constant
-{
-    public static String getSQL(String sqlKey, Map<String, Object> params)
-    {
+public class SqlParamsUtil implements Constant {
+    public static String getSQL(String sqlKey, Map<String, Object> params) {
         String sql = SqlManager.getSqls().getProperty(sqlKey);
 
-        if (null != params && !params.isEmpty())
-        {
+        if (null != params && !params.isEmpty()) {
             Set<String> paramKeys = params.keySet();
-            for (String param : paramKeys)
-            {
+            for (String param : paramKeys) {
                 sql = sql.replace(DOLLER + DOLLER + param, params.get(param).toString());
             }
         }

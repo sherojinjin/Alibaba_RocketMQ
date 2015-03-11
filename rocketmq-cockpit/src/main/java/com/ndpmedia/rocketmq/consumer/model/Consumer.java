@@ -5,8 +5,7 @@ import com.alibaba.rocketmq.remoting.protocol.LanguageCode;
 /**
  * consumer bean.
  */
-public class Consumer
-{
+public class Consumer {
     private String clientId;
     private String clientAddr;
     private LanguageCode language;

@@ -8,20 +8,17 @@ import org.springframework.context.support.ApplicationObjectSupport;
  * get spring beans.
  * when need,can get it.
  */
-public class ToolSpring extends ApplicationObjectSupport
-{
+public class ToolSpring extends ApplicationObjectSupport {
     private static ApplicationContext applicationContext = null;
 
     @Override
-    protected void initApplicationContext(ApplicationContext context) throws BeansException
-    {
+    protected void initApplicationContext(ApplicationContext context) throws BeansException {
         super.initApplicationContext(context);
         if (null == ToolSpring.applicationContext)
             ToolSpring.applicationContext = context;
     }
 
-    public static Object getBean(String beanName)
-    {
+    public static Object getBean(String beanName) {
         return applicationContext.getBean(beanName);
     }
 }

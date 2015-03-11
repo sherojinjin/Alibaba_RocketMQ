@@ -8,8 +8,7 @@ import java.util.Map;
 /**
  * cockpit dao .
  */
-public interface CockpitDao
-{
+public interface CockpitDao {
     public Map<String, Object> getFirstRow(String sql);
 
     public List<Map<String, Object>> getList(String sql);

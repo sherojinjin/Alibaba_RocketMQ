@@ -32,34 +32,29 @@ public class MonitorTask implements Runnable {
 
     private static Logger logger = LoggerFactory.getLogger(MonitorTask.class);
 
-    public MonitorTask()
-    {
+    public MonitorTask() {
         init();
     }
 
-    private void init(){
+    private void init() {
         topicManager = (TopicManager) ToolSpring.getBean("topicManager");
-        consumerManager = (ConsumerManager)ToolSpring.getBean("consumerManager");
-        cockpitDao = (CockpitDao)ToolSpring.getBean("cockpitDao");
+        consumerManager = (ConsumerManager) ToolSpring.getBean("consumerManager");
+        cockpitDao = (CockpitDao) ToolSpring.getBean("cockpitDao");
     }
 
     @Override
-    public void run()
-    {
-        try
-        {
+    public void run() {
+        try {
             Set<String> topicList = topicManager.list();
 
             List<ConsumerProgress> results = new ArrayList<ConsumerProgress>();
 
-            for (String topic : topicList)
-            {
+            for (String topic : topicList) {
                 if (!topic.contains(MixAll.RETRY_GROUP_TOPIC_PREFIX))
                     continue;
                 results = consumerManager.findProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null, null);
 
-                for (ConsumerProgress cp : results)
-                {
+                for (ConsumerProgress cp : results) {
                     if (null == cp || null == cp.getTopic() || null == cp.getBrokerName())
                         continue;
                     logger.debug(cp.toString());
@@ -67,8 +62,7 @@ public class MonitorTask implements Runnable {
                     cockpitDao.add(sql, cp);
                 }
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.warn(" monitor had some problem" + e.getMessage());
         }
     }
@@ -89,13 +83,11 @@ public class MonitorTask implements Runnable {
         this.topicManager = topicManager;
     }
 
-    public CockpitDao getCockpitDao()
-    {
+    public CockpitDao getCockpitDao() {
         return cockpitDao;
     }
 
-    public void setCockpitDao(CockpitDao cockpitDao)
-    {
+    public void setCockpitDao(CockpitDao cockpitDao) {
         this.cockpitDao = cockpitDao;
     }
 }

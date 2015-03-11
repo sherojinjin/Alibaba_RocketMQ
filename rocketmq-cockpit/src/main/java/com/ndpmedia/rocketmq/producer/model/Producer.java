@@ -5,8 +5,7 @@ import com.alibaba.rocketmq.remoting.protocol.LanguageCode;
 /**
  * Created by Administrator on 2014/12/30.
  */
-public class Producer
-{
+public class Producer {
     private String id;
     private String addr;
     private LanguageCode language;

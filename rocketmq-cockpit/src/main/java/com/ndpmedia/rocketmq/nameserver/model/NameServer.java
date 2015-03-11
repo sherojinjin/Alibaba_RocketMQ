@@ -18,18 +18,15 @@ public class NameServer {
 
     private Date date = new Date();
 
-    public NameServer() {}
+    public NameServer() {
+    }
 
-    public NameServer(String url, long create_time)
-    {
+    public NameServer(String url, long create_time) {
         this.url = url;
-        if (url.contains(":"))
-        {
+        if (url.contains(":")) {
             this.ip = url.split(":")[0];
             this.port = url.split(":")[1];
-        }
-        else
-        {
+        } else {
             this.ip = url;
         }
 
@@ -45,13 +42,11 @@ public class NameServer {
         this.url = url;
     }
 
-    public void makeUrl()
-    {
+    public void makeUrl() {
         this.url = this.ip + ":" + this.port;
     }
 
-    public void makeDate()
-    {
+    public void makeDate() {
         this.date = 0 < this.update_time ? new Date(this.update_time) : new Date(this.create_time);
     }
 
@@ -104,8 +99,7 @@ public class NameServer {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "NameServer{" +
                 "id=" + id +
                 ", url='" + url + '\'' +

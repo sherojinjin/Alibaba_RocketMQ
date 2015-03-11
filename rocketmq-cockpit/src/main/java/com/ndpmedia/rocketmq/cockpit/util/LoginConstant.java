@@ -1,10 +1,9 @@
 package com.ndpmedia.rocketmq.cockpit.util;
 
 /**
- *  constant for login action.
+ * constant for login action.
  */
-public interface LoginConstant extends Constant
-{
+public interface LoginConstant extends Constant {
     String LOGIN_TOO_MANY_TIMES_MSG = " you try too many times !";
 
     String LOGIN_VERIFICATION_CODE_WRONG = " please check your verification code !";
@@ -27,7 +26,7 @@ public interface LoginConstant extends Constant
 
     String LOGIN_SSO_KEY_AUTHORITY = "SSO_USER_DETAIL_AUTHORITY";
 
-    String PROPERTIES_KEY_LOGIN_RETRY_TIME = "login_retry_time" ;
+    String PROPERTIES_KEY_LOGIN_RETRY_TIME = "login_retry_time";
 
     String PROPERTIES_KEY_JDBC_DRIVER = "jdbc.driverClassName";
 

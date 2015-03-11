@@ -13,27 +13,23 @@ import java.io.IOException;
  * the spring security configuration.
  * when the access is denied.
  */
-public class RocketMQUserAccessDeniedHandler implements AccessDeniedHandler, LoginConstant
-{
+public class RocketMQUserAccessDeniedHandler implements AccessDeniedHandler, LoginConstant {
     private String accessDeniedURL;
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
-            AccessDeniedException accessDeniedException) throws IOException, ServletException
-    {
+                       AccessDeniedException accessDeniedException) throws IOException, ServletException {
         response.sendRedirect(accessDeniedURL);
         String deniedMessage = accessDeniedException.getMessage();
 
         request.getSession().setAttribute(ACCESS_DENIED_MSG, deniedMessage);
     }
 
-    public String getAccessDeniedURL()
-    {
+    public String getAccessDeniedURL() {
         return accessDeniedURL;
     }
 
-    public void setAccessDeniedURL(String accessDeniedURL)
-    {
+    public void setAccessDeniedURL(String accessDeniedURL) {
         this.accessDeniedURL = accessDeniedURL;
     }
 }

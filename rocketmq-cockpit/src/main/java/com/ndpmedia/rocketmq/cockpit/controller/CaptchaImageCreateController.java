@@ -19,19 +19,16 @@ import java.awt.image.BufferedImage;
  */
 
 @Controller
-public class CaptchaImageCreateController
-{
+public class CaptchaImageCreateController {
     private Producer captchaProducer;
 
     @Autowired
-    public void setCaptchaProducer(Producer captchaProducer)
-    {
+    public void setCaptchaProducer(Producer captchaProducer) {
         this.captchaProducer = captchaProducer;
     }
 
     @RequestMapping(value = "/captcha-image", method = {RequestMethod.GET, RequestMethod.POST})
-    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception
-    {
+    public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         response.setDateHeader("Expires", 0);
         // Set standard HTTP/1.1 no-cache headers.
         response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");

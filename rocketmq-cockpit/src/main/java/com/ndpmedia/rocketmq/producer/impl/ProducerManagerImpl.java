@@ -12,11 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service("producerManager")
-public class ProducerManagerImpl implements ProducerManager
-{
+public class ProducerManagerImpl implements ProducerManager {
     @Override
-    public List<Producer> findProducersByGroupName(String groupName, String topic)
-    {
+    public List<Producer> findProducersByGroupName(String groupName, String topic) {
         List<Producer> producers = new ArrayList<Producer>();
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
 
@@ -43,11 +41,9 @@ public class ProducerManagerImpl implements ProducerManager
                         MQVersion.getVersionDesc(conn.getVersion())//
                 );
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             defaultMQAdminExt.shutdown();
         }
         return producers;

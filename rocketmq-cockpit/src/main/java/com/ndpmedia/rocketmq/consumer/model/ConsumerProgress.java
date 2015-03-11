@@ -6,8 +6,7 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
 /**
  * the offset between consumer and broker.
  */
-public class ConsumerProgress
-{
+public class ConsumerProgress {
     private String topic;
     private String brokerName;
     private int queueId;
@@ -38,69 +37,56 @@ public class ConsumerProgress
         this.diff = diff;
     }
 
-    public String getTopic()
-    {
+    public String getTopic() {
         return topic;
     }
 
-    public void setTopic(String topic)
-    {
+    public void setTopic(String topic) {
         this.topic = topic;
     }
 
-    public String getBrokerName()
-    {
+    public String getBrokerName() {
         return brokerName;
     }
 
-    public void setBrokerName(String brokerName)
-    {
+    public void setBrokerName(String brokerName) {
         this.brokerName = brokerName;
     }
 
-    public int getQueueId()
-    {
+    public int getQueueId() {
         return queueId;
     }
 
-    public void setQueueId(int queueId)
-    {
+    public void setQueueId(int queueId) {
         this.queueId = queueId;
     }
 
-    public long getBrokerOffset()
-    {
+    public long getBrokerOffset() {
         return brokerOffset;
     }
 
-    public void setBrokerOffset(long brokerOffset)
-    {
+    public void setBrokerOffset(long brokerOffset) {
         this.brokerOffset = brokerOffset;
     }
 
-    public long getConsumerOffset()
-    {
+    public long getConsumerOffset() {
         return consumerOffset;
     }
 
-    public void setConsumerOffset(long consumerOffset)
-    {
+    public void setConsumerOffset(long consumerOffset) {
         this.consumerOffset = consumerOffset;
     }
 
-    public long getLastTimestamp()
-    {
+    public long getLastTimestamp() {
         return lastTimestamp;
     }
 
-    public void setLastTimestamp(long lastTimestamp)
-    {
+    public void setLastTimestamp(long lastTimestamp) {
         this.lastTimestamp = lastTimestamp;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "ConsumerProgress{" +
                 "topic='" + topic + '\'' +
                 ", brokerName='" + brokerName + '\'' +

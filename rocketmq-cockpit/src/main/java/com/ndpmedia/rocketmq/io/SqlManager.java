@@ -2,13 +2,13 @@ package com.ndpmedia.rocketmq.io;
 
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Service
-public class SqlManager
-{
+public class SqlManager {
 
     private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -20,7 +20,7 @@ public class SqlManager
         load();
     }
 
-    private static void load(){
+    private static void load() {
         ClassLoader classLoader = SqlManager.class.getClassLoader();
         InputStream inputStream = null;
         try {
@@ -40,18 +40,16 @@ public class SqlManager
         }
     }
 
-    public static void reload(){
+    public static void reload() {
         load();
         changeTime++;
     }
 
-    public static long getChangeTime()
-    {
+    public static long getChangeTime() {
         return changeTime;
     }
 
-    public static Properties getSqls()
-    {
+    public static Properties getSqls() {
         return SQLS;
     }
 }

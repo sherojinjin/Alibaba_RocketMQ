@@ -1,5 +1,7 @@
-package com.ndpmedia.rocketmq.nameserver.model;
+package com.ndpmedia.rocketmq.cockpit.service.impl;
 
+import com.ndpmedia.rocketmq.cockpit.model.KV;
+import com.ndpmedia.rocketmq.cockpit.model.KVStatus;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -14,6 +16,7 @@ public class KVRowMapper implements RowMapper<KV> {
         kv.setNameSpace(resultSet.getString("name_space"));
         kv.setKey(resultSet.getString("key"));
         kv.setValue(resultSet.getString("value"));
+        kv.setStatus(KVStatus.valueOf(resultSet.getString("status")));
         return kv;
     }
 }

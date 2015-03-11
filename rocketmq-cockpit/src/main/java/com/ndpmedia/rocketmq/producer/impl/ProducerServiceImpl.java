@@ -6,20 +6,16 @@ import com.ndpmedia.rocketmq.producer.model.Producer;
 
 import java.util.List;
 
-public class ProducerServiceImpl implements ProducerService
-{
+public class ProducerServiceImpl implements ProducerService {
     private ProducerManager producerManager;
 
     @Override
-    public List<Producer> list(String groupName, String topic)
-    {
-        if (null == groupName)
-        {
+    public List<Producer> list(String groupName, String topic) {
+        if (null == groupName) {
             System.err.println(" group name is null ");
             return null;
         }
-        if (null == topic)
-        {
+        if (null == topic) {
             System.err.println(" topic is null ");
             return null;
         }

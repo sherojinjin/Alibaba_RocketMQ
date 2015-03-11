@@ -2,12 +2,19 @@ package com.ndpmedia.rocketmq.io;
 
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 @Service
 public class FileManager {
 
@@ -45,7 +52,7 @@ public class FileManager {
 
             File dataFile = new File(CONFIG.getProperty(fileKey));
 
-            if (! dataFile.exists()) {
+            if (!dataFile.exists()) {
                 File parentFile = dataFile.getParentFile();
                 if (!parentFile.exists()) {
                     if (!parentFile.mkdirs()) {
@@ -130,8 +137,7 @@ public class FileManager {
         }
     }
 
-    public static Properties getConfig()
-    {
+    public static Properties getConfig() {
         return CONFIG;
     }
 }

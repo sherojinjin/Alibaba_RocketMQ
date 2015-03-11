@@ -24,10 +24,8 @@ public class RocketMQUserLoginSuccessHanlder extends SavedRequestAwareAuthentica
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-            Authentication authentication) throws ServletException, IOException
-    {
-        try
-        {
+                                        Authentication authentication) throws ServletException, IOException {
+        try {
             Cookie users = getCookie(request, LOGIN_PARAMETER_USERNAME, request.getParameter(LOGIN_PARAMETER_USERNAME));
             Cookie pass = getCookie(request, LOGIN_PARAMETER_PASSWORD, request.getParameter(LOGIN_PARAMETER_PASSWORD));
             Collection<? extends GrantedAuthority> c = authentication.getAuthorities();

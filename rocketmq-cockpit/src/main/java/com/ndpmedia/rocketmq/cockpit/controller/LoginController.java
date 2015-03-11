@@ -8,18 +8,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * the login controller.
  */
 @Controller
-public class LoginController
-{
+public class LoginController {
     @RequestMapping(value = "/login", method = {RequestMethod.GET, RequestMethod.POST})
-    public String showIndex()
-    {
+    public String showIndex() {
         System.out.println(" first , we need open the login page .");
         return "login";
     }
 
     @RequestMapping(value = "/home", method = {RequestMethod.GET, RequestMethod.POST})
-    public String login()
-    {
+    public String login() {
         return "home";
     }
 }

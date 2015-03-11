@@ -8,11 +8,9 @@ import java.sql.SQLException;
 /**
  * row mapper for ip pair.
  */
-public class IPRowMapper<T> implements RowMapper
-{
+public class IPRowMapper<T> implements RowMapper {
     @Override
-    public Object mapRow(ResultSet rs, int rowNum) throws SQLException
-    {
+    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
         IPPair ipPair = new IPPair();
 
         ipPair.setId(rs.getInt("id"));

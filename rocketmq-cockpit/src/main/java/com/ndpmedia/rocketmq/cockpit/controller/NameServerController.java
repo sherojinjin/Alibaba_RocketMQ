@@ -1,13 +1,18 @@
 package com.ndpmedia.rocketmq.cockpit.controller;
 
-import com.ndpmedia.rocketmq.nameserver.NameServerKVService;
-import com.ndpmedia.rocketmq.nameserver.model.KV;
+import com.alibaba.rocketmq.client.exception.MQBrokerException;
+import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.remoting.exception.RemotingException;
+import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
+import com.ndpmedia.rocketmq.cockpit.service.NameServerKVService;
+import com.ndpmedia.rocketmq.cockpit.model.KV;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
@@ -31,17 +36,14 @@ public class NameServerController {
         return modelAndView;
     }
 
-
-    @RequestMapping(value = "/kv", method = RequestMethod.PUT)
-    public String add(@ModelAttribute KV kv) {
-        nameServerKVService.add(kv);
-        return "forward:/cockpit/name-server/kv";
+    @RequestMapping(value = "/kv/{id}", method = RequestMethod.POST)
+    @ResponseBody
+    public void apply(@PathVariable("id") long id)
+            throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
+        KV kv = nameServerKVService.get(id);
+        if (null != kv) {
+            DefaultMQAdminExt mqAdmin = new DefaultMQAdminExt();
+            mqAdmin.createAndUpdateKvConfig(kv.getNameSpace(), kv.getKey(), kv.getValue());
+        }
     }
-
-    @RequestMapping(value = "/kv", method = RequestMethod.POST)
-    public String update(@ModelAttribute KV kv) {
-        nameServerKVService.update(kv);
-        return "forward:/cockpit/name-server/kv";
-    }
-
 }

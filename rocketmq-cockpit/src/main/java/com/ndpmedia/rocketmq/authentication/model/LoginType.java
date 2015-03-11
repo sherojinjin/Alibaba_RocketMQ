@@ -4,68 +4,56 @@ package com.ndpmedia.rocketmq.authentication.model;
  * the user login type.
  * login failed - retry times
  */
-public class LoginType
-{
+public class LoginType {
     private String name;
     private int retryTimes;
     private long lockTime;
     private int status;
 
-    public LoginType()
-    {
+    public LoginType() {
     }
 
-    public LoginType(String name)
-    {
+    public LoginType(String name) {
         this.name = name;
         this.retryTimes = 0;
         this.status = 0;
         this.lockTime = 0L;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public int getRetryTimes()
-    {
+    public int getRetryTimes() {
         return retryTimes;
     }
 
-    public void setRetryTimes(int retryTimes)
-    {
+    public void setRetryTimes(int retryTimes) {
         this.retryTimes = retryTimes;
     }
 
-    public long getLockTime()
-    {
+    public long getLockTime() {
         return lockTime;
     }
 
-    public void setLockTime(long lockTime)
-    {
+    public void setLockTime(long lockTime) {
         this.lockTime = lockTime;
     }
 
-    public int getStatus()
-    {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(int status)
-    {
+    public void setStatus(int status) {
         this.status = status;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "LoginType{" +
                 "name='" + name + '\'' +
                 ", retryTimes='" + retryTimes + '\'' +
