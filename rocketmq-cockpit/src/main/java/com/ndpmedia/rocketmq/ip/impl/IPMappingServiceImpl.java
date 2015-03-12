@@ -13,8 +13,4 @@ public class IPMappingServiceImpl implements IPMappingService {
     public String lookUp(String innerIP) {
         return ipPairMapper.lookUp(innerIP);
     }
-
-    public static void main(String[] args) {
-        System.out.println(System.currentTimeMillis());
-    }
 }
