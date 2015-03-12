@@ -10,9 +10,9 @@ public interface ConsumerGroupMapper {
 
     ConsumerGroup get(long id);
 
-    List<ConsumerGroup> getByGroupName(String topic);
+    ConsumerGroup getByGroupName(String groupName);
 
-    List<ConsumerGroup> getByClusterName(String clusterName);
+    List<ConsumerGroup> listByClusterName(String clusterName);
 
     long insert(ConsumerGroup consumerGroup);
 

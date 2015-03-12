@@ -61,7 +61,7 @@
         WHERE group_name = #{groupName}
     </select>
 
-    <select id="getByClusterName" resultMap="consumerGroupMap" parameterType="string">
+    <select id="listByClusterName" resultMap="consumerGroupMap" parameterType="string">
         SELECT id, cluster_name, which_broker_when_consume_slowly, group_name, consume_enable, consume_broadcast_enable, broker_address, broker_id, retry_max_times, retry_queue_num, consume_from_min_enable, status_id, create_time, update_time
         FROM consumer_group
         WHERE cluster_name = #{clusterName}

@@ -20,9 +20,11 @@
                            http://www.springframework.org/schema/context/spring-context.xsd">
     <context:property-placeholder location="classpath*:config.properties" />
     <context:component-scan base-package="com.ndpmedia.rocketmq.cockpit"/>
+
     <task:annotation-driven executor="myExecutor" scheduler="myScheduler"/>
     <task:executor id="myExecutor" pool-size="10" rejection-policy="CALLER_RUNS"/>
     <task:scheduler id="myScheduler" pool-size="1"/>
+
     <tx:annotation-driven transaction-manager="transactionManager" />
 
     <mybatis:scan base-package="com.ndpmedia.rocketmq.cockpit.mybatis.mapper" />
@@ -85,40 +87,7 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="cockpitDao" class="com.ndpmedia.rocketmq.cockpit.connection.impl.CockpitDaoImpl">
-        <property name="jdbcTemplate" ref="jdbcTemplate"/>
-        <property name="dataSource" ref="dataSource" />
-    </bean>
-
     <bean id="fileManager" class="com.ndpmedia.rocketmq.io.FileManager" />
-
-    <bean id="nameServerManager" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerManagerImpl">
-        <property name="cockpitDao" ref="cockpitDao" />
-    </bean>
-
-    <bean id="topicManager" class="com.ndpmedia.rocketmq.topic.impl.TopicManagerImpl">
-        <property name="cockpitDao" ref="cockpitDao" />
-    </bean>
-
-    <bean id="consumerManager" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerManagerImpl">
-        <property name="cockpitDao" ref="cockpitDao" />
-    </bean>
-
-    <bean id="producerManager" class="com.ndpmedia.rocketmq.producer.impl.ProducerManagerImpl">
-
-    </bean>
-
-    <bean id="topicBean" class="com.ndpmedia.rocketmq.topic.impl.TopicServiceImpl">
-        <property name="topicManager" ref="topicManager" />
-    </bean>
-
-    <bean id="consumerBean" class="com.ndpmedia.rocketmq.cockpit.model.ConsumerServiceImpl">
-        <property name="consumerManager" ref="consumerManager" />
-    </bean>
-
-    <bean id="producerBean" class="com.ndpmedia.rocketmq.producer.impl.ProducerServiceImpl">
-        <property name="producerManager" ref="producerManager" />
-    </bean>
 
     <bean id="toolSpring" class="com.ndpmedia.rocketmq.cockpit.util.ToolSpring" />
 

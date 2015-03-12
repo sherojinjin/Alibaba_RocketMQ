@@ -14,7 +14,6 @@ public interface TopicMapper {
 
     Topic get(long id);
 
-
     List<Topic> list();
 
     List<Topic> listByTopic(String topic);

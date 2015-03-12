@@ -17,14 +17,10 @@
         </property>
     </bean>
 
-    <jaxrs:server id="nameServerAddress" address="/">
+    <jaxrs:server id="restServer" address="/">
         <jaxrs:serviceBeans>
             <ref bean="nameServerAddressBean" />
             <ref bean="ipMappingBean" />
-            <ref bean="topicBean" />
-            <ref bean="consumerBean" />
-            <ref bean="producerBean" />
-            <ref bean="monitor" />
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider">
