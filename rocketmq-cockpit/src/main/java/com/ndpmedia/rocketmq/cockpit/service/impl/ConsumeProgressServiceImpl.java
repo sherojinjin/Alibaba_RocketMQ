@@ -4,8 +4,11 @@ import com.alibaba.rocketmq.common.admin.ConsumeStats;
 import com.alibaba.rocketmq.common.admin.OffsetWrapper;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
-import com.ndpmedia.rocketmq.cockpit.model.ConsumerProgress;
+import com.ndpmedia.rocketmq.cockpit.model.ConsumeProgress;
+import com.ndpmedia.rocketmq.cockpit.model.ConsumerGroup;
+import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.ConsumerGroupMapper;
 import com.ndpmedia.rocketmq.cockpit.service.ConsumeProgressService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -16,47 +19,48 @@ import java.util.List;
 @Service("consumeProgressService")
 public class ConsumeProgressServiceImpl implements ConsumeProgressService {
 
+    @Autowired
+    private ConsumerGroupMapper consumerGroupMapper;
+
     @Override
-    public List<ConsumerProgress> queryConsumerProgress(String groupName, String topic, String broker) {
-        List<ConsumerProgress> progressList = new ArrayList<ConsumerProgress>();
+    public List<ConsumeProgress> queryConsumerProgress(String groupName, String topic, String broker) {
+        List<ConsumeProgress> consumeProgressList = new ArrayList<ConsumeProgress>();
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
-
         defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
-
+        ConsumerGroup consumerGroup = consumerGroupMapper.getByGroupName(groupName);
         try {
             defaultMQAdminExt.start();
             // 查询特定consumer
             ConsumeStats consumeStats = defaultMQAdminExt.examineConsumeStats(groupName);
 
-            List<MessageQueue> mqList = new LinkedList<MessageQueue>();
-            mqList.addAll(consumeStats.getOffsetTable().keySet());
-            Collections.sort(mqList);
+            List<MessageQueue> messageQueueList = new LinkedList<MessageQueue>();
+            messageQueueList.addAll(consumeStats.getOffsetTable().keySet());
+            Collections.sort(messageQueueList);
 
             long diffTotal = 0L;
 
-            for (MessageQueue mq : mqList) {
-                OffsetWrapper offsetWrapper = consumeStats.getOffsetTable().get(mq);
-
-                if (null != topic && !topic.equals(mq.getTopic())) {
+            for (MessageQueue messageQueue : messageQueueList) {
+                OffsetWrapper offsetWrapper = consumeStats.getOffsetTable().get(messageQueue);
+                if (null != topic && !topic.equals(messageQueue.getTopic())) {
                     continue;
                 }
 
-                if (null != broker && !broker.equals(mq.getBrokerName())) {
+                if (null != broker && !broker.equals(messageQueue.getBrokerName())) {
                     continue;
                 }
 
                 long diff = offsetWrapper.getBrokerOffset() - offsetWrapper.getConsumerOffset();
                 diffTotal += diff;
 
-                progressList.add(new ConsumerProgress(mq, offsetWrapper, diff));
+                consumeProgressList.add(new ConsumeProgress(consumerGroup, messageQueue, offsetWrapper, diff));
             }
 
-            progressList.add(new ConsumerProgress(null, null, diffTotal));
+            consumeProgressList.add(new ConsumeProgress(consumerGroup, null, null, diffTotal));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             defaultMQAdminExt.shutdown();
         }
-        return progressList;
+        return consumeProgressList;
     }
 }

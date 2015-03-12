@@ -10,4 +10,6 @@ public interface CockpitUserMapper {
 
     List<CockpitUser> list();
 
+    CockpitUser getByUserName(String userName);
+
 }

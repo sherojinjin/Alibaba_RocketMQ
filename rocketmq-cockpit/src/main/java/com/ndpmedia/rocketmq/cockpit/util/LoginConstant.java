@@ -4,6 +4,7 @@ package com.ndpmedia.rocketmq.cockpit.util;
  * constant for login action.
  */
 public interface LoginConstant extends Constant {
+
     String LOGIN_TOO_MANY_TIMES_MSG = " you try too many times !";
 
     String LOGIN_VERIFICATION_CODE_WRONG = " please check your verification code !";

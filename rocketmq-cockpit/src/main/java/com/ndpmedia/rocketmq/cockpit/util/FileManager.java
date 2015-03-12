@@ -1,4 +1,4 @@
-package com.ndpmedia.rocketmq.io;
+package com.ndpmedia.rocketmq.cockpit.util;
 
 import org.springframework.stereotype.Service;
 

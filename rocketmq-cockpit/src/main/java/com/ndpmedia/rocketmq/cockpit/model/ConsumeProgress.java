@@ -3,23 +3,39 @@ package com.ndpmedia.rocketmq.cockpit.model;
 import com.alibaba.rocketmq.common.admin.OffsetWrapper;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 
+import java.util.Date;
+
 /**
  * the offset between consumer and broker.
  */
-public class ConsumerProgress {
+public class ConsumeProgress {
+
+    private long id;
+
+    private ConsumerGroup consumerGroup;
+
     private String topic;
+
     private String brokerName;
+
     private int queueId;
+
     private long brokerOffset;
+
     private long consumerOffset;
+
     // 消费的最后一条消息对应的时间戳
     private long lastTimestamp;
+
     private long diff;
 
-    public ConsumerProgress() {
+    private Date createTime;
+
+    public ConsumeProgress() {
     }
 
-    public ConsumerProgress(MessageQueue messageQueue, OffsetWrapper offsetWrapper, long diff) {
+    public ConsumeProgress(ConsumerGroup consumerGroup, MessageQueue messageQueue, OffsetWrapper offsetWrapper, long diff) {
+        this.consumerGroup = consumerGroup;
         this.topic = messageQueue.getTopic();
         this.brokerName = messageQueue.getBrokerName();
         this.queueId = messageQueue.getQueueId();
@@ -85,16 +101,43 @@ public class ConsumerProgress {
         this.lastTimestamp = lastTimestamp;
     }
 
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public ConsumerGroup getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public void setConsumerGroup(ConsumerGroup consumerGroup) {
+        this.consumerGroup = consumerGroup;
+    }
+
     @Override
     public String toString() {
-        return "ConsumerProgress{" +
-                "topic='" + topic + '\'' +
+        return "ConsumeProgress{" +
+                "id=" + id +
+                ", consumerGroup=" + consumerGroup +
+                ", topic='" + topic + '\'' +
                 ", brokerName='" + brokerName + '\'' +
                 ", queueId=" + queueId +
                 ", brokerOffset=" + brokerOffset +
                 ", consumerOffset=" + consumerOffset +
                 ", lastTimestamp=" + lastTimestamp +
                 ", diff=" + diff +
+                ", createTime=" + createTime +
                 '}';
     }
 }

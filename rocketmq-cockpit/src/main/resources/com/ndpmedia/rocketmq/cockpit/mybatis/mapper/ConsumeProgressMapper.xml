@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ndpmedia.rocketmq.cockpit.mybatis.mapper.ConsumeProgressMapper">
+
+    <insert id="insert" parameterType="ConsumeProgress">
+        INSERT INTO consume_progress(id, consumer_group_id, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time)
+        VALUES (NULL, #{consumerGroup.id}, #{topic}, #{brokerName}, #{queueId}, #{brokerOffset}, #{consumerOffset}, #{lastTimestamp}, #{diff}, #{createTime})
+    </insert>
+
+    <delete id="delete" parameterType="long">
+        DELETE
+        FROM consume_progress
+        WHERE id = #{id}
+    </delete>
+
+    <resultMap id="consumerGroupMap" type="ConsumerGroup">
+        <id column="id" property="id" />
+        <result column="cluster_name" property="clusterName" />
+        <result column="which_broker_when_consume_slowly" property="whichBrokerWhenConsumeSlowly" />
+        <result column="group_name" property="groupName" />
+        <result column="consume_enable" property="consumeEnable" />
+        <result column="consume_broadcast_enable" property="consumeBroadcastEnable" />
+        <result column="broker_address" property="brokerAddress" />
+        <result column="broker_id" property="brokerId" />
+        <result column="retry_max_times" property="retryMaxTimes" />
+        <result column="retry_queue_num" property="retryQueueNum" />
+        <result column="consume_from_min_enable" property="consumeFromMinEnable" />
+        <result column="status_id" property="status"
+                typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"
+                javaType="com.ndpmedia.rocketmq.cockpit.model.Status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <select id="selectConsumerGroup" parameterType="long" resultMap="consumerGroupMap">
+        SELECT id, cluster_name, which_broker_when_consume_slowly, group_name, consume_enable, consume_broadcast_enable, broker_address, broker_id, retry_max_times, retry_queue_num, consume_from_min_enable, status_id, create_time, update_time
+        FROM consumer_group
+        WHERE id = #{id}
+
+    </select>
+
+    <resultMap id="consumeProgressMap" type="ConsumeProgress">
+        <id column="id" property="id" />
+        <result column="topic" property="topic" />
+        <result column="broker_name" property="brokerName" />
+        <result column="queue_id" property="queueId" />
+        <result column="broker_offset" property="brokerOffset" />
+        <result column="last_timestamp" property="lastTimestamp" />
+        <result column="diff" property="diff" />
+        <result column="create_time" property="createTime" />
+
+        <association property="consumerGroup" column="consumer_group_id" javaType="ConsumerGroup" select="selectConsumerGroup" />
+    </resultMap>
+
+    <select id="list" resultMap="consumeProgressMap">
+        SELECT id, consumer_group_id, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time
+        FROM consume_progress
+    </select>
+
+    <select id="listByConsumerGroup" resultMap="consumeProgressMap" parameterType="ConsumerGroup">
+        SELECT id, consumer_group_id, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time
+        FROM consume_progress
+        WHERE consumer_group_id = #{consumerGroup.id}
+    </select>
+
+    <select id="listByTopic" resultMap="consumeProgressMap" parameterType="string">
+        SELECT id, consumer_group_id, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time
+        FROM consume_progress
+        WHERE topic = #{topic}
+    </select>
+
+</mapper>

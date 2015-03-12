@@ -55,8 +55,9 @@ CREATE TABLE IF NOT EXISTS status_lu (
   name VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS cockpit_message_backlog (
+CREATE TABLE IF NOT EXISTS consume_progress (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    consumer_group_id INT NOT NULL REFERENCES consumer_group(id),
     topic VARCHAR(255) NOT NULL,
     broker_name VARCHAR(255) NOT NULL,
     queue_id INT NOT NULL,

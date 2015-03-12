@@ -14,4 +14,10 @@
         FROM cockpit_user
     </select>
 
+    <select id="getByUserName" resultType="CockpitUser" parameterType="string">
+        SELECT id, role, username, password
+        FROM cockpit_user
+        WHERE username = #{userName}
+    </select>
+
 </mapper>

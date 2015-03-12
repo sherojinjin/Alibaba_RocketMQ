@@ -1,8 +1,10 @@
 package com.ndpmedia.rocketmq.authentication;
 
-import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
+import com.ndpmedia.rocketmq.cockpit.model.CockpitUser;
+import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.CockpitUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -13,36 +15,37 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * authentication.
  */
 public class RocketMQUserDetailsService implements UserDetailsService {
-    private CockpitDao cockpitDao;
+
+    @Autowired
+    private CockpitUserMapper cockpitUserMapper;
 
     private final Logger logger = LoggerFactory.getLogger(RocketMQUserDetailsService.class);
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         UserDetails user = null;
-        try {
-            logger.debug("[login] try to login ====username===== " + username);
-            Map<String, Object> map = getUser(username);
 
-            if (map == null) {
-                throw new Exception(" this user need register first :" + username);
+        try {
+            logger.debug("[login] try to login ====userName===== " + userName);
+            CockpitUser cockpitUser = getCockpitUser(userName);
+
+            if (cockpitUser == null) {
+                throw new Exception("Credentials incorrect.");
             }
 
-            logger.debug("[login] try to login ====getUser====== " + map.get("username") + " " + map.get("password"));
+            logger.debug("[login] try to login as " + cockpitUser.getUsername());
 
             // 用户名、密码、是否启用、是否被锁定、是否过期、权限
-            user = new User(username, map.get("password").toString(), true, true, true, true,
-                    getAuthority(map.get("role").toString()));
-
+            user = new User(userName, cockpitUser.getPassword(), true, true, true, true,
+                    getAuthority(cockpitUser.getRole()));
         } catch (Exception e) {
-            logger.warn(" log faied !" + e.getMessage());
-            throw new UsernameNotFoundException(" log faied !" + e.getMessage());
+            logger.warn(" log failed !" + e.getMessage());
+            throw new UsernameNotFoundException(" log failed !" + e.getMessage());
         }
 
         return user;
@@ -62,19 +65,7 @@ public class RocketMQUserDetailsService implements UserDetailsService {
         return authList;
     }
 
-    private Map<String, Object> getUser(String username) throws Exception {
-        String sql = " select * from cockpit_user where username='" + username + "'";
-
-        return cockpitDao.getFirstRow(sql);
+    private CockpitUser getCockpitUser(String userName) throws Exception {
+        return cockpitUserMapper.getByUserName(userName);
     }
-
-    public CockpitDao getCockpitDao() {
-        return cockpitDao;
-    }
-
-    public void setCockpitDao(CockpitDao cockpitDao) {
-        this.cockpitDao = cockpitDao;
-    }
-
-
 }
