@@ -58,15 +58,10 @@
             通过 RocketMQUserDetailsService,Spring会控制用户的访问级别.
             也可以理解成:以后我们和数据库操作就是通过RocketMQUserDetailsService来进行关联.
          -->
-    <bean id="userService" class="com.ndpmedia.rocketmq.authentication.RocketMQUserDetailsService" >
-        <property name="cockpitDao" ref="cockpitDao" />
-    </bean>
+    <bean id="userService" class="com.ndpmedia.rocketmq.authentication.RocketMQUserDetailsService" />
 
     <bean id="rocketMQUserLoginFailedHandler"
-          class="com.ndpmedia.rocketmq.authentication.RocketMQUserLoginFailedHandler" >
-    </bean>
+          class="com.ndpmedia.rocketmq.authentication.RocketMQUserLoginFailedHandler" />
 
-    <bean id="loginController" class="com.ndpmedia.rocketmq.cockpit.controller.LoginController" >
-
-    </bean>
+    <bean id="loginController" class="com.ndpmedia.rocketmq.cockpit.controller.LoginController" />
 </beans>

@@ -17,6 +17,9 @@
         </property>
     </bean>
 
+    <bean id="nameServerAddressBean" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerAddressServiceImpl" />
+    <bean id="ipMappingBean" class="com.ndpmedia.rocketmq.ip.impl.IPMappingServiceImpl" />
+
     <jaxrs:server id="restServer" address="/">
         <jaxrs:serviceBeans>
             <ref bean="nameServerAddressBean" />
