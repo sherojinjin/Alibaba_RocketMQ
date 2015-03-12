@@ -24,9 +24,9 @@ public class ConsumerGroup {
      */
     private int brokerId;
 
-    private int retryMaxTimes;
+    private Integer retryMaxTimes = 3;
 
-    private int retryQueueNum;
+    private Integer retryQueueNum = 3;
 
     private boolean consumeFromMinEnable;
 
@@ -37,22 +37,6 @@ public class ConsumerGroup {
     private Date createTime;
 
     private Date updateTime;
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
-
-    public String getBrokerAddress() {
-        return brokerAddress;
-    }
-
-    public void setBrokerAddress(String brokerAddress) {
-        this.brokerAddress = brokerAddress;
-    }
 
     public long getId() {
         return id;
@@ -68,6 +52,14 @@ public class ConsumerGroup {
 
     public void setWhichBrokerWhenConsumeSlowly(int whichBrokerWhenConsumeSlowly) {
         this.whichBrokerWhenConsumeSlowly = whichBrokerWhenConsumeSlowly;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public boolean isConsumeEnable() {
@@ -86,6 +78,14 @@ public class ConsumerGroup {
         this.consumeBroadcastEnable = consumeBroadcastEnable;
     }
 
+    public String getBrokerAddress() {
+        return brokerAddress;
+    }
+
+    public void setBrokerAddress(String brokerAddress) {
+        this.brokerAddress = brokerAddress;
+    }
+
     public int getBrokerId() {
         return brokerId;
     }
@@ -94,19 +94,19 @@ public class ConsumerGroup {
         this.brokerId = brokerId;
     }
 
-    public int getRetryMaxTimes() {
+    public Integer getRetryMaxTimes() {
         return retryMaxTimes;
     }
 
-    public void setRetryMaxTimes(int retryMaxTimes) {
+    public void setRetryMaxTimes(Integer retryMaxTimes) {
         this.retryMaxTimes = retryMaxTimes;
     }
 
-    public int getRetryQueueNum() {
+    public Integer getRetryQueueNum() {
         return retryQueueNum;
     }
 
-    public void setRetryQueueNum(int retryQueueNum) {
+    public void setRetryQueueNum(Integer retryQueueNum) {
         this.retryQueueNum = retryQueueNum;
     }
 
@@ -116,22 +116,6 @@ public class ConsumerGroup {
 
     public void setConsumeFromMinEnable(boolean consumeFromMinEnable) {
         this.consumeFromMinEnable = consumeFromMinEnable;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
     }
 
     public String getClusterName() {
@@ -148,6 +132,22 @@ public class ConsumerGroup {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
     }
 }
 

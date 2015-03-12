@@ -1,4 +1,4 @@
-package com.ndpmedia.rocketmq.cockpit.controller.ajax;
+package com.ndpmedia.rocketmq.cockpit.controller.api;
 
 import com.ndpmedia.rocketmq.cockpit.model.IPPair;
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.IpPairMapper;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.List;
 
 @Controller
-@RequestMapping(value = "/ajax/ips")
+@RequestMapping(value = "/api/ip")
 public class IpMappingServiceController {
 
     @Autowired
@@ -27,7 +27,7 @@ public class IpMappingServiceController {
         return ipPair;
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/id/{id}", method = RequestMethod.DELETE)
     @ResponseBody
     public void delete(@PathVariable("id") long id) {
         ipPairMapper.delete(id);

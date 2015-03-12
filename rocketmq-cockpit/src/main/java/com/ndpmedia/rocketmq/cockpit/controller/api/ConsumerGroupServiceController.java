@@ -1,4 +1,4 @@
-package com.ndpmedia.rocketmq.cockpit.controller.ajax;
+package com.ndpmedia.rocketmq.cockpit.controller.api;
 
 import com.ndpmedia.rocketmq.cockpit.model.ConsumerGroup;
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.ConsumerGroupMapper;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.List;
 
 @Controller
-@RequestMapping(value = "/ajax/consumer-group")
+@RequestMapping(value = "/api/consumer-group")
 public class ConsumerGroupServiceController {
 
     @Autowired

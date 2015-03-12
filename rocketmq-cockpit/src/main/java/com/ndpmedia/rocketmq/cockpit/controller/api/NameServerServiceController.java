@@ -1,4 +1,4 @@
-package com.ndpmedia.rocketmq.cockpit.controller.ajax;
+package com.ndpmedia.rocketmq.cockpit.controller.api;
 
 import com.ndpmedia.rocketmq.cockpit.model.NameServer;
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.NameServerMapper;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import java.util.List;
 
 @Controller
-@RequestMapping(value = "/ajax/name-server")
+@RequestMapping(value = "/api/name-server")
 public class NameServerServiceController {
 
     @Autowired

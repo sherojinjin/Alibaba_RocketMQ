@@ -1,4 +1,4 @@
-package com.ndpmedia.rocketmq.cockpit.controller.ajax;
+package com.ndpmedia.rocketmq.cockpit.controller.api;
 
 import com.ndpmedia.rocketmq.cockpit.model.Topic;
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.TopicMapper;
@@ -10,19 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.Map;
 
 @Controller
-@RequestMapping(value = "/ajax/topic")
+@RequestMapping(value = "/api/topic")
 public class TopicServiceController {
 
     @Autowired

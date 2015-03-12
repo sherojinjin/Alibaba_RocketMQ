@@ -6,39 +6,26 @@ import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
 import com.ndpmedia.rocketmq.cockpit.model.Topic;
 import com.ndpmedia.rocketmq.cockpit.service.TopicService;
+import com.ndpmedia.rocketmq.cockpit.util.Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service("topicService")
 public class TopicServiceImpl implements TopicService {
 
     private Logger logger = LoggerFactory.getLogger(TopicServiceImpl.class);
 
-    private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
-    private static String getInstanceName() {
-        String localHostAddress = null;
-        try {
-            localHostAddress = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            localHostAddress = "127.0.0.1";
-        }
-
-        return localHostAddress + "@" + Thread.currentThread().getId() + "_" + COUNTER.incrementAndGet();
-    }
 
 
     @Override
     public Set<String> fetchTopics() {
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
-        defaultMQAdminExt.setInstanceName(getInstanceName());
+        defaultMQAdminExt.setInstanceName(Helper.getInstanceName());
         try {
             defaultMQAdminExt.start();
 
@@ -58,7 +45,7 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public boolean createOrUpdateTopic(Topic topic) {
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
-        defaultMQAdminExt.setInstanceName(getInstanceName());
+        defaultMQAdminExt.setInstanceName(Helper.getInstanceName());
         try {
             defaultMQAdminExt.start();
             TopicConfig topicConfig = wrapTopicToTopicConfig(topic);
@@ -104,9 +91,8 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public boolean deleteTopic(Topic topic) {
-
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
-        defaultMQAdminExt.setInstanceName(getInstanceName());
+        defaultMQAdminExt.setInstanceName(Helper.getInstanceName());
         try {
             defaultMQAdminExt.start();
             Set<String> nameServerAddress = new HashSet<String>(defaultMQAdminExt.getNameServerAddressList());

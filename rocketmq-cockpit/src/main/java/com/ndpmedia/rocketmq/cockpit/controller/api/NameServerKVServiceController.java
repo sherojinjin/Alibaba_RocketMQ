@@ -1,6 +1,5 @@
-package com.ndpmedia.rocketmq.cockpit.controller.ajax;
+package com.ndpmedia.rocketmq.cockpit.controller.api;
 
-import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.ndpmedia.rocketmq.cockpit.model.KV;
 import com.ndpmedia.rocketmq.cockpit.model.Status;
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.NameServerKVMapper;
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.List;
 
 @Controller
-@RequestMapping(value = "/ajax/name-server-kv")
+@RequestMapping(value = "/api/name-server-kv")
 public class NameServerKVServiceController {
 
     @Autowired
@@ -41,19 +40,6 @@ public class NameServerKVServiceController {
         return nameServerKVService.get(id);
     }
 
-    @RequestMapping(value = "/id/{id}", method = RequestMethod.POST)
-    @ResponseBody
-    public KV apply(@PathVariable("id") long id) throws Exception {
-        KV kv = nameServerKVService.get(id);
-        if (null != kv) {
-            DefaultMQAdminExt mqAdmin = new DefaultMQAdminExt();
-            mqAdmin.createAndUpdateKvConfig(kv.getNameSpace(), kv.getKey(), kv.getValue());
-            kv.setStatus(Status.ACTIVE);
-            nameServerKVService.update(kv);
-        }
-        return kv;
-    }
-
     @RequestMapping(value = "/id/{id}", method = RequestMethod.DELETE)
     @ResponseBody
     public KV delete(@PathVariable("id") long id) {
@@ -65,29 +51,15 @@ public class NameServerKVServiceController {
         return kv;
     }
 
-    @RequestMapping
+    @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public List<KV> list() {
         return nameServerKVService.list();
     }
 
-    @RequestMapping(value = "/{status}", method = RequestMethod.GET)
+    @RequestMapping(value = "/status/{status}", method = RequestMethod.GET)
     @ResponseBody
     public List<KV> list(@PathVariable(value = "status") String status) {
         return nameServerKVService.list(Status.valueOf(status));
     }
-
-    @RequestMapping(value = "/mybatis", method = RequestMethod.GET)
-    @ResponseBody
-    public List<KV> listByMybatis() {
-        return nameServerKVMapper.list();
-    }
-
-
-    @RequestMapping(value = "/mybatis/{id}", method = RequestMethod.GET)
-    @ResponseBody
-    public KV listByMybatis(@PathVariable("id") long id) {
-        return nameServerKVMapper.get(id);
-    }
-
 }
