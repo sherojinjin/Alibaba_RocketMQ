@@ -10,7 +10,7 @@ public class KV implements Comparable {
 
     private String value;
 
-    private KVStatus status = KVStatus.DRAFT;
+    private Status status = Status.DRAFT;
 
     public long getId() {
         return id;
@@ -44,11 +44,11 @@ public class KV implements Comparable {
         this.value = value;
     }
 
-    public KVStatus getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(KVStatus status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 

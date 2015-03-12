@@ -1,4 +1,4 @@
-package com.ndpmedia.rocketmq.consumer.model;
+package com.ndpmedia.rocketmq.cockpit.model;
 
 import com.alibaba.rocketmq.remoting.protocol.LanguageCode;
 

@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS topic (
   has_unit_subscription BOOL NOT NULL DEFAULT FALSE ,
   broker_address VARCHAR(255),
   order_type BOOL DEFAULT FALSE,
-  allow BOOL DEFAULT FALSE,
+  status_id INT NOT NULL REFERENCES status_lu(id),
   create_time DATETIME NOT NULL ,
   update_time DATETIME NOT NULL
 ) ENGINE = INNODB;
@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS topic (
 
 CREATE TABLE IF NOT EXISTS consumer_group (
   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  cluster_name VARCHAR(255) NOT NULL,
   which_broker_when_consume_slowly INT NOT NULL DEFAULT 1,
   group_name VARCHAR(255) NOT NULL,
   consume_enable BOOL NOT NULL DEFAULT TRUE ,
@@ -44,9 +45,15 @@ CREATE TABLE IF NOT EXISTS consumer_group (
   retry_max_times INT NOT NULL DEFAULT 3,
   retry_queue_num MEDIUMINT NOT NULL DEFAULT 3,
   consume_from_min_enable BOOL NOT NULL DEFAULT TRUE,
+  status_id INT NOT NULL DEFAULT 0 REFERENCES status_lu(id),
   create_time DATETIME NOT NULL,
   update_time DATETIME NOT NULL
 ) ENGINE = INNODB;
+
+CREATE TABLE IF NOT EXISTS status_lu (
+  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255)
+);
 
 CREATE TABLE IF NOT EXISTS cockpit_message_backlog (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -65,12 +72,7 @@ CREATE TABLE name_server_kv (
   name_space VARCHAR(255) NOT NULL,
   `key` VARCHAR(255) NOT NULL,
   `value` VARCHAR(255) NOT NULL,
-  status_id TINYINT NOT NULL
-);
-
-CREATE TABLE name_server_kv_status_lu (
-  id TINYINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  name VARCHAR(20) NOT NULL
+  status_id INT NOT NULL REFERENCES status_lu(id)
 );
 
 

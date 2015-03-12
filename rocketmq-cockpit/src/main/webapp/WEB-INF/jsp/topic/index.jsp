@@ -46,14 +46,14 @@
 <div class="col-xs-8 col-xs-offset-2 text-left table-responsive">
     <table class="table table-bordered">
         <tr><td>topic:</td><td>  <input type="text" class="form-control topic" placeholder="topic"></td></tr>
-        <tr><td>write_queue_num:</td><td>  <input type="text" class="form-control write_queue_num"
-        placeholder="write_queue_num"></td></tr>
-        <tr><td>read_queue_num:</td><td>  <input type="text" class="form-control read_queue_num"
-        placeholder="read_queue_num"></td></tr>
-        <tr><td>broker_address:</td><td>  <input type="text" class="form-control broker_address"
-        placeholder="broker_address"></td></tr>
-        <tr><td>cluster_name:</td><td>  <input type="text" class="form-control cluster_name"
-        placeholder="cluster_name"></td></tr>
+        <tr><td>writeQueueNum:</td><td>  <input type="text" class="form-control writeQueueNum"
+        placeholder="writeQueueNum"></td></tr>
+        <tr><td>readQueueNum:</td><td>  <input type="text" class="form-control readQueueNum"
+        placeholder="readQueueNum"></td></tr>
+        <tr><td>brokerAddress:</td><td>  <input type="text" class="form-control brokerAddress"
+        placeholder="brokerAddress"></td></tr>
+        <tr><td>clusterName:</td><td>  <input type="text" class="form-control clusterName"
+        placeholder="clusterName"></td></tr>
         <tr><td>order:</td><td>  <input type="text" class="form-control order" placeholder="order"></td></tr>
         <tr><td colspan="2">
     <div class="col-xs-2">

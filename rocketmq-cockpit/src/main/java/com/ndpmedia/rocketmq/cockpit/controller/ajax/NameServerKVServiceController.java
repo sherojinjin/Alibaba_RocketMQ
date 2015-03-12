@@ -2,7 +2,7 @@ package com.ndpmedia.rocketmq.cockpit.controller.ajax;
 
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.ndpmedia.rocketmq.cockpit.model.KV;
-import com.ndpmedia.rocketmq.cockpit.model.KVStatus;
+import com.ndpmedia.rocketmq.cockpit.model.Status;
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.NameServerKVMapper;
 import com.ndpmedia.rocketmq.cockpit.service.NameServerKVService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.List;
 
 @Controller
-@RequestMapping(value = "/ajax/name-server/kv")
+@RequestMapping(value = "/ajax/name-server-kv")
 public class NameServerKVServiceController {
 
     @Autowired
@@ -38,8 +38,7 @@ public class NameServerKVServiceController {
     @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
     @ResponseBody
     public KV view(@PathVariable("id") long id) {
-        KV kv = nameServerKVService.get(id);
-        return kv;
+        return nameServerKVService.get(id);
     }
 
     @RequestMapping(value = "/id/{id}", method = RequestMethod.POST)
@@ -49,7 +48,7 @@ public class NameServerKVServiceController {
         if (null != kv) {
             DefaultMQAdminExt mqAdmin = new DefaultMQAdminExt();
             mqAdmin.createAndUpdateKvConfig(kv.getNameSpace(), kv.getKey(), kv.getValue());
-            kv.setStatus(KVStatus.ACTIVE);
+            kv.setStatus(Status.ACTIVE);
             nameServerKVService.update(kv);
         }
         return kv;
@@ -61,7 +60,7 @@ public class NameServerKVServiceController {
         KV kv = nameServerKVService.get(id);
         if (null != kv) {
             nameServerKVService.delete(kv);
-            kv.setStatus(KVStatus.DELETED);
+            kv.setStatus(Status.DELETED);
         }
         return kv;
     }
@@ -75,7 +74,7 @@ public class NameServerKVServiceController {
     @RequestMapping(value = "/{status}", method = RequestMethod.GET)
     @ResponseBody
     public List<KV> list(@PathVariable(value = "status") String status) {
-        return nameServerKVService.list(KVStatus.valueOf(status));
+        return nameServerKVService.list(Status.valueOf(status));
     }
 
     @RequestMapping(value = "/mybatis", method = RequestMethod.GET)

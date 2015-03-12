@@ -1,9 +1,7 @@
-package com.ndpmedia.rocketmq.consumer.impl;
+package com.ndpmedia.rocketmq.cockpit.model;
 
 import com.ndpmedia.rocketmq.consumer.ConsumerManager;
 import com.ndpmedia.rocketmq.consumer.ConsumerService;
-import com.ndpmedia.rocketmq.consumer.model.Consumer;
-import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
 
 import java.util.List;
 

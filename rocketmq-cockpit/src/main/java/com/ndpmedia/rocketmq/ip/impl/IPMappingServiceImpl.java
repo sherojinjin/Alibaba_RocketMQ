@@ -1,7 +1,6 @@
 package com.ndpmedia.rocketmq.ip.impl;
 
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.IpPairMapper;
-import com.ndpmedia.rocketmq.ip.IPMappingManager;
 import com.ndpmedia.rocketmq.ip.IPMappingService;
 import org.springframework.beans.factory.annotation.Autowired;
 

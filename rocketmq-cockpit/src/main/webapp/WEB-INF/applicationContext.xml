@@ -108,15 +108,11 @@
 
     </bean>
 
-    <bean id="nameServerAddressBean" class="com.ndpmedia.rocketmq.nameserver.impl.NameServerAddressServiceImpl">
-        <property name="nameServerManager" ref="nameServerManager" />
-    </bean>
-
     <bean id="topicBean" class="com.ndpmedia.rocketmq.topic.impl.TopicServiceImpl">
         <property name="topicManager" ref="topicManager" />
     </bean>
 
-    <bean id="consumerBean" class="com.ndpmedia.rocketmq.consumer.impl.ConsumerServiceImpl">
+    <bean id="consumerBean" class="com.ndpmedia.rocketmq.cockpit.model.ConsumerServiceImpl">
         <property name="consumerManager" ref="consumerManager" />
     </bean>
 

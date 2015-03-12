@@ -5,7 +5,7 @@ import com.ndpmedia.rocketmq.cockpit.connection.CockpitDao;
 import com.ndpmedia.rocketmq.cockpit.util.SqlParamsUtil;
 import com.ndpmedia.rocketmq.cockpit.util.ToolSpring;
 import com.ndpmedia.rocketmq.consumer.ConsumerManager;
-import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
+import com.ndpmedia.rocketmq.cockpit.model.ConsumerProgress;
 import com.ndpmedia.rocketmq.topic.TopicManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

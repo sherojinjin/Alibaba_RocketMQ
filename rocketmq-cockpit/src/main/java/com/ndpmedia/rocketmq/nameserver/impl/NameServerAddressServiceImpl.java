@@ -1,53 +1,33 @@
 package com.ndpmedia.rocketmq.nameserver.impl;
 
 import com.google.common.base.Joiner;
+import com.ndpmedia.rocketmq.cockpit.model.NameServer;
+import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.NameServerMapper;
 import com.ndpmedia.rocketmq.nameserver.NameServerAddressService;
-import com.ndpmedia.rocketmq.nameserver.NameServerManager;
-import com.ndpmedia.rocketmq.nameserver.model.NameServer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Set;
 
 public class NameServerAddressServiceImpl implements NameServerAddressService {
 
-    private NameServerManager nameServerManager;
+    @Autowired
+    private NameServerMapper nameServerMapper;
 
     @Override
     public String listNameServer() {
-        Set<String> nameServers = nameServerManager.listNames();
-        Joiner joiner = Joiner.on(";").skipNulls();
-        return joiner.join(nameServers);
-    }
-
-
-    @Override
-    public void add(String nameServer) {
-        nameServerManager.add(nameServer);
-    }
-
-    @Override
-    public void delete(String nameServer) {
-        nameServerManager.remove(nameServer);
-    }
-
-    @Override
-    public List<NameServer> list() {
-
-        try {
-            List<NameServer> nameServers = nameServerManager.list();
-
-            return nameServers;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        StringBuilder stringBuilder = new StringBuilder(256);
+        List<NameServer> nameServerList = nameServerMapper.list();
+        if (null != nameServerList && nameServerList.size() > 0) {
+            for (int i = 0; i < nameServerList.size(); i++) {
+                NameServer nameServer = nameServerList.get(i);
+                if (i > 0) {
+                    stringBuilder.append(";");
+                }
+                stringBuilder.append(nameServer.getIp()).append(":").append(nameServer.getPort());
+            }
         }
-    }
 
-    public NameServerManager getNameServerManager() {
-        return nameServerManager;
-    }
-
-    public void setNameServerManager(NameServerManager nameServerManager) {
-        this.nameServerManager = nameServerManager;
+        return stringBuilder.toString();
     }
 }

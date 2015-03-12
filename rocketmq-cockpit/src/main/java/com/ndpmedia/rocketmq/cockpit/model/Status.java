@@ -1,6 +1,6 @@
 package com.ndpmedia.rocketmq.cockpit.model;
 
-public enum KVStatus {
+public enum Status {
 
     DRAFT(1, "DRAFT"),
     ACTIVE(2, "ACTIVE"),
@@ -10,7 +10,7 @@ public enum KVStatus {
 
     private int id;
 
-    KVStatus(int id, String value) {
+    Status(int id, String value) {
         this.value = value;
         this.id = id;
     }

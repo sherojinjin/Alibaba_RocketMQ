@@ -1,7 +1,7 @@
 package com.ndpmedia.rocketmq.consumer;
 
-import com.ndpmedia.rocketmq.consumer.model.Consumer;
-import com.ndpmedia.rocketmq.consumer.model.ConsumerProgress;
+import com.ndpmedia.rocketmq.cockpit.model.Consumer;
+import com.ndpmedia.rocketmq.cockpit.model.ConsumerProgress;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;

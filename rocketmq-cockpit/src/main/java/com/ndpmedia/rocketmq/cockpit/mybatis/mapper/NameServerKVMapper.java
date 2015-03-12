@@ -10,7 +10,11 @@ public interface NameServerKVMapper {
 
     List<KV> list();
 
-    long persist(KV kv);
+    long insert(KV kv);
 
     void update(KV kv);
+
+    void delete(long id);
+
+    List<KV> listByStatus(int[] status);
 }

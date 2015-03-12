@@ -1,7 +1,7 @@
 package com.ndpmedia.rocketmq.cockpit.service;
 
 import com.ndpmedia.rocketmq.cockpit.model.KV;
-import com.ndpmedia.rocketmq.cockpit.model.KVStatus;
+import com.ndpmedia.rocketmq.cockpit.model.Status;
 
 import java.util.List;
 
@@ -19,5 +19,5 @@ public interface NameServerKVService {
 
     List<KV> list();
 
-    List<KV> list(KVStatus... statuses);
+    List<KV> list(Status... statuses);
 }

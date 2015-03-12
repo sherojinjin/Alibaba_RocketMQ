@@ -1,8 +1,8 @@
 USE cockpit;
 
 -- Insert name server list.
-INSERT INTO name_server(ip, port) VALUES ('54.173.39.198', 9876);
-INSERT INTO name_server(ip, port) VALUES ('54.173.209.191', 9876);
+INSERT INTO name_server(ip, port, create_time, update_time) VALUES ('54.173.39.198', 9876, now(), now());
+INSERT INTO name_server(ip, port, create_time, update_time) VALUES ('54.173.209.191', 9876, NOW(), NOW());
 
 
 -- Insert IP mapping.
