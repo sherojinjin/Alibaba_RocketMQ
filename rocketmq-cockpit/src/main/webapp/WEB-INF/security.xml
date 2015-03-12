@@ -54,6 +54,7 @@
     <bean id="accessDeniedHandler" class="com.ndpmedia.rocketmq.authentication.RocketMQUserAccessDeniedHandler" >
         <property name="accessDeniedURL" value="/cockpit/home.jsp" />
     </bean>
+
     <!--
             通过 RocketMQUserDetailsService,Spring会控制用户的访问级别.
             也可以理解成:以后我们和数据库操作就是通过RocketMQUserDetailsService来进行关联.

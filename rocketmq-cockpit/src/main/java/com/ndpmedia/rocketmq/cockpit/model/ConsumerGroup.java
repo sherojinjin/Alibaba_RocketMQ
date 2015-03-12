@@ -32,7 +32,7 @@ public class ConsumerGroup {
 
     private String clusterName;
 
-    private int status;
+    private Status status;
 
     private Date createTime;
 
@@ -142,11 +142,11 @@ public class ConsumerGroup {
         this.clusterName = clusterName;
     }
 
-    public int getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 }

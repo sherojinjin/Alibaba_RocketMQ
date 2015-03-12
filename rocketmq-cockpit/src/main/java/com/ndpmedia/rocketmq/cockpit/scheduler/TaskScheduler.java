@@ -24,7 +24,7 @@ public class TaskScheduler {
     private TopicService topicService;
 
 
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 30000)
     public void queryAccumulation() {
 
         try {
@@ -44,7 +44,7 @@ public class TaskScheduler {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 
