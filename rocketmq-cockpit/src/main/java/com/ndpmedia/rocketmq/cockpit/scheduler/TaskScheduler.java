@@ -44,16 +44,15 @@ public class TaskScheduler {
                         .queryConsumerProgress(topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, ""), null, null);
                 for (ConsumeProgress cp : consumeProgressList)
                 {
-                    if (null == cp || null == cp.getTopic() || null == cp.getBrokerName() || null == cp.getConsumerGroup()) {
-                        logger.info("[MONITOR][CONSUME PROCESS] this consumer group :" + topic.replace(MixAll.RETRY_GROUP_TOPIC_PREFIX, "")
-                                + " can not monitor.");
+                    if (null == cp || null == cp.getTopic() || null == cp.getBrokerName()) {
                         continue;
                     }
                     consumeProgressMapper.insert(cp);
                 }
             }
         } catch (Exception e) {
-            logger.warn("[MONITOR][CONSUME PROCESS] main method failed." + e);
+            if (!e.getMessage().contains("offset table is empty"))
+                logger.warn("[MONITOR][CONSUME PROCESS] main method failed." + e);
         }
     }
 

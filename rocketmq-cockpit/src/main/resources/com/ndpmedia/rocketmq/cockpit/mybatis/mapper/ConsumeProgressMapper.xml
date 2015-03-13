@@ -3,8 +3,8 @@
 <mapper namespace="com.ndpmedia.rocketmq.cockpit.mybatis.mapper.ConsumeProgressMapper">
 
     <insert id="insert" parameterType="ConsumeProgress">
-        INSERT INTO consume_progress(id, consumer_group_id, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time)
-        VALUES (NULL, #{consumerGroup.id}, #{topic}, #{brokerName}, #{queueId}, #{brokerOffset}, #{consumerOffset}, #{lastTimestamp}, #{diff}, #{createTime})
+        INSERT INTO consume_progress(id, consumer_group, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time)
+        VALUES (NULL, #{consumerGroup}, #{topic}, #{brokerName}, #{queueId}, #{brokerOffset}, #{consumerOffset}, #{lastTimestamp}, #{diff}, #{createTime})
     </insert>
 
     <delete id="delete" parameterType="long">
@@ -48,19 +48,18 @@
         <result column="last_timestamp" property="lastTimestamp" />
         <result column="diff" property="diff" />
         <result column="create_time" property="createTime" />
-
-        <association property="consumerGroup" column="consumer_group_id" javaType="ConsumerGroup" select="selectConsumerGroup" />
+        <result column="consumer_group" property="consumerGroup" />
     </resultMap>
 
     <select id="list" resultMap="consumeProgressMap">
-        SELECT id, consumer_group_id, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time
+        SELECT id, consumer_group, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time
         FROM consume_progress
     </select>
 
-    <select id="listByConsumerGroup" resultMap="consumeProgressMap" parameterType="ConsumerGroup">
-        SELECT id, consumer_group_id, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time
+    <select id="listByConsumerGroup" resultMap="consumeProgressMap">
+        SELECT id, consumer_group, topic, broker_name, queue_id, broker_offset, consumer_offset, last_timestamp, diff, create_time
         FROM consume_progress
-        WHERE consumer_group_id = #{consumerGroup.id}
+        WHERE consumer_group = #{consumerGroup}
     </select>
 
     <select id="listByTopic" resultMap="consumeProgressMap" parameterType="string">

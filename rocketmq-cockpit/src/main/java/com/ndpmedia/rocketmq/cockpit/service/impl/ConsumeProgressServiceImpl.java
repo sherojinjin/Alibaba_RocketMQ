@@ -32,7 +32,6 @@ public class ConsumeProgressServiceImpl implements ConsumeProgressService {
         List<ConsumeProgress> consumeProgressList = new ArrayList<ConsumeProgress>();
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
         defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
-        ConsumerGroup consumerGroup = consumerGroupMapper.getByGroupName(groupName);
         try
         {
             defaultMQAdminExt.start();
@@ -59,12 +58,13 @@ public class ConsumeProgressServiceImpl implements ConsumeProgressService {
                 long diff = offsetWrapper.getBrokerOffset() - offsetWrapper.getConsumerOffset();
                 diffTotal += diff;
 
-                consumeProgressList.add(new ConsumeProgress(consumerGroup, messageQueue, offsetWrapper, diff));
+                consumeProgressList.add(new ConsumeProgress(groupName, messageQueue, offsetWrapper, diff));
             }
 
 //            consumeProgressList.add(new ConsumeProgress(consumerGroup, null, null, diffTotal));
         } catch (Exception e) {
-            logger.warn("[MONITOR][CONSUME PROCESS] try to get " + groupName + " message diff failed." + e);
+            if (!e.getMessage().contains("offset table is empty"))
+                logger.warn("[MONITOR][CONSUME PROCESS] try to get " + groupName + " message diff failed." + e);
         } finally {
             defaultMQAdminExt.shutdown();
         }

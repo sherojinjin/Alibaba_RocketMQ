@@ -12,7 +12,7 @@ public class ConsumeProgress {
 
     private long id;
 
-    private ConsumerGroup consumerGroup;
+    private String consumerGroup;
 
     private String topic;
 
@@ -34,7 +34,7 @@ public class ConsumeProgress {
     public ConsumeProgress() {
     }
 
-    public ConsumeProgress(ConsumerGroup consumerGroup, MessageQueue messageQueue, OffsetWrapper offsetWrapper, long diff) {
+    public ConsumeProgress(String consumerGroup, MessageQueue messageQueue, OffsetWrapper offsetWrapper, long diff) {
         this.consumerGroup = consumerGroup;
         this.topic = messageQueue.getTopic();
         this.brokerName = messageQueue.getBrokerName();
@@ -117,11 +117,11 @@ public class ConsumeProgress {
         this.id = id;
     }
 
-    public ConsumerGroup getConsumerGroup() {
+    public String getConsumerGroup() {
         return consumerGroup;
     }
 
-    public void setConsumerGroup(ConsumerGroup consumerGroup) {
+    public void setConsumerGroup(String consumerGroup) {
         this.consumerGroup = consumerGroup;
     }
 

@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS status_lu (
 
 CREATE TABLE IF NOT EXISTS consume_progress (
   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  consumer_group_id INT NOT NULL REFERENCES consumer_group(id),
+  consumer_group VARCHAR(255) NOT NULL,
   topic VARCHAR(255) NOT NULL,
   broker_name VARCHAR(255) NOT NULL,
   queue_id INT NOT NULL,
