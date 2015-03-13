@@ -2,6 +2,7 @@ package com.ndpmedia.rocketmq.cockpit.model;
 
 public enum Status {
 
+    NULL(0, "NULL"),
     DRAFT(1, "DRAFT"),
     ACTIVE(2, "ACTIVE"),
     DELETED(3, "DELETED");

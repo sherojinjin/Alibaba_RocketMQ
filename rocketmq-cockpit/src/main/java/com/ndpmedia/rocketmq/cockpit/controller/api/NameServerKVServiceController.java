@@ -2,7 +2,6 @@ package com.ndpmedia.rocketmq.cockpit.controller.api;
 
 import com.ndpmedia.rocketmq.cockpit.model.KV;
 import com.ndpmedia.rocketmq.cockpit.model.Status;
-import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.NameServerKVMapper;
 import com.ndpmedia.rocketmq.cockpit.service.NameServerKVService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,9 +21,6 @@ public class NameServerKVServiceController {
     @Autowired
     @Qualifier("nameServerKVService")
     private NameServerKVService nameServerKVService;
-
-    @Autowired
-    private NameServerKVMapper nameServerKVMapper;
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody

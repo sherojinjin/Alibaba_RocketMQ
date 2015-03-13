@@ -1,9 +1,10 @@
 $(document).ready(function() {
-    $.get("cockpit/ajax/name-server/kv", function(data) {
+    $.get("cockpit/api/name-server-kv", function(data) {
         $(".table-content").children().remove();
 
         data.forEach(function(item) {
-            var operationLink = $("<a href='javascript:;' rel='" + item.id + "' class='applyKV'>Apply</a>");
+            var operationLink = $("<a href='javascript:;'  class='applyKV'>Apply</a>");
+            operationLink.attr("rel", item.id);
             var operation = $("<td></td>").append(operationLink);
             var item = $("<tr><td>" + item.nameSpace + "</td><td>" + item.key + "</td><td>" + item.value + "</td><td>"
             + item.status + "</td></tr>");
