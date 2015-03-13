@@ -19,9 +19,6 @@ public class TopicServiceImpl implements TopicService {
 
     private Logger logger = LoggerFactory.getLogger(TopicServiceImpl.class);
 
-
-
-
     @Override
     public Set<String> fetchTopics() {
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
@@ -88,7 +85,6 @@ public class TopicServiceImpl implements TopicService {
 
     }
 
-
     @Override
     public boolean deleteTopic(Topic topic) {
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
@@ -113,7 +109,6 @@ public class TopicServiceImpl implements TopicService {
         }
         return true;
     }
-
 
     private static TopicConfig wrapTopicToTopicConfig(Topic topic) {
         TopicConfig topicConfig = new TopicConfig();

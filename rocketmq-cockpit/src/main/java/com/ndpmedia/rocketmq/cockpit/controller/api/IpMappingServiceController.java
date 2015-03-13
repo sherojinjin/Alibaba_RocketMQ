@@ -1,7 +1,7 @@
 package com.ndpmedia.rocketmq.cockpit.controller.api;
 
 import com.ndpmedia.rocketmq.cockpit.model.IPPair;
-import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.IpPairMapper;
+import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.IPPairMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -17,7 +17,7 @@ import java.util.List;
 public class IpMappingServiceController {
 
     @Autowired
-    private IpPairMapper ipPairMapper;
+    private IPPairMapper ipPairMapper;
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody

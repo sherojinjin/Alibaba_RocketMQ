@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.ndpmedia.rocketmq.cockpit.mybatis.mapper.IpPairMapper">
+<mapper namespace="com.ndpmedia.rocketmq.cockpit.mybatis.mapper.IPPairMapper">
     <insert id="insert" parameterType="IPPair" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO ip_mapping (id, inner_ip, public_ip, create_time, update_time)
         VALUES (NULL, #{innerIP}, #{publicIP}, #{createTime}, #{updateTime})
