@@ -27,6 +27,17 @@
         <thead>
         <tr>
           <td style="display:none">id</td>
+          <td style="display:none">cluster_name</td>
+          <td style="display:none">permission</td>
+          <td style="display:none">write_queue_num</td>
+          <td style="display:none">read_queue_num</td>
+          <td style="display:none">unit</td>
+          <td style="display:none">has_unit_subscription</td>
+          <td style="display:none">broker_address</td>
+          <td style="display:none">order_type</td>
+          <td style="display:none">status_id</td>
+          <td style="display:none">create_time</td>
+          <td style="display:none">update_time</td>
           <td>topic</td>
           <td>Operation</td>
         </tr>
@@ -54,6 +65,12 @@
         placeholder="brokerAddress"></td></tr>
         <tr><td>clusterName:</td><td>  <input type="text" class="form-control clusterName"
         placeholder="clusterName"></td></tr>
+        <tr><td>clusterName:</td><td>  <input type="text" class="form-control permission"
+                placeholder="permission"></td></tr>
+        <tr><td>clusterName:</td><td>  <input type="text" class="form-control unit"
+                placeholder="unit"></td></tr>
+        <tr><td>clusterName:</td><td>  <input type="text" class="form-control hasUnitSubscription"
+                placeholder="hasUnitSubscription"></td></tr>
         <tr><td>order:</td><td>  <input type="text" class="form-control order" placeholder="order"></td></tr>
         <tr><td colspan="2">
     <div class="col-xs-2">

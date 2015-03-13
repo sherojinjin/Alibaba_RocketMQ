@@ -47,6 +47,7 @@ public class TopicServiceController {
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public void update(@ModelAttribute Topic topic) {
+        topic.setUpdateTime(System.currentTimeMillis());
         topicMapper.update(topic);
     }
 }
