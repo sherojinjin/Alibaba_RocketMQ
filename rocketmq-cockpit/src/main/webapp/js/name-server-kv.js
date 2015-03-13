@@ -31,7 +31,7 @@ $(document).ready(function() {
                 if (data.responseText != "") {
                     var dataJson = $.parseJSON(data.responseText);
                     var applyLink = $("<a href='javascript:;' class='applyKV'>Apply</a>");
-                    var deleteLink = $("<a href='javascript:;' class='deleteKV'>Delete</a>");
+                    var deleteLink = $("<a href='javascript:;' style='margin-left: 20px;' class='deleteKV'>Delete</a>");
                     applyLink.attr("rel", dataJson.id);
                     deleteLink.attr("rel", dataJson.id);
                     var operation = $("<td></td>").append(applyLink).append(deleteLink);
