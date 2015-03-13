@@ -3,6 +3,7 @@ package com.ndpmedia.rocketmq.cockpit.controller.api;
 import com.ndpmedia.rocketmq.cockpit.model.NameServer;
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.NameServerMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Controller
@@ -40,9 +42,10 @@ public class NameServerServiceController {
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
-    public NameServer add(@ModelAttribute NameServer nameServer) {
-        long id = nameServerMapper.insert(nameServer);
-        nameServer.setId(id);
+    public NameServer add(@ModelAttribute NameServer nameServer, HttpServletResponse response) {
+        nameServerMapper.insert(nameServer);
+        response.setContentType("application/json");
+        response.setStatus(HttpStatus.OK.value());
         return nameServer;
     }
 

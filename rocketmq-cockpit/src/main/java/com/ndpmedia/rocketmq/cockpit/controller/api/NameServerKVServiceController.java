@@ -29,8 +29,7 @@ public class NameServerKVServiceController {
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
     public KV add(@ModelAttribute KV kv) {
-        long id = nameServerKVService.add(kv);
-        kv.setId(id);
+        nameServerKVService.add(kv);
         return kv;
     }
 

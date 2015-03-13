@@ -43,6 +43,13 @@ public class ConsumerGroupServiceController {
         return consumerGroupMapper.getByGroupName(consumerGroupName);
     }
 
+    @RequestMapping(method = RequestMethod.PUT)
+    @ResponseBody
+    public ConsumerGroup add(@ModelAttribute ConsumerGroup consumerGroup) {
+        consumerGroupMapper.insert(consumerGroup);
+        return consumerGroup;
+    }
+
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public void update(@ModelAttribute ConsumerGroup consumerGroup) {

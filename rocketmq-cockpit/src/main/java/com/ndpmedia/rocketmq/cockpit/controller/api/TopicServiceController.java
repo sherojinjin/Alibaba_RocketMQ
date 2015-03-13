@@ -33,8 +33,7 @@ public class TopicServiceController {
 
     @RequestMapping(method = RequestMethod.PUT)
     public Topic add(@ModelAttribute Topic topic) {
-        long id = topicMapper.insert(topic);
-        topic.setId(id);
+        topicMapper.insert(topic);
         return topic;
     }
 

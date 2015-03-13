@@ -21,7 +21,7 @@ $(document).ready(function() {
         } else {
             sections = nameServer.split(":");
             $.ajax({
-                async: true,
+                async: false,
                 url: "cockpit/api/name-server",
                 type: "PUT",
                 dataType: "application/json",
@@ -33,9 +33,10 @@ $(document).ready(function() {
                     var item = $("<tr><td>" + data.ip + ":" + data.port + "</td><td>" + data.createTime + "</td></tr>");
                     item.append(operation);
                     $(".table-content").append(item);
-                },
-                complete: function() {
                     $("input.newNameServer").val("");
+                },
+                error: function() {
+                    alert("Oops...")
                 }
             });
         }

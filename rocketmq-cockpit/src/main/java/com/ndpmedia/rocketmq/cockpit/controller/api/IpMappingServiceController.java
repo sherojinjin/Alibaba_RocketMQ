@@ -22,8 +22,7 @@ public class IpMappingServiceController {
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
     public IPPair add(@ModelAttribute IPPair ipPair) {
-        long id = ipPairMapper.insert(ipPair);
-        ipPair.setId(id);
+        ipPairMapper.insert(ipPair);
         return ipPair;
     }
 

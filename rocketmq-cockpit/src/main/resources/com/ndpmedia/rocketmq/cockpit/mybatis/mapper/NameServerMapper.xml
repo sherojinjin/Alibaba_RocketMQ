@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.ndpmedia.rocketmq.cockpit.mybatis.mapper.NameServerMapper">
-    <insert id="insert" parameterType="NameServer" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+    <insert id="insert" parameterType="NameServer" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO name_server(id, ip, port, create_time, update_time)
         VALUES (NULL, #{ip}, #{port}, #{createTime}, #{updateTime})
     </insert>
