@@ -24,19 +24,16 @@ $(document).ready(function() {
                 async: false,
                 url: "cockpit/api/name-server",
                 type: "PUT",
-                dataType: "application/json",
+                dataType: "json",
                 data: {ip: sections[0], port: sections[1]},
-                success: function(data) {
+                complete: function(dataResult) {
                     var operationLink = $("<a class='removeItem' href='javascript:;'>Remove</a>");
-                    operationLink.attr("rel", data.id);
+                    operationLink.attr("rel", dataResult.id);
                     var operation = $("<td></td>").append(operationLink);
-                    var item = $("<tr><td>" + data.ip + ":" + data.port + "</td><td>" + data.createTime + "</td></tr>");
+                    var item = $("<tr><td>" + dataResult.ip + ":" + dataResult.port + "</td><td>" + dataResult.createTime + "</td></tr>");
                     item.append(operation);
                     $(".table-content").append(item);
                     $("input.newNameServer").val("");
-                },
-                error: function() {
-                    alert("Oops...")
                 }
             });
         }
@@ -48,7 +45,7 @@ $(document).ready(function() {
             async: true,
             url: "cockpit/api/name-server/id/" + $(this).attr("rel"),
             type: "DELETE",
-            dataType: "application/json",
+            dataType: "json",
             complete: function() {
                 row.remove();
             }

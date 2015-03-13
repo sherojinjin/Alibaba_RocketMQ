@@ -19,16 +19,22 @@
         WHERE id = #{id}
     </delete>
 
-    <select id="list" resultType="IPPair">
+    <resultMap id="ipPairMap" type="IPPair">
+        <id column="id" property="id" />
+        <result column="inner_ip" property="innerIP" />
+        <result column="public_ip" property="publicIP" />
+        <result column="create_time" property="createTime" javaType="date" />
+        <result column="update_time" property="updateTime" javaType="date" />
+    </resultMap>
+
+    <select id="list" resultMap="ipPairMap">
         SELECT id, inner_ip, public_ip, create_time, update_time
         FROM ip_mapping
     </select>
-
 
     <select id="lookUp" resultType="string" parameterType="string">
         SELECT public_ip
         FROM ip_mapping
         WHERE inner_ip = #{innerIP}
     </select>
-
 </mapper>

@@ -10,9 +10,9 @@ public class NameServer {
 
     private Integer port;
 
-    private Date createTime = new Date();
+    private Date createTime;
 
-    private Date updateTime = new Date();
+    private Date updateTime;
 
     public long getId() {
         return id;

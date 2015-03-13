@@ -237,6 +237,7 @@
                 <version>9.2.5.v20141112</version>
                 <configuration>
                     <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <jvmArgs>-Xmx1G -Xms1G</jvmArgs>
                 </configuration>
             </plugin>
         </plugins>

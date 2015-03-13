@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -24,7 +27,12 @@ public class NameServerServiceController {
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public List<NameServer> list() {
-        return nameServerMapper.list();
+        List<NameServer> nameServerList = nameServerMapper.list();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        for (NameServer nameServer : nameServerList) {
+            System.out.println(null == nameServer.getCreateTime() ? "NULL!!!" : dateFormat.format(nameServer.getCreateTime()));
+        }
+        return nameServerList;
     }
 
     @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
@@ -43,6 +51,8 @@ public class NameServerServiceController {
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
     public NameServer add(@ModelAttribute NameServer nameServer, HttpServletResponse response) {
+        nameServer.setCreateTime(new Date());
+        nameServer.setUpdateTime(new Date());
         nameServerMapper.insert(nameServer);
         response.setContentType("application/json");
         response.setStatus(HttpStatus.OK.value());

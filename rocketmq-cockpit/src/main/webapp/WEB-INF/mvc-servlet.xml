@@ -17,6 +17,7 @@
         <mvc:message-converters>
             <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
                 <property name="objectMapper" ref="dateObjectMapper" />
+                <property name="supportedMediaTypes" value="*/*" />
             </bean>
         </mvc:message-converters>
     </mvc:annotation-driven>

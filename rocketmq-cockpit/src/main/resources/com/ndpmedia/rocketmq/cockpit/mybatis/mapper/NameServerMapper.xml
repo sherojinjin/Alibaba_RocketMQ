@@ -18,12 +18,20 @@
         WHERE id = #{id}
     </delete>
 
-    <select id="list" resultType="NameServer">
+    <resultMap id="nameServerMap" type="NameServer">
+        <id column="id" property="id" />
+        <result column="ip" property="ip" />
+        <result column="port" property="port" />
+        <result column="create_time" property="createTime" javaType="date" />
+        <result column="update_time" property="updateTime" javaType="date" />
+    </resultMap>
+
+    <select id="list" resultMap="nameServerMap">
         SELECT id, ip, port, create_time, update_time
         FROM name_server
     </select>
 
-    <select id="get" resultType="NameServer" parameterType="long">
+    <select id="get" resultMap="nameServerMap" parameterType="long">
         SELECT id, ip, port, create_time, update_time
         FROM name_server
         WHERE id = #{id}
