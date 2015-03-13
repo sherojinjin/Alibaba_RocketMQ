@@ -1,11 +1,12 @@
 $(document).ready(function() {
 
-    $.get("rocketmq/nsaddrJson", function(data) {
+    $.get("cockpit/api/name-server", function(data) {
         $(".table-content").children().remove();
         data.forEach(function(nameServerItem) {
             var operationLink = $("<a class='removeItem' href='javascript:;'>Remove</a>");
+            operationLink.attr("rel", nameServerItem.id);
             var operation = $("<td></td>").append(operationLink);
-            var item = $("<tr><td>" + nameServerItem.url + "</td><td>" + nameServerItem.date + "</td></tr>");
+            var item = $("<tr><td>" + nameServerItem.ip + ":" + nameServerItem.port + "</td><td>" + nameServerItem.createTime + "</td></tr>");
             item.append(operation);
             $(".table-content").append(item);
         });
@@ -18,21 +19,33 @@ $(document).ready(function() {
         if ($.trim(nameServer) === "") {
             return false;
         } else {
-            $.post("rocketmq/nsaddr", {nameServer: nameServer}, function() {
-                $("input.newNameServer").val("");
-                var item = $("<tr><td>" + nameServer + "</td><td>Just Now</td><td><a class='removeItem' href='javascript:;'>Remove</a></td></tr>");
-                $(".table-content").append(item);
+            sections = nameServer.split(":");
+            $.ajax({
+                async: true,
+                url: "cockpit/api/name-server",
+                type: "PUT",
+                dataType: "application/json",
+                data: {ip: sections[0], port: sections[1]},
+                success: function(data) {
+                    var operationLink = $("<a class='removeItem' href='javascript:;'>Remove</a>");
+                    operationLink.attr("rel", data.id);
+                    var operation = $("<td></td>").append(operationLink);
+                    var item = $("<tr><td>" + data.ip + ":" + data.port + "</td><td>" + data.createTime + "</td></tr>");
+                    item.append(operation);
+                    $(".table-content").append(item);
+                },
+                complete: function() {
+                    $("input.newNameServer").val("");
+                }
             });
         }
     });
 
     $(".removeItem").live("click", function() {
         var row = $(this).parent().parent();
-        var nameServer = $(this).parent().prev().prev().html();
         $.ajax({
-            async: false,
-            data: {nameServer: nameServer},
-            url: "rocketmq/nsaddr",
+            async: true,
+            url: "cockpit/api/name-server/id/" + $(this).attr("rel"),
             type: "DELETE",
             dataType: "application/json",
             complete: function() {

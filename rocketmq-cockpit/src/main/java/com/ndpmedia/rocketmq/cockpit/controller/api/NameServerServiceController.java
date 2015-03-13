@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
@@ -19,16 +20,26 @@ public class NameServerServiceController {
     private NameServerMapper nameServerMapper;
 
     @RequestMapping(method = RequestMethod.GET)
+    @ResponseBody
     public List<NameServer> list() {
         return nameServerMapper.list();
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
+    @ResponseBody
     public NameServer get(@PathVariable("id") long id) {
         return nameServerMapper.get(id);
     }
 
+    @RequestMapping(value = "/id/{id}", method = RequestMethod.DELETE)
+    @ResponseBody
+    public boolean delete(long id) {
+        nameServerMapper.delete(id);
+        return true;
+    }
+
     @RequestMapping(method = RequestMethod.PUT)
+    @ResponseBody
     public NameServer add(@ModelAttribute NameServer nameServer) {
         long id = nameServerMapper.insert(nameServer);
         nameServer.setId(id);
@@ -36,6 +47,7 @@ public class NameServerServiceController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
+    @ResponseBody
     public NameServer update(@ModelAttribute NameServer nameServer) {
         long id = nameServerMapper.insert(nameServer);
         nameServer.setId(id);
