@@ -6,8 +6,8 @@
     <resultMap id="kvMap" type="KV">
         <id property="id" column="id"/>
         <result property="nameSpace" column="name_space"/>
-        <result property="key" column="key"/>
-        <result property="value" column="value"/>
+        <result property="key" column="`key`"/>
+        <result property="value" column="`value`"/>
         <result property="status" column="status_id"
                 typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"
                 javaType="com.ndpmedia.rocketmq.cockpit.model.Status"/>
@@ -20,18 +20,18 @@
     </delete>
 
     <select id="list" resultMap="kvMap">
-        SELECT id, name_space, "key", "value", status_id
+        SELECT id, name_space, `key`, `value`, status_id
         FROM name_server_kv
     </select>
 
     <select id="get" resultMap="kvMap" parameterType="long">
-        SELECT id, name_space, "key", "value", status_id
+        SELECT id, name_space, `key`, `value`, status_id
         FROM name_server_kv
         WHERE id = #{id}
     </select>
 
     <select id="listByStatus" resultType="KV" parameterType="arraylist">
-        SELECT id, name_space, "key", "value", status_id
+        SELECT id, name_space, `key`, `value`, status_id
         FROM name_server_kv
         WHERE status_id IN
         <foreach collection="array" item="item" open="(" close=")" separator=",">
@@ -40,12 +40,12 @@
     </select>
 
     <insert id="insert" parameterType="KV" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO name_server_kv(id, name_space, "key", "value", status_id)
+        INSERT INTO name_server_kv(id, name_space, `key`, `value`, status_id)
         VALUES (NULL, #{nameSpace}, #{key}, #{value}, #{status.id})
     </insert>
 
     <update id="update" parameterType="KV">
-        UPDATE name_server_kv SET name_space = #{nameSpace}, "key" = #{key}, "value" = #{value},
+        UPDATE name_server_kv SET name_space = #{nameSpace}, `key` = #{key}, `value` = #{value},
         status_id = #{status.id}
         WHERE id = #{id}
     </update>

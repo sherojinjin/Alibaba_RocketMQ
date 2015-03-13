@@ -18,7 +18,7 @@ public class NameServerKVManageController {
     @Autowired
     private NameServerKVService nameServerKVService;
 
-    @RequestMapping(value = "/id/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
     @ResponseBody
     public KV apply(@PathVariable("id") long id) throws Exception {
         KV kv = nameServerKVService.get(id);
