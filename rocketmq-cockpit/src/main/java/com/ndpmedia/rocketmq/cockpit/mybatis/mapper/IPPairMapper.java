@@ -4,7 +4,7 @@ import com.ndpmedia.rocketmq.cockpit.model.IPPair;
 
 import java.util.List;
 
-public interface IpPairMapper {
+public interface IPPairMapper {
 
     List<IPPair> list();
 
