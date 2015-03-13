@@ -7,7 +7,7 @@ $(document).ready(function() {
             var approveLink = $("<a class='approveItem' href='javascript:;'>Approve</a>");
 
             var operation = $("<td></td>");
-            if (topic.status_id != "ACTIVE"){
+            if (topic.status != "ACTIVE"){
                 operation.append(approveLink);
                 operation.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
             }
@@ -94,14 +94,10 @@ $(document).ready(function() {
             var has_unit_subscription = row.children().eq(6).html();
             var broker_address = row.children().eq(7).html();
             var order = row.children().eq(8).html();
-            var status_id = row.children().eq(9).html();
-            var create_time = row.children().eq(10).html();
-            var update_time = row.children().eq(11).html();
             var topic = row.children().eq(12).html();
             var ob = JSON.stringify({"id":id, "topic":topic,"writeQueueNum":write_queue_num,"readQueueNum":read_queue_num,
                                      "brokerAddress":broker_address, "clusterName":cluster_name, "permission":permission,
-                                     "unit":unit, "hasUnitSubscription":has_unit_subscription, "order":order, "createTime":create_time,
-                                     "updateTime":update_time, "status":"ACTIVE"});
+                                     "unit":unit, "hasUnitSubscription":has_unit_subscription, "order":order});
             if ($.trim(id) === "" ) {
                         return false;
             }
@@ -115,13 +111,12 @@ $(document).ready(function() {
                 success: function() {
                     $.ajax({
                         async: false,
-                        data: ob,
-                        url: "cockpit/api/topic",
+                        url: "cockpit/api/topic/" + id,
                         type: "POST",
                         dataType: "json",
                         contentType: "application/json",
                         success: function() {
-                                                       location.reload(true);
+
                                                     }
                     });
                 }

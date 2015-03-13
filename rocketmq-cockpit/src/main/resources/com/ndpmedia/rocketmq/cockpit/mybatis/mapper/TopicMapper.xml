@@ -23,6 +23,11 @@
         WHERE id = #{id}
     </delete>
 
+    <update id="register" parameterType="long">
+        UPDATE topic SET status_id = 2
+        WHERE id = #{id}
+    </update>
+
     <resultMap id="topicMap" type="Topic">
         <id column="id" property="id" />
         <result column="topic" property="topic" />

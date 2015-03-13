@@ -10,6 +10,8 @@ public interface TopicMapper {
 
     void delete(long id);
 
+    void register(long id);
+
     void update(Topic topic);
 
     Topic get(long id);

@@ -35,13 +35,17 @@ public class TopicServiceController {
         return topic;
     }
 
-
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @ResponseBody
     public void delete(@PathVariable("id") long id) {
         topicMapper.delete(id);
     }
 
+    @RequestMapping(value = "/{id}", method = RequestMethod.POST)
+    @ResponseBody
+    public void register(@PathVariable("id") long id){
+        topicMapper.register(id);
+    }
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public void update(@RequestBody Topic topic) {

@@ -8,6 +8,8 @@ import com.ndpmedia.rocketmq.cockpit.model.ConsumeProgress;
 import com.ndpmedia.rocketmq.cockpit.model.ConsumerGroup;
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.ConsumerGroupMapper;
 import com.ndpmedia.rocketmq.cockpit.service.ConsumeProgressService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,16 +21,20 @@ import java.util.List;
 @Service("consumeProgressService")
 public class ConsumeProgressServiceImpl implements ConsumeProgressService {
 
+    private Logger logger = LoggerFactory.getLogger(ConsumeProgressServiceImpl.class);
+
     @Autowired
     private ConsumerGroupMapper consumerGroupMapper;
 
     @Override
-    public List<ConsumeProgress> queryConsumerProgress(String groupName, String topic, String broker) {
+    public List<ConsumeProgress> queryConsumerProgress(String groupName, String topic, String broker)
+    {
         List<ConsumeProgress> consumeProgressList = new ArrayList<ConsumeProgress>();
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
         defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
         ConsumerGroup consumerGroup = consumerGroupMapper.getByGroupName(groupName);
-        try {
+        try
+        {
             defaultMQAdminExt.start();
             // 查询特定consumer
             ConsumeStats consumeStats = defaultMQAdminExt.examineConsumeStats(groupName);
@@ -39,7 +45,8 @@ public class ConsumeProgressServiceImpl implements ConsumeProgressService {
 
             long diffTotal = 0L;
 
-            for (MessageQueue messageQueue : messageQueueList) {
+            for (MessageQueue messageQueue : messageQueueList)
+            {
                 OffsetWrapper offsetWrapper = consumeStats.getOffsetTable().get(messageQueue);
                 if (null != topic && !topic.equals(messageQueue.getTopic())) {
                     continue;
@@ -55,9 +62,9 @@ public class ConsumeProgressServiceImpl implements ConsumeProgressService {
                 consumeProgressList.add(new ConsumeProgress(consumerGroup, messageQueue, offsetWrapper, diff));
             }
 
-            consumeProgressList.add(new ConsumeProgress(consumerGroup, null, null, diffTotal));
+//            consumeProgressList.add(new ConsumeProgress(consumerGroup, null, null, diffTotal));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn("[MONITOR][CONSUME PROCESS] try to get " + groupName + " message diff failed." + e);
         } finally {
             defaultMQAdminExt.shutdown();
         }
