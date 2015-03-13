@@ -1,32 +1,49 @@
 package com.ndpmedia.rocketmq.cockpit.model;
 
+import java.util.Date;
+
 /**
  * topic bean.
  */
 public class Topic {
 
-    public static int DEFAULT_READ_QUEUE_NUM = 16;
+    public static int DEFAULT_READ_QUEUE_NUM  = 16;
+
     public static int DEFAULT_WRITE_QUEUE_NUM = 16;
 
-    private long id;
-    private String topic;
-    private String clusterName;
-    private String brokerAddress;
-    private int writeQueueNum = DEFAULT_WRITE_QUEUE_NUM;
-    private int readQueueNum = DEFAULT_READ_QUEUE_NUM;
-    private int permission;
-    private boolean unit;
-    private boolean hasUnitSubscription;
-    private boolean order;
-    private Status status = Status.DRAFT;
-    private long createTime;
-    private long updateTime;
+    private long   id;
 
-    public String getTopic() {
+    private String topic;
+
+    private String clusterName;
+
+    private String brokerAddress;
+
+    private int writeQueueNum = DEFAULT_WRITE_QUEUE_NUM;
+
+    private int readQueueNum  = DEFAULT_READ_QUEUE_NUM;
+
+    private int     permission;
+
+    private boolean unit;
+
+    private boolean hasUnitSubscription;
+
+    private boolean order;
+
+    private Status status = Status.DRAFT;
+
+    private Date createTime;
+
+    private Date updateTime;
+
+    public String getTopic()
+    {
         return topic;
     }
 
-    public void setTopic(String topic) {
+    public void setTopic(String topic)
+    {
         this.topic = topic;
     }
 
@@ -62,19 +79,23 @@ public class Topic {
         this.readQueueNum = readQueueNum;
     }
 
-    public long getCreateTime() {
+    public Date getCreateTime()
+    {
         return createTime;
     }
 
-    public void setCreateTime(long createTime) {
+    public void setCreateTime(Date createTime)
+    {
         this.createTime = createTime;
     }
 
-    public long getUpdateTime() {
+    public Date getUpdateTime()
+    {
         return updateTime;
     }
 
-    public void setUpdateTime(long updateTime) {
+    public void setUpdateTime(Date updateTime)
+    {
         this.updateTime = updateTime;
     }
 

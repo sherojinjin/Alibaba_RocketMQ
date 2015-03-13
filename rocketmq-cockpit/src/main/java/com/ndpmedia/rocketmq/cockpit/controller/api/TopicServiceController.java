@@ -4,12 +4,9 @@ import com.ndpmedia.rocketmq.cockpit.model.Topic;
 import com.ndpmedia.rocketmq.cockpit.mybatis.mapper.TopicMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -32,7 +29,8 @@ public class TopicServiceController {
     }
 
     @RequestMapping(method = RequestMethod.PUT)
-    public Topic add(@ModelAttribute Topic topic) {
+    @ResponseBody
+    public Topic add(@RequestBody Topic topic) {
         topicMapper.insert(topic);
         return topic;
     }
@@ -46,8 +44,8 @@ public class TopicServiceController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
-    public void update(@ModelAttribute Topic topic) {
-        topic.setUpdateTime(System.currentTimeMillis());
+    public void update(@RequestBody Topic topic) {
+        topic.setUpdateTime(new Date());
         topicMapper.update(topic);
     }
 }

@@ -65,11 +65,11 @@
         placeholder="brokerAddress"></td></tr>
         <tr><td>clusterName:</td><td>  <input type="text" class="form-control clusterName"
         placeholder="clusterName"></td></tr>
-        <tr><td>clusterName:</td><td>  <input type="text" class="form-control permission"
+        <tr><td>permission:</td><td>  <input type="text" class="form-control permission"
                 placeholder="permission"></td></tr>
-        <tr><td>clusterName:</td><td>  <input type="text" class="form-control unit"
+        <tr><td>unit:</td><td>  <input type="text" class="form-control unit"
                 placeholder="unit"></td></tr>
-        <tr><td>clusterName:</td><td>  <input type="text" class="form-control hasUnitSubscription"
+        <tr><td>hasUnitSubscription:</td><td>  <input type="text" class="form-control hasUnitSubscription"
                 placeholder="hasUnitSubscription"></td></tr>
         <tr><td>order:</td><td>  <input type="text" class="form-control order" placeholder="order"></td></tr>
         <tr><td colspan="2">

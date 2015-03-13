@@ -26,6 +26,7 @@
     <resultMap id="topicMap" type="Topic">
         <id column="id" property="id" />
         <result column="topic" property="topic" />
+        <result column="cluster_name" property="clusterName" />
         <result column="permission" property="permission" />
         <result column="write_queue_num" property="writeQueueNum" />
         <result column="read_queue_num" property="readQueueNum" />

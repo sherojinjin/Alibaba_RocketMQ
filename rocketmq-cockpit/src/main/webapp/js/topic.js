@@ -7,12 +7,12 @@ $(document).ready(function() {
             var approveLink = $("<a class='approveItem' href='javascript:;'>Approve</a>");
 
             var operation = $("<td></td>");
-            if (topic.status_id === 1){
+            if (topic.status_id != "ACTIVE"){
                 operation.append(approveLink);
                 operation.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
             }
             operation.append(operationLink);
-            var item = $("<tr><td style='display:none'>" + topic.id + "</td><td style='display:none'>" + topic.cluster_name + "</td><td style='display:none'>" + topic.permission + "</td><td style='display:none'>" + topic.write_queue_num + "</td><td style='display:none'>" + topic.read_queue_num + "</td><td style='display:none'>" + topic.unit + "</td><td style='display:none'>" + topic.has_unit_subscription + "</td><td style='display:none'>" + topic.broker_address + "</td><td style='display:none'>" + topic.order_type + "</td><td style='display:none'>" + topic.status_id + "</td><td style='display:none'>" + topic.create_time + "</td><td style='display:none'>" + topic.update_time + "</td><td>" + topic.topic + "</td></tr>");
+            var item = $("<tr><td style='display:none'>" + topic.id + "</td><td style='display:none'>" + topic.clusterName + "</td><td style='display:none'>" + topic.permission + "</td><td style='display:none'>" + topic.writeQueueNum + "</td><td style='display:none'>" + topic.readQueueNum + "</td><td style='display:none'>" + topic.unit + "</td><td style='display:none'>" + topic.hasUnitSubscription + "</td><td style='display:none'>" + topic.brokerAddress + "</td><td style='display:none'>" + topic.order + "</td><td style='display:none'>" + topic.status + "</td><td style='display:none'>" + topic.createTime + "</td><td style='display:none'>" + topic.updateTime + "</td><td>" + topic.topic + "</td></tr>");
             item.append(operation);
             $(".table-content").append(item);
         });
@@ -28,9 +28,9 @@ $(document).ready(function() {
         var unit = $("input.unit").val();
         var has_unit_subscription = $("input.hasUnitSubscription").val();
         var order = $("input.order").val();
-        var allow = 1;
+        var allow = "DRAFT";
         var ob = JSON.stringify({"topic":topic,"writeQueueNum":write_queue_num,"readQueueNum":read_queue_num,
-                                 "broker_address":broker_address, "cluster_name":cluster_name, "permission":permission, "unit":unit, "hasUnitSubscription":has_unit_subscription, "order":order, "status":allow});
+                                 "brokerAddress":broker_address, "clusterName":cluster_name, "permission":permission, "unit":unit, "hasUnitSubscription":has_unit_subscription, "order":order, "status":allow});
         if ($.trim(topic) === "") {
             return false;
         } else if ($.trim(cluster_name) === "" && $.trim(broker_address) == "") {
@@ -63,7 +63,7 @@ $(document).ready(function() {
         }
         $.ajax({
             async: false,
-            data: JSON.stringify({"id":id, "topic":topic, "cluster_name":cluster_name}),
+            data: JSON.stringify({"id":id, "topic":topic, "clusterName":cluster_name}),
             url: "cockpit/manage/topic/",
             type: "DELETE",
             dataType: "json",
@@ -75,11 +75,10 @@ $(document).ready(function() {
                             type: "DELETE",
                             dataType: "json",
                             contentType: "application/json",
-                            complete: function() {
+                            success: function() {
                                 row.remove();
                             }
                         });
-                row.remove();
             }
         });
     });
@@ -94,14 +93,15 @@ $(document).ready(function() {
             var unit = row.children().eq(5).html();
             var has_unit_subscription = row.children().eq(6).html();
             var broker_address = row.children().eq(7).html();
-            var order_type = row.children().eq(8).html();
+            var order = row.children().eq(8).html();
             var status_id = row.children().eq(9).html();
             var create_time = row.children().eq(10).html();
             var update_time = row.children().eq(11).html();
             var topic = row.children().eq(12).html();
             var ob = JSON.stringify({"id":id, "topic":topic,"writeQueueNum":write_queue_num,"readQueueNum":read_queue_num,
-                                     "broker_address":broker_address, "cluster_name":cluster_name, "permission":permission,
-                                     "unit":unit, "hasUnitSubscription":has_unit_subscription, "order":order, "status":2});
+                                     "brokerAddress":broker_address, "clusterName":cluster_name, "permission":permission,
+                                     "unit":unit, "hasUnitSubscription":has_unit_subscription, "order":order, "createTime":create_time,
+                                     "updateTime":update_time, "status":"ACTIVE"});
             if ($.trim(id) === "" ) {
                         return false;
             }
@@ -120,7 +120,7 @@ $(document).ready(function() {
                         type: "POST",
                         dataType: "json",
                         contentType: "application/json",
-                        complete: function() {
+                        success: function() {
                                                        location.reload(true);
                                                     }
                     });
