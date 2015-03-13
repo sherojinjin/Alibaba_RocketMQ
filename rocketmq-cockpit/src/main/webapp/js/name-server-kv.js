@@ -64,4 +64,13 @@ $(document).ready(function() {
 
     });
 
+    $(".applyKV").live("click", function() {
+        var id = $(this).attr("rel");
+
+        var $status = $(this).parent().prev();
+        $.get("cockpit/manage/name-server-kv/id/" + id, function(data) {
+            $status.text(data.status);
+        });
+    });
+
 });
