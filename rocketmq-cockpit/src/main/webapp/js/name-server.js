@@ -28,7 +28,7 @@ $(document).ready(function() {
                 dataType: "json",
                 data: JSON.stringify({ip: sections[0], port: sections[1]}),
                 complete: function(data) {
-                    if (data.statusCode() == 200 || data.responseText != "") {
+                    if (data.responseText != "") {
                         var nsItem = $.parseJSON(data.responseText);
                         var operationLink = $("<a class='removeItem' href='javascript:;'>Remove</a>");
                         operationLink.attr("rel", nsItem.id);
