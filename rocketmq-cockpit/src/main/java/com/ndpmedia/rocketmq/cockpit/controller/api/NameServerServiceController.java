@@ -33,7 +33,7 @@ public class NameServerServiceController {
 
     @RequestMapping(value = "/id/{id}", method = RequestMethod.DELETE)
     @ResponseBody
-    public boolean delete(long id) {
+    public boolean delete(@PathVariable("id") long id) {
         nameServerMapper.delete(id);
         return true;
     }
