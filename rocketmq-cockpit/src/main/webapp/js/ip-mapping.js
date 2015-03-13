@@ -1,9 +1,10 @@
 $(document).ready(function() {
 
-    $.get("rocketmq/ips", function(data) {
+    $.get("cockpit/api/ip", function(data) {
         $(".table-content").children().remove();
         data.forEach(function(ip) {
             var operationLink = $("<a class='removeItem' href='javascript:;'>Remove</a>");
+            operationLink.attr("rel", ip.id);
             var operation = $("<td></td>").append(operationLink);
             var item = $("<tr><td>" + ip.innerIP + "</td><td>" + ip.publicIP + "</td></tr>");
             item.append(operation);
@@ -18,27 +19,35 @@ $(document).ready(function() {
         if ($.trim(innerIP) === "" || $.trim(publicIP) == "") {
             return false;
         } else {
-            $.post("rocketmq/ip", {innerIP: innerIP, publicIP:publicIP}, function() {
-                $("input.innerIP").val("");
-                $("input.publicIP").val("");
-                var item = $("<tr><td>" + innerIP + "</td><td>" + publicIP + "</td><td><a class='removeItem' href='javascript:;'>Remove</a></td></tr>");
-                $(".table-content").append(item);
+            $.ajax({
+                url: "cockpit/api/ip",
+                type: "PUT",
+                dataType: "json",
+                contentType: "application/json;charset=UTF-8",
+                data: JSON.stringify({innerIP: innerIP, publicIP:publicIP}),
+                async: true,
+                success: function(data) {
+                    var item = $("<tr><td>" + data.innerIP + "</td><td>" + data.publicIP + "</td><td><a class='removeItem' rel='\'' + data.id + '\'' href='javascript:;'>Remove</a></td></tr>");
+                    $(".table-content").append(item);
+                    $("input.innerIP").val("");
+                    $("input.publicIP").val("");
+                }
             });
         }
     });
 
     $(".removeItem").live("click", function() {
         var row = $(this).parent().parent();
-        var innerIP = $(this).parent().prev().prev().html();
+        var id = $(this).attr("rel");
         $.ajax({
-            async: false,
-            data: JSON.stringify({inner_ip: innerIP}),
-            url: "rocketmq/ip",
+            async: true,
+            url: "cockpit/api/ip/id/" + id,
             type: "DELETE",
-            dataType: "application/json",
-            contentType: "application/json",
-            complete: function() {
+            success: function() {
                 row.remove();
+            },
+            error: function() {
+                alert("Error");
             }
         });
     });
