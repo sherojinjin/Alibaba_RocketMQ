@@ -24,16 +24,23 @@ $(document).ready(function() {
                 async: false,
                 url: "cockpit/api/name-server",
                 type: "PUT",
+                contentType: "application/json; charset=UTF-8",
                 dataType: "json",
-                data: {ip: sections[0], port: sections[1]},
-                complete: function(dataResult) {
-                    var operationLink = $("<a class='removeItem' href='javascript:;'>Remove</a>");
-                    operationLink.attr("rel", dataResult.id);
-                    var operation = $("<td></td>").append(operationLink);
-                    var item = $("<tr><td>" + dataResult.ip + ":" + dataResult.port + "</td><td>" + dataResult.createTime + "</td></tr>");
-                    item.append(operation);
-                    $(".table-content").append(item);
-                    $("input.newNameServer").val("");
+                data: JSON.stringify({ip: sections[0], port: sections[1]}),
+                complete: function(data) {
+                    if (data.statusCode() == 200 || data.responseText != "") {
+                        var nsItem = $.parseJSON(data.responseText);
+                        var operationLink = $("<a class='removeItem' href='javascript:;'>Remove</a>");
+                        operationLink.attr("rel", nsItem.id);
+                        var operation = $("<td></td>").append(operationLink);
+                        var item = $("<tr><td>" + nsItem.ip + ":" + nsItem.port + "</td><td>" + nsItem.createTime + "</td></tr>");
+                        item.append(operation);
+                        $(".table-content").append(item);
+                        $("input.newNameServer").val("");
+                    } else {
+                        alert("Error!");
+                    }
+
                 }
             });
         }
