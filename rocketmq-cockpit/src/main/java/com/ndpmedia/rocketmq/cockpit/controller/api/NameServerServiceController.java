@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -27,12 +25,7 @@ public class NameServerServiceController {
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public List<NameServer> list() {
-        List<NameServer> nameServerList = nameServerMapper.list();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        for (NameServer nameServer : nameServerList) {
-            System.out.println(null == nameServer.getCreateTime() ? "NULL!!!" : dateFormat.format(nameServer.getCreateTime()));
-        }
-        return nameServerList;
+        return nameServerMapper.list();
     }
 
     @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
